@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Recommender</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="bg-shape shape-1"></div>
+<div class="bg-shape shape-2"></div>
+
+<div class="container">
+    <header class="main-header">
+        <div class="icon-wrapper">🎓</div>
+        <h1>Course Recommendation System</h1>
+        <p class="subtitle">Plan your semester with Course Recommender</p>
+    </header>
+
+    <!-- MAIN FORM (shown only if manual history is NOT required) -->
+    {% if not need_manual_history %}
+    <form method="POST" class="form-card glass-panel">
+        <div class="section-title">Student Profile</div>
+
+        <div class="grid">
+            <div class="field">
+                <label>Student ID</label>
+                <input name="student_id" placeholder="e.g. XXbXXXX" required>
+            </div>
+
+            <div class="field">
+                <label>Degree</label>
+                <div class="select-wrapper">
+                    <select name="degree" required>
+                        <option value="" disabled selected>Select degree</option>
+                        <option value="B.Tech.">B.Tech.</option>
+                        <option value="M.Tech.">M.Tech.</option>
+                        <option value="Ph.D.">Ph.D.</option>
+                        <option value="M.Sc.">M.Sc.</option>
+                        <option value="Dual Degree (B.Tech. + M.Tech.)">
+                            Dual Degree (B.Tech. + M.Tech.)
+                        </option>
+                        <option value="B.S.">B.S.</option>
+                        <option value="B.Des.">B.Des.</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Year</label>
+                <div class="select-wrapper">
+                    <select name="year" required>
+                        <option value="" disabled selected>Select year</option>
+                        {% for y in range(2025, 2014, -1) %}
+                            <option value="{{ y }}">{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Department</label>
+                <div class="select-wrapper">
+                    <select name="department" required>
+                        <option value="" disabled selected>Select department</option>
+                        <option value="Aerospace Engineering">Aerospace Engineering</option>
+                        <option value="Chemical Engineering">Chemical Engineering</option>
+                        <option value="Computer Science and Engineering">
+                            Computer Science and Engineering
+                        </option>
+                        <option value="Electrical Engineering">Electrical Engineering</option>
+                        <option value="Mechanical Engineering">Mechanical Engineering</option>
+                        <option value="Physics">Physics</option>
+                        <option value="Chemistry">Chemistry</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="field full-width">
+            <label>Research Interests & Skills</label>
+            <textarea name="interest" rows="3"
+                placeholder="e.g. stochastic calculus, ML, thermodynamics"
+                required></textarea>
+        </div>
+
+        <button type="submit" class="btn-primary">
+            Generate Recommendations <span class="arrow">→</span>
+        </button>
+    </form>
+    {% endif %}
+
+    <!-- MANUAL HISTORY FORM -->
+    {% if need_manual_history %}
+    <div class="results glass-panel animate-up">
+        <h2>⚠️ Student ID not found</h2>
+        <p class="subtitle">Enter completed courses (comma-separated)</p>
+
+        <form method="POST">
+            <input type="hidden" name="student_id" value="{{ request.form.student_id }}">
+            <input type="hidden" name="degree" value="{{ request.form.degree }}">
+            <input type="hidden" name="year" value="{{ request.form.year }}">
+            <input type="hidden" name="department" value="{{ request.form.department }}">
+            <input type="hidden" name="interest" value="{{ request.form.interest }}">
+
+            <textarea name="manual_history"
+                rows="3"
+                placeholder="e.g. MA105, CS101, CS6001, SOM101"
+                required></textarea>
+
+            <button type="submit" class="btn-primary">
+                Continue →
+            </button>
+        </form>
+    </div>
+    {% endif %}
+
+    <!-- COURSE HISTORY -->
+    {% if course_history %}
+    <div class="results glass-panel animate-up">
+        <h2>📘 Academic History</h2>
+        <ul class="course-history-compact">
+            {% for c in course_history %}
+                <li class="history-item">{{ c }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <!-- RESULTS -->
+    <div class="results-grid">
+        {% if eligible %}
+        <div class="results glass-panel animate-up delay-1">
+            <div class="status-header success">
+                <h2>✅ Eligible Courses</h2>
+                <span class="badge success-badge">{{ eligible|length }} Found</span>
+            </div>
+            <ul class="course-list">
+                {% for c in eligible %}
+                <li class="course-card success-card">
+                    <div class="card-content">
+                        <span class="course-code">{{ c.code }}</span>
+                        <span class="course-name">{{ c.name }}</span>
+                        <div class="meta-text">
+                            Slot: <strong>{{ c.slot }}</strong><br>
+                            Instructor: {{ c.instructor }}
+                        </div>
+                    </div>
+                    <button class="add-btn">+</button>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if rejected %}
+        <div class="results glass-panel animate-up delay-2">
+            <div class="status-header danger">
+                <h2>❌ Not Eligible</h2>
+                <span class="badge danger-badge">{{ rejected|length }} Blocked</span>
+            </div>
+            <ul class="course-list">
+                {% for c in rejected %}
+                <li class="course-card danger-card">
+                    <div class="card-content">
+                        <span class="course-code">{{ c.code }}</span>
+                        <span class="course-name">{{ c.name }}</span>
+                        <div class="meta-text">
+                            Slot: <strong>{{ c.slot }}</strong><br>
+                            Instructor: {{ c.instructor }}
+                        </div>
+                        <div class="reason-text">⚠️ {{ c.reason }}</div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+</body>
+</html>
