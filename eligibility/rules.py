@@ -109,14 +109,14 @@ def check_prereq(course_code,course_hist,data=df_prereq):
     # Check if course_code exists in the data
     #course_hist is course history of student
     if course_code not in data['CourseCode'].values:
-        return 'Not in available data'
+        return 'Valid'
 
     # Fetch prerequsite course code
     prereq = data.loc[data['CourseCode'] == course_code, 'Courses'].values[0]
     pattern = r'(?:[A-Z]{2} \d{3}|[A-Z]{3}\d{3}|[A-Z]{2}\d{4})'
     # no prereq
     if pd.isna(prereq):
-        return 'Valid'
+        return 'Instructors Approval'
     # if single prereq
     elif re.match(pattern, prereq) and (len(prereq)==6 or len(prereq)==7):
         if prereq in course_hist:
