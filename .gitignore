@@ -1,0 +1,10 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+.vscode/settings.json
+
+# Excel temporary files (if opened locally)
+~$*.xlsx
+~$*.xls
