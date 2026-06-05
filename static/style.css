@@ -386,8 +386,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
     letter-spacing 0.16s ease;
 }
  
-/* Floating label — active/filled state for inputs & textarea
-   Uses placeholder=" " trick: label floats when placeholder is hidden */
+/* Floating label — active/filled state for inputs & textarea */
 .field input:focus ~ label,
 .field input:not(:placeholder-shown) ~ label,
 .field textarea:focus ~ label,
@@ -399,7 +398,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   letter-spacing: 0.5px;
 }
  
-/* Select floating label: JS adds .has-value class */
+/* Select floating label */
 .field select:focus ~ label,
 .field select.has-value ~ label {
   top: 8px;
@@ -760,7 +759,6 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 }
  
 .entry.expanded .entry-desc-wrap {
-  /* large enough for even long descriptions; CSS can't use auto  */
   max-height: None;
 }
  
@@ -786,7 +784,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   color: var(--ts);
   line-height: 1.65;
   margin: 0;
-  padding-bottom: 4px;  /* a little breathing room inside the reveal */
+  padding-bottom: 4px;
 }
  
 /* ── 17. Empty states ────────────────────────────────────────────── */
@@ -892,7 +890,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
  
   /* ── iOS Safari: prevent auto-zoom on input focus.
        Safari zooms whenever font-size < 16px on a focused input.
-       We bump inputs to 16px on mobile and adjust label accordingly. ── */
+       Inputs are bumped to 16px on mobile and the label is adjusted accordingly. ── */
   .field input,
   .field select,
   .field textarea {
