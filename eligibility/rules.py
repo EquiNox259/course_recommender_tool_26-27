@@ -127,7 +127,7 @@ def check_prereq(course_code,course_hist,data=df_prereq):
         if prereq in course_hist:
           return 'Valid'
         else:
-          return 'Prerequisite not met'
+          return f'Prerequisite not met. You need to do {prereq}'
     # some boolean expression (i.e. AND , OR)
     else:
       pre_course = re.findall(pattern, prereq)
@@ -138,13 +138,13 @@ def check_prereq(course_code,course_hist,data=df_prereq):
         for i in pre_course:
           if i in course_hist:
             return 'Valid'
-        return 'Prerequisite not met'
+        return f'Prerequisite not met . You need to do {prereq}'
 
       # if prereq only contain AND
       elif 'OR' not in l and 'AND' in l:
         for i in pre_course:
           if i not in course_hist:
-            return 'Prerequisite not met'
+            return f'Prerequisite not met. You need to do {prereq}'
         return 'Valid'
 
       elif "OR" in l and 'AND' in l:
@@ -214,7 +214,7 @@ def check_prereq(course_code,course_hist,data=df_prereq):
           if r:
             return 'Valid'
 
-      return 'Prerequisite not met'
+      return f'Prerequisite not met. You need to do {prereq}'
     
 
 
@@ -250,6 +250,8 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
     for course in desired_courses:
         course_code = course["code"]
         # 3. Check restriction
+        if course_code.replace(" ", "").upper() in course_hist:
+           continue
         r_status = check_restriction(
             Degree=Degree,
             year=year,
