@@ -8,6 +8,7 @@ app = Flask(__name__)
 def index():
     eligible = None
     rejected = None
+    i_a_r = None
     course_history = None
     need_manual_history = False
 
@@ -49,11 +50,13 @@ def index():
         else:
             course_history = output["course_history"]
             eligible = output["eligible"]
+            i_a_r = output["i_a_r"]
             rejected = output["rejected"]
 
     return render_template(
         "index.html",
         eligible=eligible,
+        i_a_r = i_a_r,
         rejected=rejected,
         course_history=course_history,
         need_manual_history=need_manual_history

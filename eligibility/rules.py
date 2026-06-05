@@ -8,14 +8,15 @@ data = pd.read_csv(COURSES_HISTORY_PATH)
 df = pd.read_csv(RUNNING_COURSES_PATH)
 df_prereq = pd.read_excel(PREREQ_PATH)
 
-# Build quick lookup: course_code -> slot & instructor
+# Build quick lookup: course_code -> slot & instructor, with description upon expansion
 course_meta = {}
 
 for _, row in df.iterrows():
     code = row["Course Code"]
     course_meta[code] = {
         "slot": row.get("Slot", "N/A"),
-        "instructor": row.get("Instructor", "N/A")
+        "instructor": row.get("Instructor", "N/A"),
+        "description": row.get("Description", "")
     }
 
 import re
@@ -108,25 +109,29 @@ def check_restriction(Degree,year,department,course_code, data=data_modified):
 def check_prereq(course_code,course_hist,data=df_prereq):
     # Check if course_code exists in the data
     #course_hist is course history of student
-    if course_code not in data['CourseCode'].values:
-        return 'Not in available data'
+    if course_code not in data['CourseCode'].values: # No prereq
+        return 'Valid'
 
     # Fetch prerequsite course code
     prereq = data.loc[data['CourseCode'] == course_code, 'Courses'].values[0]
-    pattern = r'(?:[A-Z]{2} \d{3}|[A-Z]{3}\d{3}|[A-Z]{2}\d{4})'
-    # no prereq
+    if isinstance(prereq, str):
+        prereq = re.sub(r'\s+(\d)', r'\1', prereq).upper()
+
+    pattern = r'(?:[A-Z]{2,3}\d{3,4})'
+    
+    #Blank cells => Instructor approval required
     if pd.isna(prereq):
-        return 'Valid'
+        return 'Instructor approval required'
     # if single prereq
-    elif re.match(pattern, prereq) and (len(prereq)==6 or len(prereq)==7):
+    elif re.match(pattern, prereq) and (len(prereq) in [5, 6, 7]):
         if prereq in course_hist:
           return 'Valid'
         else:
           return 'Prerequisite not met'
-    # some boolen expression (i.e. AND , OR)
+    # some boolean expression (i.e. AND , OR)
     else:
       pre_course = re.findall(pattern, prereq)
-      pattern_2 = r'(?:[A-Z]{2} \d{3}|[A-Z]{3}\d{3}|[A-Z]{2}\d{4})|OR|AND|\(|\)'
+      pattern_2 = r'(?:[A-Z]{2,3}\d{3,4})|OR|AND|\(|\)'
       l = re.findall(pattern_2,prereq)
       #if prereq contain only OR
       if 'OR' in l and "AND" not in l:
@@ -159,7 +164,7 @@ def check_prereq(course_code,course_hist,data=df_prereq):
         res_ = l[p_idx[-1][1]+1:]
 
         if len(res_) == 2:
-         if re.match(pattern, res_[-1]) and len(res_[-1]) in [6,7]:
+         if re.match(pattern, res_[-1]) and len(res_[-1]) in [5, 6, 7]:
             res_val = res_[-1] in course_hist
 
         list_=[]
@@ -168,21 +173,21 @@ def check_prereq(course_code,course_hist,data=df_prereq):
           prereq_i_list = l[i[0]+1:i[1]]
           prereq_i = ' '.join(prereq_i_list)
           pre_course_i = re.findall(pattern, prereq_i)
-          pattern_2 = r'(?:[A-Z]{2} \d{3}|[A-Z]{3}\d{3}|[A-Z]{2}\d{4})|OR|AND|\(|\)'
+          pattern_2 = r'(?:[A-Z]{2,3}\d{3,4})|OR|AND|\(|\)'
           l_i = re.findall(pattern_2,prereq_i)
 
-          if re.match(pattern, prereq_i) and (len(prereq_i)==6 or len(prereq_i)==7):
+          if re.match(pattern, prereq_i) and (len(prereq_i) in [5, 6, 7]):
              if prereq_i in course_hist:
                valid=True
           else:
             if 'OR' in l_i and "AND" not in l_i:
-             for i in pre_course_i:
-               if i in course_hist:
+             for item in pre_course_i:
+               if item in course_hist:
                   valid=True
 
             elif 'OR' not in l_i and 'AND' in l_i:
-             for i in pre_course_i:
-               if i not in course_hist:
+             for item in pre_course_i:
+               if item not in course_hist:
                    break
              else:
               valid=True
@@ -239,6 +244,7 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
 
     eligible_courses = []
     rejected_courses = []
+    i_a_r_courses = []
 
     # 2. Loop over model-recommended courses
     for course in desired_courses:
@@ -259,6 +265,7 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
     "name": course["name"],
     "slot": meta.get("slot", "N/A"),
     "instructor": meta.get("instructor", "N/A"),
+    "description": meta.get("description", ""),
     "reason": r_status
 })
 
@@ -273,11 +280,22 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
         if p_status != 'Valid':
             meta = course_meta.get(course_code, {})
 
-            rejected_courses.append({
+            if p_status == 'Instructor approval required':
+               i_a_r_courses.append({
+                  "code": course_code,
+                  "name": course["name"],
+                  "slot": meta.get("slot", "N/A"),
+                  "instructor": meta.get("instructor", "N/A"),
+                  "description": meta.get("description", "")
+               })
+
+            else:
+                rejected_courses.append({
     "code": course_code,
     "name": course["name"],
     "slot": meta.get("slot", "N/A"),
     "instructor": meta.get("instructor", "N/A"),
+    "description": meta.get("description", ""),
     "reason": p_status
 })
 
@@ -291,7 +309,8 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
     "code": course_code,
     "name": course["name"],
     "slot": meta.get("slot", "N/A"),
-    "instructor": meta.get("instructor", "N/A")
+    "instructor": meta.get("instructor", "N/A"),
+    "description": meta.get("description", ""),
 })
 
         
@@ -300,6 +319,7 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
     "course_history": course_hist,
     "history_source": history_source,
     "eligible": eligible_courses,
+    "i_a_r": i_a_r_courses,
     "rejected": rejected_courses
 }
 
