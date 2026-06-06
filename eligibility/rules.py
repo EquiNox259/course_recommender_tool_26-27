@@ -93,6 +93,19 @@ def check_restriction(Degree,year,department,course_code, data=data_modified):
 
             '''restrictions array have format every element contain first year then dept,then degree, then tell allowed or deny'''
 
+            allowed_groups = []
+            for j in restrictions:
+                if j[3] == 'Allowed':
+                    parts = []
+                    if j[2] != 'ALL': parts.append(j[2])
+                    if j[1] != 'ALL': parts.append(j[1])
+                    if j[0] != 'ALL': parts.append(f"{j[0]}")
+                    allowed_groups.append(', '.join(parts) if parts else 'specific students')
+            if allowed_groups:
+                restricted_msg = f"Open only to {' / '.join(allowed_groups)}'"
+            else:
+               restricted_msg = 'Restricted'
+
             for i in restrictions:
               if i[0]==year or i[0]=='ALL':
                 if i[1]==department or i[1]=='ALL':
@@ -100,10 +113,10 @@ def check_restriction(Degree,year,department,course_code, data=data_modified):
                     if i[3]=='Allowed':
                       return 'Valid'
                     else:
-                      return 'Restricted'
+                      return restricted_msg
         else:
             return 'Invalid Degree'
-    return 'Restricted'
+    return restricted_msg
 
 #check prerequsite
 def check_prereq(course_code,course_hist,data=df_prereq):
@@ -112,8 +125,9 @@ def check_prereq(course_code,course_hist,data=df_prereq):
     if course_code not in data['CourseCode'].values: # No prereq
         return 'Valid'
 
-    # Fetch prerequsite course code
+    # Fetch prerequsite course code and instructor approval status
     prereq = data.loc[data['CourseCode'] == course_code, 'Courses'].values[0]
+    approval = data.loc[data['CourseCode'] == course_code, 'InstructorConsent'].values[0]
     if isinstance(prereq, str):
         prereq = re.sub(r'\s+(\d)', r'\1', prereq).upper()
 
@@ -125,9 +139,14 @@ def check_prereq(course_code,course_hist,data=df_prereq):
     # if single prereq
     elif re.match(pattern, prereq) and (len(prereq) in [5, 6, 7]):
         if prereq in course_hist:
-          return 'Valid'
+          if approval == 'Required':
+            return 'Instructor approval required'
+          elif approval == 'Conditional':
+            return 'Instructor approval is conditional'
+          else:
+            return 'Valid'
         else:
-          return f'Prerequisite not met. You need to do {prereq}'
+          return f'Prerequisite not met. You need to complete {prereq}.'
     # some boolean expression (i.e. AND , OR)
     else:
       pre_course = re.findall(pattern, prereq)
@@ -137,15 +156,25 @@ def check_prereq(course_code,course_hist,data=df_prereq):
       if 'OR' in l and "AND" not in l:
         for i in pre_course:
           if i in course_hist:
-            return 'Valid'
-        return f'Prerequisite not met . You need to do {prereq}'
+            if approval == 'Required':
+                return 'Instructor approval required'
+            elif approval == 'Conditional':
+                return 'Instructor approval is conditional'
+            else:
+                return 'Valid'
+        return f'Prerequisite not met. You need to complete {prereq}.'
 
       # if prereq only contain AND
       elif 'OR' not in l and 'AND' in l:
         for i in pre_course:
           if i not in course_hist:
-            return f'Prerequisite not met. You need to do {prereq}'
-        return 'Valid'
+            return f'Prerequisite not met. You need to complete {prereq}.'
+          if approval == 'Required':
+            return 'Instructor approval required'
+          elif approval == 'Conditional':
+            return 'Instructor approval is conditional'
+          else:
+            return 'Valid'
 
       elif "OR" in l and 'AND' in l:
         open_close_idx = [(x,i) for i, x in enumerate(l) if x == '(' or x == ')']
@@ -212,9 +241,14 @@ def check_prereq(course_code,course_hist,data=df_prereq):
         for i in range(1, len(t), 2):
           r = r and t[i+1] if t[i] == 'AND' else r or t[i+1]
           if r:
-            return 'Valid'
+            if approval == 'Required':
+                return 'Instructor approval required'
+            elif approval == 'Conditional':
+                return 'Instructor approval is conditional'
+            else:
+                return 'Valid'
 
-      return f'Prerequisite not met. You need to do {prereq}'
+      return f'Prerequisite not met. You need to complete {prereq}.'
     
 
 
@@ -289,6 +323,16 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
                   "slot": meta.get("slot", "N/A"),
                   "instructor": meta.get("instructor", "N/A"),
                   "description": meta.get("description", "")
+               })
+
+            elif p_status == 'Instructor approval is conditional':
+               i_a_r_courses.append({
+                  "code": course_code,
+                  "name": course["name"],
+                  "slot": meta.get("slot", "N/A"),
+                  "instructor": meta.get("instructor", "N/A"),
+                  "description": meta.get("description", ""),
+                  "reason": p_status + '. Contact them for more info.'
                })
 
             else:

@@ -81,7 +81,7 @@
           {% set depts = [
             'Aerospace Engineering','Biosciences and Bioengineering',
             'Chemical Engineering','Chemistry','Civil Engineering',
-            'Computer Science & Engineering','Earth Sciences','Economics',
+            'Computer Science and Engineering','Earth Sciences','Economics',
             'Electrical Engineering','Energy Science and Engineering',
             'Environmental Science and Engineering','Humanities & Social Science',
             'Industrial Engineering & Operations Research','Mathematics',
@@ -231,6 +231,9 @@
           <div class="entry-meta">
             Slot&nbsp;&middot;&nbsp;<span class="mono">{{ c.slot }}</span><br>
             Instructor&nbsp;&middot;&nbsp;{{ c.instructor }}
+            {% if c.reason %}
+                <div class="entry-reason">&#9888; {{ c.reason }}</div>
+            {% endif %}
           </div>
           {% if c.description %}
           <div class="entry-desc-wrap">
