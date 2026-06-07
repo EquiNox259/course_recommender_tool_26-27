@@ -102,7 +102,7 @@ def check_restriction(Degree,year,department,course_code, data=data_modified):
                     if j[0] != 'ALL': parts.append(f"{j[0]}")
                     allowed_groups.append(', '.join(parts) if parts else 'specific students')
             if allowed_groups:
-                restricted_msg = f"Open only to {' / '.join(allowed_groups)}'"
+                restricted_msg = f"Open only to {' / '.join(allowed_groups)} students."
             else:
                restricted_msg = 'Restricted'
 
