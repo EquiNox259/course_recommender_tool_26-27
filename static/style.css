@@ -53,6 +53,11 @@
   --fr:  0 0 0 3px rgba(29,75,47,0.20);
   --bs:  0 2px 10px rgba(29,75,47,0.30);
   --bt:  #FFFFFF;
+
+    /* Time Slot Clash */
+  --cl:  #174A7E;
+  --clb: #EEF4FB;
+  --clr: #85B7D9;
  
   /* Typefaces */
   --font-display: 'Source Serif 4', serif;
@@ -97,6 +102,9 @@
   --fr:  0 0 0 3px rgba(91,170,120,0.22);
   --bs:  0 2px 10px rgba(0,0,0,0.40);
   --bt:  #0F1510;
+  --cl:  #5B9BD5;
+  --clb: #0D1A2E;
+  --clr: #1F3D5C;
 }
  
 /* ── 3. Reset & Base ─────────────────────────────────────────────── */
@@ -580,13 +588,137 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   border: 1px solid var(--wr);
   color: var(--ac);
 }
+
+.badge-clash {
+  background: var(--clb);
+  border: 1px solid var(--clr);
+  color: var(--cl);
+}
  
 .badge-no {
   background: var(--nb2);
   border: 1px solid var(--nr);
   color: var(--no);
 }
+
+/* ── Minor filter bar ────────────────────────────────────────────── */
+.mtag-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.mtag-label {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--ts);
+  margin-right: 4px;
+}
+
+.mtag-btn {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 5px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--bc);
+  background: transparent;
+  color: var(--ts);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.mtag-btn.active {
+  background: var(--tp);
+  color: var(--pc);
+  border-color: var(--tp);
+}
+
+.mtag-btn:hover:not(.active) {
+  border-color: var(--gr);
+  color: var(--gr);
+}
+
+/* ── Minor badge on course chip row ──────────────────────────────── */
+.tag-minor {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: var(--al);
+  border: 1px solid var(--wr);
+  color: var(--ac);
+  margin-left: 6px;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+/* ── Division selector inside entries ────────────────────────────── */
+.entry-div-wrap {
+  margin: 8px 0 4px;
+}
+
+.div-select {
+  width: 100%;
+  padding: 6px 28px 6px 10px;
+  border: 2px solid var(--bi);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--tp);
+  font-family: var(--font-body);
+  font-size: 12px;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%231D4B2F'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+
+.dark .div-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%235BAA78'/%3E%3C/svg%3E");
+}
+
+.div-select:focus {
+  border-color: var(--gr);
+  box-shadow: var(--fr);
+}
+
+/* ── Minor registration message ──────────────────────────────────── */
+.minor-msg {
+  margin-top: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border-left: 3px solid var(--ac);
+  background: var(--al);
+  border-top: 1px solid var(--wr);
+  border-right: 1px solid var(--wr);
+  border-bottom: 1px solid var(--wr);
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--wt);
+  line-height: 1.6;
+}
  
+
+.minor-banner {
+  padding: 12px 16px;
+  border-radius: 8px;
+  border-left: 3px solid var(--ac);
+  background: var(--al);
+  border-top: 1px solid var(--wr);
+  border-right: 1px solid var(--wr);
+  border-bottom: 1px solid var(--wr);
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--wt);
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
 /* ── 15. Results grid ────────────────────────────────────────────── */
 .results-grid {
   display: grid;
@@ -610,6 +742,11 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   background: var(--al);
   border: 1px solid var(--wr);
 }
+
+.card-clash {
+  background: var(--clb);
+  border: 1px solid var(--clr);
+}
  
 .card-no {
   background: var(--nb2);
@@ -631,6 +768,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
  
 .result-ok { color: var(--ok); }
 .result-consent { color: var(--ac); }
+.result-clash { color: var(--cl); }
 .result-no { color: var(--no); }
  
 .result-divider {
@@ -640,6 +778,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
  
 .divider-ok { background: var(--or); opacity: 0.5; }
 .divider-consent { background: var(--wr); opacity: 0.6; }
+.divider-clash { background: var(--clr); opacity: 0.5; }
 .divider-no { background: var(--nr); opacity: 0.5; }
  
 /* ── 16. Course entries ──────────────────────────────────────────── */
@@ -660,6 +799,11 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   border-left-color: var(--ac);
   border-bottom-color: var(--wr);
 }
+
+.entry-clash {
+  border-left-color: var(--cl);
+  border-bottom-color: var(--clr);
+}
  
 .entry-no {
   border-left-color: var(--no);
@@ -668,6 +812,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
  
 .entry-ok:hover  { background: var(--ph); }
 .entry-consent:hover { background: color-mix(in srgb, var(--al) 60%, transparent); }
+.entry-clash:hover { background: var(--clb); filter: brightness(0.96); }
 .entry-no:hover  { background: var(--nb2); filter: brightness(0.95); }
  
 /* Remove bottom divider from last entry */
@@ -701,6 +846,12 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   color: var(--ac);
 }
 
+.code-clash {
+  background: var(--clb);
+  border: 1px solid var(--clr);
+  color: var(--cl);
+}
+
 .code-no {
   background: var(--nb2);
   border: 1px solid var(--nr);
@@ -722,6 +873,11 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   color: var(--ts);
   line-height: 1.6;
 }
+
+.div-slot {
+  white-space: pre-line;
+  font-family: var(--font-mono);
+}
  
 .entry-reason {
   display: flex;
@@ -731,6 +887,30 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   font-family: var(--font-body);
   font-size: 12px;
   color: var(--no);
+}
+
+.entry-clash-msg {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  margin-top: 8px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--cl);
+  line-height: 1.5;
+}
+
+.entry-equiv-msg {
+  margin-top: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: transparent;
+  border: 2px solid var(--bi);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--ts);
+  line-height: 1.5;
 }
 
 /* ── Click-to-expand: chevron ─────────────────────────────────── */
@@ -822,6 +1002,8 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
  
 .fade-up    { animation: fadeUp 0.38s ease both; }
 .fade-up-d1 { animation: fadeUp 0.38s 0.09s ease both; }
+.fade-up-d2 { animation: fadeUp 0.38s 0.18s ease both; }
+.fade-up-d3 { animation: fadeUp 0.38s 0.27s ease both; }
  
 /* ══════════════════════════════════════════════════════════════════
    19. RESPONSIVE LAYOUT

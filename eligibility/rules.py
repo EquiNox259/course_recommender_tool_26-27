@@ -2,21 +2,80 @@ import ast
 import numpy as np
 import re
 import pandas as pd
-from config import RUNNING_COURSES_PATH, PREREQ_PATH, COURSES_HISTORY_PATH
+from config import RUNNING_COURSES_PATH, PREREQ_PATH, COURSES_HISTORY_PATH, CORE_COURSES_PATH
+from collections import defaultdict
 
 data = pd.read_csv(COURSES_HISTORY_PATH)
 df = pd.read_csv(RUNNING_COURSES_PATH)
 df_prereq = pd.read_excel(PREREQ_PATH)
+df_core = pd.read_csv(CORE_COURSES_PATH)
+df_core_spring = df_core[df_core['Sem'] == 'Spring'].copy()
 
-# Build quick lookup: course_code -> slot & instructor, with description upon expansion
-course_meta = {}
+# Build slot-number lookup from running courses: course_code -> set of slot numbers
+# (a course may appear in multiple divisions with different slots)
+def extract_slot_num(slot_str):
+    """Returns the slot number (e.g. '4', '11', 'L') from a raw Slot cell."""
+    if pd.isna(slot_str) or not str(slot_str).strip():
+        return None
+    first = str(slot_str).strip().split('\n')[0].strip()
+    return first if first else None
 
+running_slot_map = {}
+for _, _row in df.iterrows():
+    _code = str(_row['Course Code']).strip()
+    _sn   = extract_slot_num(_row['Slot'])
+    if _sn:
+        running_slot_map.setdefault(_code, set()).add(_sn)
+
+# course_meta : one default entry per code (first non-minor row)
+# course_divisions : all rows per code (for the division dropdown)
+from collections import defaultdict
+
+_raw = defaultdict(list)
 for _, row in df.iterrows():
-    code = row["Course Code"]
+    code = str(row['Course Code']).strip()
+    div  = str(row.get('Division', '')).strip()
+    _raw[code].append({
+        "slot":        str(row.get('Slot',        'N/A')),
+        "slot_num":    extract_slot_num(row.get('Slot', '')),
+        "instructor":  str(row.get('Instructor',  'N/A')).strip(),
+        "description": str(row.get('Description', '')),
+        "division":    div,
+        "is_minor":    (div == 'M'),
+        "label":       ("Minor"   if div == 'M'
+                        else "Regular" if not div
+                        else div.strip()),
+    })
+
+course_meta      = {}
+course_divisions = {}
+
+for code, rows in _raw.items():
+    course_divisions[code] = rows
+    default = next((r for r in rows if not r['is_minor']), rows[0])
     course_meta[code] = {
-        "slot": row.get("Slot", "N/A"),
-        "instructor": row.get("Instructor", "N/A"),
-        "description": row.get("Description", "")
+        "slot":        default['slot'],
+        "instructor":  default['instructor'],
+        "description": default['description'],
+    }
+
+# M-Tag course codes (no spaces) — for equiv filtering
+m_tag_set = {
+    str(row['Course Code']).strip().replace(' ', '')
+    for _, row in df.iterrows()
+    if str(row.get('Division', '')).strip() == 'M'
+}
+
+# Equivalent courses map: code → {regular: [...], minor: [...]}
+_peq = re.compile(r'[A-Z]{2,3}\d{3,4}')
+equiv_map = {}
+for _, erow in df_prereq[df_prereq['Type'] == 'equivalent'].iterrows():
+    code  = str(erow['CourseCode']).strip().replace(' ', '')
+    raw   = re.sub(r'\s+(\d)', r'\1', str(erow['Courses'])).upper()
+    codes = _peq.findall(raw)
+    equiv_map[code] = {
+        'regular': [c for c in codes if c not in m_tag_set],
+        'minor':   [c for c in codes if c in m_tag_set],
     }
 
 import re
@@ -42,7 +101,6 @@ for _, row in data_cleaned.iterrows():
         # Normalize spacing: "MA 105" → "MA105"
         normalized = [c.replace(" ", "") for c in courses_list]
         data_dict[student_id] = list(set(normalized))
-
 
 
 ''' this is to convert restriction from string to numpy array with transpose so that we can process it easily '''
@@ -128,10 +186,20 @@ def check_prereq(course_code,course_hist,data=df_prereq):
     # Fetch prerequsite course code and instructor approval status
     prereq = data.loc[data['CourseCode'] == course_code, 'Courses'].values[0]
     approval = data.loc[data['CourseCode'] == course_code, 'InstructorConsent'].values[0]
+    type_    = data.loc[data['CourseCode'] == course_code, 'Type'].values[0]
+    
     if isinstance(prereq, str):
         prereq = re.sub(r'\s+(\d)', r'\1', prereq).upper()
 
     pattern = r'(?:[A-Z]{2,3}\d{3,4})'
+
+    # Equivalent courses — inverted logic
+    if type_ == 'equivalent':
+        equiv_codes = re.findall(pattern, str(prereq).upper())
+        for eq in equiv_codes:
+            if eq in course_hist:
+                return f'Equivalent course already completed: {eq}.'
+        return 'Valid'
     
     #Blank cells => Instructor approval required
     if pd.isna(prereq):
@@ -250,7 +318,14 @@ def check_prereq(course_code,course_hist,data=df_prereq):
 
       return f'Prerequisite not met. You need to complete {prereq}.'
     
-
+def check_clash(course_code, core_slot_to_courses):
+    slot_num = extract_slot_num(course_meta.get(course_code, {}).get("slot", ""))
+    if not slot_num or slot_num in ("N/A", "L", "X"):
+        return []
+    return core_slot_to_courses.get(slot_num, [])
+    
+def norm_code(x):
+    return str(x).replace(" ", "").upper().strip()
 
 def recommender(student_id, Degree, year, department, desired_courses, manual_course_history=None):
     """
@@ -276,16 +351,41 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
         course_hist = manual_course_history
         history_source = "manual"
 
+    # Build slot-number → core course name map for this student
+    core_mask = (
+        (df_core_spring['Branch']  == department) &
+        (df_core_spring['Degree']  == Degree)
+    )
+    dept_core = df_core_spring[core_mask]
+
+    course_hist_norm = {norm_code(c) for c in course_hist}
+    core_slot_to_courses = {}
+    for _, crow in dept_core.iterrows():
+        code = norm_code(crow['Course Code'])
+        if code in course_hist_norm:
+           continue
+        for sn in running_slot_map.get(code, set()):
+            core_slot_to_courses.setdefault(sn, []).append(code)
+
     eligible_courses = []
     rejected_courses = []
     i_a_r_courses = []
+    t_s_c_courses = []
 
     # 2. Loop over model-recommended courses
+    seen_codes = set()
     for course in desired_courses:
         course_code = course["code"]
+        if course_code in seen_codes:
+            continue
+        seen_codes.add(course_code)
+        # Pre-compute division metadata once per course
+        divs       = course_divisions.get(course_code, [])
+        has_minor  = any(d['is_minor'] for d in divs)
+        minor_only = all(d['is_minor'] for d in divs) and bool(divs)
         # 3. Check restriction
-        if course_code.replace(" ", "").upper() in course_hist:
-           continue
+        if norm_code(course_code) in course_hist_norm:
+            continue
         r_status = check_restriction(
             Degree=Degree,
             year=year,
@@ -299,9 +399,13 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
             rejected_courses.append({
     "code": course_code,
     "name": course["name"],
+    "divisions":  divs,
+    "has_minor":  has_minor,
+    "minor_only": minor_only,
     "slot": meta.get("slot", "N/A"),
     "instructor": meta.get("instructor", "N/A"),
     "description": meta.get("description", ""),
+    "equiv": equiv_map.get(course_code.replace(' ', ''), {'regular': [], 'minor': []}),
     "reason": r_status
 })
 
@@ -320,43 +424,122 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
                i_a_r_courses.append({
                   "code": course_code,
                   "name": course["name"],
+                  "divisions":  divs,
+                  "has_minor":  has_minor,
+                  "minor_only": minor_only,
                   "slot": meta.get("slot", "N/A"),
                   "instructor": meta.get("instructor", "N/A"),
-                  "description": meta.get("description", "")
+                  "description": meta.get("description", ""),
+                  "equiv": equiv_map.get(course_code.replace(' ', ''), {'regular': [], 'minor': []}),
                })
+
+               rejected_courses.append({
+    "code": course_code,
+    "name": course["name"],
+    "divisions":  divs,
+    "has_minor":  has_minor,
+    "minor_only": minor_only,
+    "slot": meta.get("slot", "N/A"),
+    "instructor": meta.get("instructor", "N/A"),
+    "description": meta.get("description", ""),
+    "equiv": equiv_map.get(course_code.replace(' ', ''), {'regular': [], 'minor': []}),
+    "reason": p_status
+})
 
             elif p_status == 'Instructor approval is conditional':
                i_a_r_courses.append({
                   "code": course_code,
                   "name": course["name"],
+                  "divisions":  divs,
+                  "has_minor":  has_minor,
+                  "minor_only": minor_only,
                   "slot": meta.get("slot", "N/A"),
                   "instructor": meta.get("instructor", "N/A"),
                   "description": meta.get("description", ""),
+                  "equiv": equiv_map.get(course_code.replace(' ', ''), {'regular': [], 'minor': []}),
                   "reason": p_status + '. Contact them for more info.'
                })
+
+               rejected_courses.append({
+    "code": course_code,
+    "name": course["name"],
+    "divisions":  divs,
+    "has_minor":  has_minor,
+    "minor_only": minor_only,
+    "slot": meta.get("slot", "N/A"),
+    "instructor": meta.get("instructor", "N/A"),
+    "description": meta.get("description", ""),
+    "equiv": equiv_map.get(course_code.replace(' ', ''), {'regular': [], 'minor': []}),
+    "reason": p_status + '. Contact them for more info.'
+})
 
             else:
                 rejected_courses.append({
     "code": course_code,
     "name": course["name"],
+    "divisions":  divs,
+    "has_minor":  has_minor,
+    "minor_only": minor_only,
     "slot": meta.get("slot", "N/A"),
     "instructor": meta.get("instructor", "N/A"),
     "description": meta.get("description", ""),
+    "equiv": equiv_map.get(course_code.replace(' ', ''), {'regular': [], 'minor': []}),
     "reason": p_status
 })
 
             continue
 
 
-        # 5. Passed all checks
+        # 5. Check slot clash , per division, if applicable
+        meta = course_meta.get(course_code, {})
+        divs_with_clash = [{
+            **d,
+            'clashes_with': (
+                core_slot_to_courses.get(d.get('slot_num'), [])
+                if d.get('slot_num') and d.get('slot_num') not in ('N/A', 'L', 'X')
+                else []
+            )
+        } for d in divs]
+
+        non_m = [d for d in divs_with_clash if not d['is_minor']] or divs_with_clash
+        all_clash   = all(bool(d['clashes_with']) for d in non_m)
+        default_div = next((d for d in non_m if not d['clashes_with']), non_m[0])
+        default_idx = next(i for i, d in enumerate(divs_with_clash) if d is default_div)
+
+        entry ={
+                "code":          course_code,
+                "name":          course["name"],
+                "divisions":  divs_with_clash,
+                "has_minor":  has_minor,
+                "minor_only": minor_only,
+                "slot":          meta.get("slot",        "N/A"),
+                "instructor":    meta.get("instructor",  "N/A"),
+                "description":   meta.get("description", ""),
+                "default_idx": default_idx,
+                "equiv": equiv_map.get(course_code.replace(' ', ''), {'regular': [], 'minor': []}),
+            }
+        
+        if all_clash:
+            t_s_c_courses.append({
+                **entry,
+                "clashing_with": default_div['clashes_with'],
+            })
+            continue
+        
+        # 6. Passed all checks
         meta = course_meta.get(course_code, {})
 
         eligible_courses.append({
     "code": course_code,
     "name": course["name"],
+    "divisions":  divs_with_clash,
+    "has_minor":  has_minor,
+    "minor_only": minor_only,
     "slot": meta.get("slot", "N/A"),
     "instructor": meta.get("instructor", "N/A"),
     "description": meta.get("description", ""),
+    "default_idx": default_idx,
+    "equiv": equiv_map.get(course_code.replace(' ', ''), {'regular': [], 'minor': []}),
 })
 
         
@@ -366,6 +549,7 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
     "history_source": history_source,
     "eligible": eligible_courses,
     "i_a_r": i_a_r_courses,
+    "t_s_c": t_s_c_courses,
     "rejected": rejected_courses
 }
 

@@ -80,11 +80,10 @@
             'Aerospace Engineering','Biosciences and Bioengineering',
             'Chemical Engineering','Chemistry','Civil Engineering',
             'Computer Science and Engineering','Earth Sciences','Economics',
-            'Electrical Engineering','Energy Science and Engineering',
+            'Electrical Engineering','Energy Science and Engineering','Engineering Physics',
             'Environmental Science and Engineering','Humanities & Social Science',
-            'Industrial Engineering & Operations Research','Mathematics',
-            'Mechanical Engineering','Metallurgical Engineering & Materials Science',
-            'Physics'
+            'Industrial Engineering and Operations Research','Mathematics',
+            'Mechanical Engineering','Metallurgical Engineering and Materials Science'
           ] %}
           <select name="department" id="department">
             <option value="">—</option>
@@ -171,27 +170,90 @@
   <!-- ─────────────── RESULTS GRID ──────────────── -->
   {% if eligible is not none %}
   <div class="results-grid">
+
+    <!-- M-Tag / Minor filter -->
+<div class="mtag-filter">
+  <span class="mtag-label">Registration type:</span>
+  <button class="mtag-btn active" onclick="filterMtag('all', this)">All Courses</button>
+  <button class="mtag-btn" onclick="filterMtag('nonminor', this)">Non-Minor</button>
+  <button class="mtag-btn" onclick="filterMtag('minor', this)">Minor</button>
+</div>
+
+<div id="minor-banner" class="minor-banner" style="display:none">
+  &#9432;&nbsp;All Minor electives are registered in a
+  <strong>separate process before</strong> the regular registration window,
+  and are allotted strictly on the basis of <strong>CPI</strong>.
+</div>
  
     <!-- ✅ Eligible -->
     <div class="result-card card-ok fade-up">
       <div class="result-head">
         <span class="result-title result-ok">Eligible Courses</span>
-        <span class="badge badge-ok">{{ eligible | length }} Found</span>
+        <span id = "badge-eligible" class="badge badge-ok">{{ eligible | length }} Found</span>
       </div>
       <div class="result-divider divider-ok"></div>
  
       {% if eligible %}
+      <div id="entries-eligible">
         {% for c in eligible %}
-        <div class="entry entry-ok{{ ' entry-last' if loop.last else '' }}" onclick="toggleEntry(this)">
+        <div class="entry entry-ok{{ ' entry-last' if loop.last else '' }}" onclick="toggleEntry(this)"
+            data-has-minor="{{ 'true' if c.has_minor else 'false' }}"
+            data-minor-only="{{ 'true' if c.minor_only else 'false' }}"
+            data-divisions='{{ c.divisions | tojson }}'
+            data-default-idx="{{ c.default_idx | default(0) }}"
+            data-section="eligible">
           <div class="entry-top">
-            <span class="code-chip code-ok">{{ c.code }}</span>
+            <div class="entry-top-left">
+                <span class="code-chip code-ok">{{ c.code }}</span>
+                {% if c.has_minor %}
+                {% set _dm = c.divisions[c.default_idx | default(0)]['is_minor'] if c.divisions else false %}
+                <span class="tag-minor" {% if not _dm %}style="display:none"{% endif %}>Minor</span>
+                {% endif %}
+            </div>
             <span class="entry-chevron">&#9662;</span>
           </div>
-          <div class="entry-name">{{ c.name }}</div>
+           <div class="entry-name">{{ c.name }}</div>
+          {% if c.divisions | length > 1 %}
+            <div class="entry-div-wrap">
+                <select class="div-select"
+                        onclick="event.stopPropagation()"
+                        onchange="switchDivision(this)">
+                {% for d in c.divisions %}
+                <option value="{{ loop.index0 }}"
+                        data-slot-num="{{ d.slot_num or 'N/A' }}"
+                        data-instructor="{{ d.instructor }}"
+                        data-is-minor="{{ 'true' if d.is_minor else 'false' }}">
+                    {{ d.label }}
+                </option>
+                {% endfor %}
+                </select>
+            </div>
+            {% endif %}
           <div class="entry-meta">
-            Slot&nbsp;&middot;&nbsp;<span class="mono">{{ c.slot }}</span><br>
-            Instructor&nbsp;&middot;&nbsp;{{ c.instructor }}
+            Slot&nbsp;&middot;&nbsp;<span class="mono div-slot">
+                {{- (c.slot or 'N/A') | replace('\r\n', '\n') | replace('\r', '\n') -}}
+            </span><br>
+            Instructor&nbsp;&middot;&nbsp;<span class="div-instructor">
+                {{- (c.instructor or 'N/A') | replace('\r\n', ', ') | replace('\r', ', ') | replace('\n', ', ') -}}
+            </span>
           </div>
+            {% if c.equiv is defined and (c.equiv.regular or c.equiv.minor) %}
+            {% set default_is_minor = c.divisions[c.default_idx | default(0)]['is_minor'] if c.divisions else false %}
+            {% set init_equiv = c.equiv.minor if default_is_minor else c.equiv.regular %}
+            <div class="entry-equiv-msg"
+                data-equiv-regular="{{ c.equiv.regular | join(', ') }}"
+                data-equiv-minor="{{ c.equiv.minor | join(', ') }}"
+                {% if not init_equiv %}style="display:none"{% endif %}>
+                &#9432;&nbsp;Equivalent Course(s):
+                <span class="equiv-text">{{ init_equiv | join(', ') }}</span>
+            </div>
+            {% endif %}
+          {% if c.has_minor %}
+            <div class="minor-msg" {% if not c.minor_only %}style="display:none"{% endif %}>
+                &#9432;&nbsp;Minor electives are registered in a <strong>separate process before</strong>
+                the regular registration window, and are allotted strictly on the basis of <strong>CPI</strong>.
+            </div>
+          {% endif %}
           {% if c.description %}
           <div class="entry-desc-wrap">
             <div class="entry-desc-divider"></div>
@@ -201,34 +263,84 @@
           {% endif %}
         </div>
         {% endfor %}
-      {% else %}
-        <div class="empty-result">
+      </div>
+      {% endif %}
+        <div id = "empty-eligible" class="empty-result" {% if eligible %}style="display:none"{% endif %}>
           <div class="empty-icon">🎓</div>
           <div class="empty-title">No eligible courses found.</div>
           <div class="empty-sub">Try different interests or review your course history.</div>
         </div>
-      {% endif %}
     </div>
 
     <!-- ⚠️ Instructor Consent Required -->
     <div class="result-card card-consent fade-up-d1">
       <div class="result-head">
         <span class="result-title result-consent">Instructor Consent Required</span>
-        <span class="badge badge-consent">{{ i_a_r | length }} Courses</span>
+        <span id = 'badge-consent' class="badge badge-consent">{{ i_a_r | length }} Courses</span>
       </div>
       <div class="result-divider divider-consent"></div>
 
       {% if i_a_r %}
+      <div id = 'entries-consent'>
         {% for c in i_a_r %}
-        <div class="entry entry-consent{{ ' entry-last' if loop.last else '' }}" onclick="toggleEntry(this)">
+        <div class="entry entry-consent{{ ' entry-last' if loop.last else '' }}" onclick="toggleEntry(this)"
+            data-has-minor="{{ 'true' if c.has_minor else 'false' }}"
+            data-minor-only="{{ 'true' if c.minor_only else 'false' }}"
+            data-divisions='{{ c.divisions | tojson }}'
+            data-default-idx="{{ c.default_idx | default(0) }}"
+            data-section="eligible">
           <div class="entry-top">
-            <span class="code-chip code-consent">{{ c.code }}</span>
+            <div class="entry-top-left">
+                <span class="code-chip code-consent">{{ c.code }}</span>
+                {% if c.has_minor %}
+                {% set _dm = c.divisions[c.default_idx | default(0)]['is_minor'] if c.divisions else false %}
+                <span class="tag-minor" {% if not _dm %}style="display:none"{% endif %}>Minor</span>
+                {% endif %}
+            </div>
             <span class="entry-chevron">&#9662;</span>
           </div>
           <div class="entry-name">{{ c.name }}</div>
+          {% if c.divisions | length > 1 %}
+            <div class="entry-div-wrap">
+                <select class="div-select"
+                        onclick="event.stopPropagation()"
+                        onchange="switchDivision(this)">
+                {% for d in c.divisions %}
+                <option value="{{ loop.index0 }}"
+                        data-slot-num="{{ d.slot_num or 'N/A' }}"
+                        data-instructor="{{ d.instructor }}"
+                        data-is-minor="{{ 'true' if d.is_minor else 'false' }}">
+                    {{ d.label }}{% if d.division and not d.is_minor %} &mdash; {{ d.instructor }}{% endif %}
+                </option>
+                {% endfor %}
+                </select>
+            </div>
+          {% endif %}
           <div class="entry-meta">
-            Slot&nbsp;&middot;&nbsp;<span class="mono">{{ c.slot }}</span><br>
-            Instructor&nbsp;&middot;&nbsp;{{ c.instructor }}
+            Slot&nbsp;&middot;&nbsp;<span class="mono div-slot">
+            {{- (c.slot or 'N/A') | replace('\r\n', '\n') | replace('\r', '\n') -}}
+            </span><br>
+            Instructor&nbsp;&middot;&nbsp;<span class="div-instructor">
+            {{- (c.instructor or 'N/A') | replace('\r\n', ', ') | replace('\r', ', ') | replace('\n', ', ') -}}
+            </span>
+           {% if c.equiv is defined and (c.equiv.regular or c.equiv.minor) %}
+             {% set default_is_minor = c.divisions[c.default_idx | default(0)]['is_minor'] if c.divisions else false %}
+             {% set init_equiv = c.equiv.minor if default_is_minor else c.equiv.regular %}
+             <div class="entry-equiv-msg"
+                data-equiv-regular="{{ c.equiv.regular | join(', ') }}"
+                data-equiv-minor="{{ c.equiv.minor | join(', ') }}"
+                {% if not init_equiv %}style="display:none"{% endif %}>
+                &#9432;&nbsp;Equivalent Course(s):
+                <span class="equiv-text">{{ init_equiv | join(', ') }}</span>
+             </div>
+           {% endif %}
+            {% if c.has_minor %}
+            <div class="minor-msg" {% if not c.minor_only %}style="display:none"{% endif %}>
+                &#9432;&nbsp;Minor electives are registered in a <strong>separate process before</strong>
+                the regular registration window, and are allotted strictly on the basis of <strong>CPI</strong>.
+            </div>
+            {% endif %}
+
             {% if c.reason %}
                 <div class="entry-reason">&#9888; {{ c.reason }}</div>
             {% endif %}
@@ -242,34 +354,174 @@
           {% endif %}
         </div>
         {% endfor %}
-      {% else %}
-        <div class="empty-result">
+      </div>
+      {% endif %}
+        <div id="empty-consent" class="empty-result" {% if i_a_r %}style="display:none"{% endif %}>
           <div class="empty-icon">✉</div>
           <div class="empty-title">No courses require consent.</div>
         </div>
-      {% endif %}
+    </div>
+
+    <!-- ⏱️ Time Slot Clash -->
+    <div class="result-card card-clash fade-up-d2">
+    <div class="result-head">
+        <span class="result-title result-clash">Time Slot Clash</span>
+        <span id = "badge-tsc" class="badge badge-clash">{{ t_s_c | length }} Clashes</span>
+    </div>
+    <div class="result-divider divider-clash"></div>
+
+    {% if t_s_c %}
+    <div id="entries-tsc">
+        {% for c in t_s_c %}
+        <div class="entry entry-clash{{ ' entry-last' if loop.last else '' }}" onclick="toggleEntry(this)"
+            data-has-minor="{{ 'true' if c.has_minor else 'false' }}"
+            data-minor-only="{{ 'true' if c.minor_only else 'false' }}"
+            data-divisions='{{ c.divisions | tojson }}'
+            data-default-idx="{{ c.default_idx | default(0) }}"
+            data-section="tsc">
+        <div class="entry-top">
+            <div class="entry-top-left">
+                <span class="code-chip code-clash">{{ c.code }}</span>
+                {% if c.has_minor %}
+                {% set _dm = c.divisions[c.default_idx | default(0)]['is_minor'] if c.divisions else false %}
+                <span class="tag-minor" {% if not _dm %}style="display:none"{% endif %}>Minor</span>
+                {% endif %}
+            </div>
+            <span class="entry-chevron">&#9662;</span>
+        </div>
+        <div class="entry-name">{{ c.name }}</div>
+        {% if c.divisions | length > 1 %}
+            <div class="entry-div-wrap">
+                <select class="div-select"
+                        onclick="event.stopPropagation()"
+                        onchange="switchDivision(this)">
+                {% for d in c.divisions %}
+                <option value="{{ loop.index0 }}"
+                        data-slot-num="{{ d.slot_num or 'N/A' }}"
+                        data-instructor="{{ d.instructor }}"
+                        data-is-minor="{{ 'true' if d.is_minor else 'false' }}">
+                    {{ d.label }}{% if d.division and not d.is_minor %} &mdash; {{ d.instructor }}{% endif %}
+                </option>
+                {% endfor %}
+                </select>
+            </div>
+        {% endif %}
+        <div class="entry-meta">
+            Slot&nbsp;&middot;&nbsp;<span class="mono div-slot">
+            {{- (c.slot or 'N/A') | replace('\r\n', '\n') | replace('\r', '\n') -}}
+            </span><br>
+            Instructor&nbsp;&middot;&nbsp;<span class="div-instructor">
+            {{- (c.instructor or 'N/A') | replace('\r\n', ', ') | replace('\r', ', ') | replace('\n', ', ') -}}
+            </span>
+        </div>
+        {% if c.equiv is defined and (c.equiv.regular or c.equiv.minor) %}
+            {% set default_is_minor = c.divisions[c.default_idx | default(0)]['is_minor'] if c.divisions else false %}
+            {% set init_equiv = c.equiv.minor if default_is_minor else c.equiv.regular %}
+            <div class="entry-equiv-msg"
+                data-equiv-regular="{{ c.equiv.regular | join(', ') }}"
+                data-equiv-minor="{{ c.equiv.minor | join(', ') }}"
+                {% if not init_equiv %}style="display:none"{% endif %}>
+                &#9432;&nbsp;Equivalent Course(s):
+                <span class="equiv-text">{{ init_equiv | join(', ') }}</span>
+            </div>
+        {% endif %}
+        {% if c.has_minor %}
+        <div class="minor-msg" {% if not c.minor_only %}style="display:none"{% endif %}>
+            &#9432;&nbsp;Minor electives are registered in a <strong>separate process before</strong>
+            the regular registration window, and are allotted strictly on the basis of <strong>CPI</strong>.
+        </div>
+        {% endif %}
+        <div class="entry-clash-msg">
+            &#9203;&nbsp;Time slot clashes with 
+            <span class="clash-courses">{{ c.clashing_with | join(', ') }}</span>
+        </div>
+        {% if c.description %}
+        <div class="entry-desc-wrap">
+            <div class="entry-desc-divider"></div>
+            <div class="entry-desc-label">Description</div>
+            <p class="entry-desc-text">{{ c.description }}</p>
+        </div>
+        {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+        <div id="empty-tsc" class="empty-result" {% if t_s_c %}style="display:none"{% endif %}>
+        <div class="empty-icon">✓</div>
+        <div class="empty-title">No slot conflicts found.</div>
+        </div>    
     </div>
  
     <!-- ❌ Not Eligible -->
     <div class="result-card card-no fade-up-d2">
       <div class="result-head">
         <span class="result-title result-no">Not Eligible</span>
-        <span class="badge badge-no">{{ rejected | length }} Blocked</span>
+        <span id = 'badge-rejected' class="badge badge-no">{{ rejected | length }} Blocked</span>
       </div>
       <div class="result-divider divider-no"></div>
  
       {% if rejected %}
+      <div id = "entries-rejected">
         {% for c in rejected %}
-        <div class="entry entry-no{{ ' entry-last' if loop.last else '' }}" onclick="toggleEntry(this)">
+        <div class="entry entry-no{{ ' entry-last' if loop.last else '' }}" onclick="toggleEntry(this)"
+            data-has-minor="{{ 'true' if c.has_minor else 'false' }}"
+            data-minor-only="{{ 'true' if c.minor_only else 'false' }}"
+            data-divisions='{{ c.divisions | tojson }}'
+            data-default-idx="{{ c.default_idx | default(0) }}"
+            data-section="rejected">
           <div class="entry-top">
-            <span class="code-chip code-no">{{ c.code }}</span>
+            <div class="entry-top-left">
+                <span class="code-chip code-no">{{ c.code }}</span>
+                {% if c.has_minor %}
+                {% set _dm = c.divisions[c.default_idx | default(0)]['is_minor'] if c.divisions else false %}
+                <span class="tag-minor" {% if not _dm %}style="display:none"{% endif %}>Minor</span>
+                {% endif %}
+            </div>
             <span class="entry-chevron">&#9662;</span>
           </div>
           <div class="entry-name">{{ c.name }}</div>
+          {% if c.divisions | length > 1 %}
+            <div class="entry-div-wrap">
+                <select class="div-select"
+                        onclick="event.stopPropagation()"
+                        onchange="switchDivision(this)">
+                {% for d in c.divisions %}
+                <option value="{{ loop.index0 }}"
+                        data-slot-num="{{ d.slot_num or 'N/A' }}"
+                        data-instructor="{{ d.instructor }}"
+                        data-is-minor="{{ 'true' if d.is_minor else 'false' }}">
+                    {{ d.label }}{% if d.division and not d.is_minor %} &mdash; {{ d.instructor }}{% endif %}
+                </option>
+                {% endfor %}
+                </select>
+            </div>
+          {% endif %}
           <div class="entry-meta">
-            Slot&nbsp;&middot;&nbsp;<span class="mono">{{ c.slot }}</span><br>
-            Instructor&nbsp;&middot;&nbsp;{{ c.instructor }}
+            Slot&nbsp;&middot;&nbsp;<span class="mono div-slot">
+            {{- (c.slot or 'N/A') | replace('\r\n', '\n') | replace('\r', '\n') -}}
+            </span><br>
+            Instructor&nbsp;&middot;&nbsp;<span class="div-instructor">
+            {{- (c.instructor or 'N/A') | replace('\r\n', ', ') | replace('\r', ', ') | replace('\n', ', ') -}}
+            </span>
           </div>
+          {% if c.equiv is defined and (c.equiv.regular or c.equiv.minor) %}
+            {% set default_is_minor = c.divisions[c.default_idx | default(0)]['is_minor'] if c.divisions else false %}
+            {% set init_equiv = c.equiv.minor if default_is_minor else c.equiv.regular %}
+            <div class="entry-equiv-msg"
+                data-equiv-regular="{{ c.equiv.regular | join(', ') }}"
+                data-equiv-minor="{{ c.equiv.minor | join(', ') }}"
+                {% if not init_equiv %}style="display:none"{% endif %}>
+                &#9432;&nbsp;Equivalent Course(s):
+                <span class="equiv-text">{{ init_equiv | join(', ') }}</span>
+            </div>
+          {% endif %}
+          {% if c.has_minor %}
+            <div class="minor-msg" {% if not c.minor_only %}style="display:none"{% endif %}>
+                &#9432;&nbsp;Minor electives are registered in a <strong>separate process before</strong>
+                the regular registration window, and are allotted strictly on the basis of <strong>CPI</strong>.
+            </div>
+          {% endif %}
+
           <div class="entry-reason">&#9888; {{ c.reason }}</div>
           {% if c.description %}
           <div class="entry-desc-wrap">
@@ -280,12 +532,12 @@
           {% endif %}
         </div>
         {% endfor %}
-      {% else %}
-        <div class="empty-result">
+      </div>
+      {% endif %}
+        <div id="empty-rejected" class="empty-result" {% if rejected %}style="display:none"{% endif %}>
           <div class="empty-icon">✓</div>
           <div class="empty-title">All courses are eligible.</div>
-        </div>
-      {% endif %}
+        </div>      
     </div>
  
   </div><!-- /results-grid -->
@@ -382,6 +634,159 @@ function initSubmitBtn() {
     btn.disabled = true;
   });
 }
+
+/* ── Switch displayed slot/instructor when division changes ─────── */
+function switchDivision(sel) {
+  var entry    = sel.closest('.entry');
+  var divs     = JSON.parse(entry.dataset.divisions);
+  var d        = divs[parseInt(sel.value)];
+
+  entry.querySelector('.div-slot').textContent       = (d.slot || 'N/A').replace(/\r\n|\r/g, '\n');
+  entry.querySelector('.div-instructor').textContent = (d.instructor || 'N/A').replace(/\r\n|\r|\n/g, ', ');
+
+  var badge = entry.querySelector('.tag-minor');
+  if (badge) {
+  badge.style.display = d.is_minor ? 'inline-block' : 'none';
+  }
+
+  var clashMsg = entry.querySelector('.entry-clash-msg');
+  if (clashMsg) {
+    var cw = d.clashes_with || [];
+    if (cw.length > 0) {
+      clashMsg.style.display = 'flex';
+      var cwEl = clashMsg.querySelector('.clash-courses');
+      if (cwEl) cwEl.textContent = cw.join(', ');
+      else clashMsg.lastChild.textContent = ' Time slot clashes with: ' + cw.join(', ');
+    } else {
+      clashMsg.style.display = 'none';
+    }
+  }
+
+  /* Minor message — only in "All Courses" mode */
+  var minorMsg    = entry.querySelector('.minor-msg');
+  var activeFilter = document.querySelector('.mtag-btn.active');
+  var mode = activeFilter ? activeFilter.textContent.trim() : 'All Courses';
+  if (minorMsg) {
+    minorMsg.style.display =
+      (d.is_minor && mode === 'All Courses') ? 'block' : 'none';
+  }
+
+  var equivMsg = entry.querySelector('.entry-equiv-msg');
+    if (equivMsg) {
+    var equivList = d.is_minor
+        ? equivMsg.dataset.equivMinor
+        : equivMsg.dataset.equivRegular;
+    if (equivList) {
+        equivMsg.querySelector('.equiv-text').textContent = equivList;
+        equivMsg.style.display = 'block';
+    } else {
+        equivMsg.style.display = 'none';
+    }
+  }
+
+   var currentSection = entry.dataset.section;
+  var isClash        = cw && cw.length > 0;    /* reuse cw from above */
+  var targetSection  = isClash ? 'tsc' : 'eligible';
+
+  if (currentSection !== targetSection &&
+      (currentSection === 'eligible' || currentSection === 'tsc')) {
+    var targetList = document.getElementById('entries-' + targetSection);
+    var wrap       = entry.closest('.entry-wrap') || entry;
+    if (targetList) {
+      targetList.appendChild(wrap);
+      entry.dataset.section = targetSection;
+      updateSectionCounts();
+    }
+  }
+}
+
+function updateSectionCounts() {
+  [
+    {
+      listId: 'entries-eligible',
+      badgeId: 'badge-eligible',
+      emptyId: 'empty-eligible',
+      suffix: 'Found'
+    },
+    {
+      listId: 'entries-consent',
+      badgeId: 'badge-consent',
+      emptyId: 'empty-consent',
+      suffix: 'Courses'
+    },
+    {
+      listId: 'entries-tsc',
+      badgeId: 'badge-tsc',
+      emptyId: 'empty-tsc',
+      suffix: 'Clashes'
+    },
+    {
+      listId: 'entries-rejected',
+      badgeId: 'badge-rejected',
+      emptyId: 'empty-rejected',
+      suffix: 'Blocked'
+    }
+  ].forEach(function(s) {
+    var list = document.getElementById(s.listId);
+    var badge = document.getElementById(s.badgeId);
+    var empty = document.getElementById(s.emptyId);
+
+    if (!list || !badge) return;
+
+    var visibleCount = Array.from(list.querySelectorAll('.entry'))
+      .filter(function(entry) {
+        return entry.style.display !== 'none';
+      }).length;
+
+    badge.textContent = visibleCount + ' ' + s.suffix;
+
+    if (empty) {
+      empty.style.display = visibleCount === 0 ? 'block' : 'none';
+    }
+  });
+}
+
+/* ── Filter all result entries by Minor / Non-Minor / All ────────── */
+function filterMtag(type, btn) {
+  /* update active button */
+  document.querySelectorAll('.mtag-btn').forEach(function(b) {
+    b.classList.toggle('active', b === btn);
+  });
+
+  /* Universal minor banner */
+  var banner = document.getElementById('minor-banner');
+  if (banner) banner.style.display = (type === 'minor') ? 'block' : 'none';
+
+  /* Per-course minor messages: only relevant in All Courses */
+  document.querySelectorAll('.minor-msg').forEach(function(msg) {
+    if (msg.closest('.entry').style.display !== 'none') {
+      msg.style.display = (type === 'all') ? 'block' : 'none';
+    }
+  });
+
+  /* show/hide entries */
+  document.querySelectorAll('.entry').forEach(function(entry) {
+    var hasMinor  = entry.dataset.hasMinor  === 'true';
+    var minorOnly = entry.dataset.minorOnly === 'true';
+    if      (type === 'all')      entry.style.display = '';
+    else if (type === 'minor')    entry.style.display = hasMinor  ? '' : 'none';
+    else  /* nonminor */          entry.style.display = minorOnly ? 'none' : '';
+  });
+
+  /* auto-select the matching division in visible dropdowns */
+  document.querySelectorAll('.div-select').forEach(function(sel) {
+    if (sel.closest('.entry').style.display === 'none') return;
+    var targetIdx = 0;
+    for (var i = 0; i < sel.options.length; i++) {
+      var isMinor = sel.options[i].dataset.isMinor === 'true';
+      if (type === 'minor'    &&  isMinor) { targetIdx = i; break; }
+      if (type !== 'minor'    && !isMinor) { targetIdx = i; break; }
+    }
+    sel.selectedIndex = targetIdx;
+    switchDivision(sel);
+  });
+  updateSectionCounts();
+}
  
 /* ── Boot ──────────────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', function () {
@@ -396,6 +801,7 @@ document.addEventListener('DOMContentLoaded', function () {
  
   /* Submit button */
   initSubmitBtn();
+
 });
 </script>
  

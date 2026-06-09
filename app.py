@@ -9,6 +9,7 @@ def index():
     eligible = None
     rejected = None
     i_a_r = None
+    t_s_c = None
     course_history = None
     need_manual_history = False
 
@@ -51,12 +52,14 @@ def index():
             course_history = output["course_history"]
             eligible = output["eligible"]
             i_a_r = output["i_a_r"]
+            t_s_c = output["t_s_c"]
             rejected = output["rejected"]
 
     return render_template(
         "index.html",
         eligible=eligible,
         i_a_r = i_a_r,
+        t_s_c = t_s_c,
         rejected=rejected,
         course_history=course_history,
         need_manual_history=need_manual_history
