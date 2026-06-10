@@ -361,11 +361,12 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
     course_hist_norm = {norm_code(c) for c in course_hist}
     core_slot_to_courses = {}
     for _, crow in dept_core.iterrows():
-        code = norm_code(crow['Course Code'])
-        if code in course_hist_norm:
-           continue
-        for sn in running_slot_map.get(code, set()):
-            core_slot_to_courses.setdefault(sn, []).append(code)
+        code_norm = norm_code(crow['Course Code'])
+        code_orig = str(crow['Course Code']).strip()
+        if code_norm in course_hist_norm:
+            continue
+        for sn in running_slot_map.get(code_orig, set()):
+            core_slot_to_courses.setdefault(sn, []).append(code_orig)
 
     eligible_courses = []
     rejected_courses = []
