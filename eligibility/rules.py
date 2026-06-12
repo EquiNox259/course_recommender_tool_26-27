@@ -2,14 +2,14 @@ import ast
 import numpy as np
 import re
 import pandas as pd
-from config import RUNNING_COURSES_PATH, PREREQ_PATH, COURSES_HISTORY_PATH, CORE_COURSES_PATH
+from config import RUNNING_COURSES_PATH, PREREQ_PATH, COURSES_HISTORY_PATH, CORE_COURSES_PATH, SEMESTER
 from collections import defaultdict
 
 data = pd.read_csv(COURSES_HISTORY_PATH)
 df = pd.read_csv(RUNNING_COURSES_PATH)
 df_prereq = pd.read_excel(PREREQ_PATH)
 df_core = pd.read_csv(CORE_COURSES_PATH)
-df_core_spring = df_core[df_core['Sem'] == 'Spring'].copy()
+df_core_sem = df_core[df_core['Sem'] == SEMESTER].copy()
 
 # Build slot-number lookup from running courses: course_code -> set of slot numbers
 # (a course may appear in multiple divisions with different slots)
@@ -353,10 +353,10 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
 
     # Build slot-number → core course name map for this student
     core_mask = (
-        (df_core_spring['Branch']  == department) &
-        (df_core_spring['Degree']  == Degree)
+        (df_core_sem['Branch']  == department) &
+        (df_core_sem['Degree']  == Degree)
     )
-    dept_core = df_core_spring[core_mask]
+    dept_core = df_core_sem[core_mask]
 
     course_hist_norm = {norm_code(c) for c in course_hist}
     core_slot_to_courses = {}
