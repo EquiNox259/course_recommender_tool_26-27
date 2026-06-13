@@ -407,6 +407,7 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
     "instructor": meta.get("instructor", "N/A"),
     "description": meta.get("description", ""),
     "equiv": equiv_map.get(course_code.replace(' ', ''), {'regular': [], 'minor': []}),
+    "score": course.get("score", 0),
     "reason": r_status
 })
 
@@ -432,6 +433,7 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
                   "instructor": meta.get("instructor", "N/A"),
                   "description": meta.get("description", ""),
                   "equiv": equiv_map.get(course_code.replace(' ', ''), {'regular': [], 'minor': []}),
+                  "score": course.get("score", 0)
                })
 
                rejected_courses.append({
@@ -444,6 +446,7 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
     "instructor": meta.get("instructor", "N/A"),
     "description": meta.get("description", ""),
     "equiv": equiv_map.get(course_code.replace(' ', ''), {'regular': [], 'minor': []}),
+    "score": course.get("score", 0),
     "reason": p_status
 })
 
@@ -458,6 +461,7 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
                   "instructor": meta.get("instructor", "N/A"),
                   "description": meta.get("description", ""),
                   "equiv": equiv_map.get(course_code.replace(' ', ''), {'regular': [], 'minor': []}),
+                  "score": course.get("score", 0),
                   "reason": p_status + '. Contact them for more info.'
                })
 
@@ -471,6 +475,7 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
     "instructor": meta.get("instructor", "N/A"),
     "description": meta.get("description", ""),
     "equiv": equiv_map.get(course_code.replace(' ', ''), {'regular': [], 'minor': []}),
+    "score": course.get("score", 0),
     "reason": p_status + '. Contact them for more info.'
 })
 
@@ -485,6 +490,7 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
     "instructor": meta.get("instructor", "N/A"),
     "description": meta.get("description", ""),
     "equiv": equiv_map.get(course_code.replace(' ', ''), {'regular': [], 'minor': []}),
+    "score": course.get("score", 0),
     "reason": p_status
 })
 
@@ -518,6 +524,7 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
                 "description":   meta.get("description", ""),
                 "default_idx": default_idx,
                 "equiv": equiv_map.get(course_code.replace(' ', ''), {'regular': [], 'minor': []}),
+                "score": course.get("score", 0)
             }
         
         if all_clash:
@@ -541,6 +548,7 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
     "description": meta.get("description", ""),
     "default_idx": default_idx,
     "equiv": equiv_map.get(course_code.replace(' ', ''), {'regular': [], 'minor': []}),
+    "score": course.get("score", 0)
 })
 
         

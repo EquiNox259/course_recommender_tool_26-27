@@ -14,12 +14,17 @@
 <!-- ═══════════════════════════════════════════════ NAVBAR ═══ -->
 <nav class="navbar">
   <div class="nav-left">
-    <img id="dav-icon" class="nav-logo" src="" alt="DAV">
-    <span class="nav-title">Data Analytics and Visualization Team</span>
+    <a href="/about" class="nav-brand-link">
+        <img id="dav-icon" class="nav-logo" src="" alt="DAV">
+        <span class="nav-title">Data Analytics and Visualization Team</span>
+    </a>
   </div>
   <div class="nav-right">
+    <a href="/docs" class="nav-docs-link">Documentation</a>
     <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">☀️</button>
-    <img id="ugac-icon" class="nav-ugac" src="https://dav-course-recommender-iitb.netlify.app/Images/ugac_logo.svg" alt="UGAC">
+    <a href="https://ugac-iitb.github.io/UGAC-IITB/divisions/9" target="_blank" rel="noopener">
+        <img id="ugac-icon" class="nav-ugac" src="https://dav-course-recommender-iitb.netlify.app/Images/ugac_logo.svg" alt="UGAC">
+    </a>
   </div>
 </nav>
  
@@ -170,20 +175,6 @@
   <!-- ─────────────── RESULTS GRID ──────────────── -->
   {% if eligible is not none %}
   <div class="results-grid">
-
-    <!-- M-Tag / Minor filter -->
-<div class="mtag-filter">
-  <span class="mtag-label">Registration type:</span>
-  <button class="mtag-btn active" onclick="filterMtag('all', this)">All Courses</button>
-  <button class="mtag-btn" onclick="filterMtag('nonminor', this)">Non-Minor</button>
-  <button class="mtag-btn" onclick="filterMtag('minor', this)">Minor</button>
-</div>
-
-<div id="minor-banner" class="minor-banner" style="display:none">
-  &#9432;&nbsp;All Minor electives are registered in a
-  <strong>separate process before</strong> the regular registration window,
-  and are allotted strictly on the basis of <strong>CPI</strong>.
-</div>
  
     <!-- ✅ Eligible -->
     <div class="result-card card-ok fade-up">
@@ -261,6 +252,7 @@
             <p class="entry-desc-text">{{ c.description }}</p>
           </div>
           {% endif %}
+          <div class="iss-score"> ISS: {{ (c.score * 100) | round(1) }}%</div>
         </div>
         {% endfor %}
       </div>
@@ -352,6 +344,7 @@
             <p class="entry-desc-text">{{ c.description }}</p>
           </div>
           {% endif %}
+          <div class="iss-score"> ISS: {{ (c.score * 100) | round(1) }}%</div>
         </div>
         {% endfor %}
       </div>
@@ -442,6 +435,7 @@
             <p class="entry-desc-text">{{ c.description }}</p>
         </div>
         {% endif %}
+        <div class="iss-score"> ISS: {{ (c.score * 100) | round(1) }}%</div>
         </div>
         {% endfor %}
     </div>
@@ -530,6 +524,7 @@
             <p class="entry-desc-text">{{ c.description }}</p>
           </div>
           {% endif %}
+          <div class="iss-score"> ISS: {{ (c.score * 100) | round(1) }}%</div>
         </div>
         {% endfor %}
       </div>
@@ -548,6 +543,13 @@
   {% endif %}
  
 </main><!-- /content -->
+
+<!-- Footer -->
+<footer style="text-align:center; padding:24px;
+               font-family:var(--font-body); font-size:12px; color:var(--tm);
+               border-top:1px solid var(--bc)">
+  &copy; 2026 DAV Team &nbsp;|&nbsp; UGAC, IIT Bombay
+</footer>
  
 <!-- ═══════════════════════════════════════════════ SCRIPTS ══ -->
 <script>
@@ -663,12 +665,9 @@ function switchDivision(sel) {
   }
 
   /* Minor message — only in "All Courses" mode */
-  var minorMsg    = entry.querySelector('.minor-msg');
-  var activeFilter = document.querySelector('.mtag-btn.active');
-  var mode = activeFilter ? activeFilter.textContent.trim() : 'All Courses';
+  var minorMsg = entry.querySelector('.minor-msg');
   if (minorMsg) {
-    minorMsg.style.display =
-      (d.is_minor && mode === 'All Courses') ? 'block' : 'none';
+    minorMsg.style.display = d.is_minor ? 'block' : 'none';
   }
 
   var equivMsg = entry.querySelector('.entry-equiv-msg');
@@ -744,48 +743,6 @@ function updateSectionCounts() {
       empty.style.display = visibleCount === 0 ? 'block' : 'none';
     }
   });
-}
-
-/* ── Filter all result entries by Minor / Non-Minor / All ────────── */
-function filterMtag(type, btn) {
-  /* update active button */
-  document.querySelectorAll('.mtag-btn').forEach(function(b) {
-    b.classList.toggle('active', b === btn);
-  });
-
-  /* Universal minor banner */
-  var banner = document.getElementById('minor-banner');
-  if (banner) banner.style.display = (type === 'minor') ? 'block' : 'none';
-
-  /* Per-course minor messages: only relevant in All Courses */
-  document.querySelectorAll('.minor-msg').forEach(function(msg) {
-    if (msg.closest('.entry').style.display !== 'none') {
-      msg.style.display = (type === 'all') ? 'block' : 'none';
-    }
-  });
-
-  /* show/hide entries */
-  document.querySelectorAll('.entry').forEach(function(entry) {
-    var hasMinor  = entry.dataset.hasMinor  === 'true';
-    var minorOnly = entry.dataset.minorOnly === 'true';
-    if      (type === 'all')      entry.style.display = '';
-    else if (type === 'minor')    entry.style.display = hasMinor  ? '' : 'none';
-    else  /* nonminor */          entry.style.display = minorOnly ? 'none' : '';
-  });
-
-  /* auto-select the matching division in visible dropdowns */
-  document.querySelectorAll('.div-select').forEach(function(sel) {
-    if (sel.closest('.entry').style.display === 'none') return;
-    var targetIdx = 0;
-    for (var i = 0; i < sel.options.length; i++) {
-      var isMinor = sel.options[i].dataset.isMinor === 'true';
-      if (type === 'minor'    &&  isMinor) { targetIdx = i; break; }
-      if (type !== 'minor'    && !isMinor) { targetIdx = i; break; }
-    }
-    sel.selectedIndex = targetIdx;
-    switchDivision(sel);
-  });
-  updateSectionCounts();
 }
  
 /* ── Boot ──────────────────────────────────────────────────────── */

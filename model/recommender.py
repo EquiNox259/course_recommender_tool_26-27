@@ -59,7 +59,8 @@ def get_candidate_courses(query, top_k=10):
     return [
         {
             "code": row["Course Code"],
-            "name": row["Course Name"]
+            "name": row["Course Name"],
+            "score": row["score"]
         }
         for _, row in results.iterrows()
     ]

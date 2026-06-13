@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About — Course Recommender | DAV Team</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=Karla:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@500&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+  <style>
+    /* ── About page layout ──────────────────────────────────── */
+    .about-layout {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 88px 24px 80px;
+    }
+
+    /* ── Hero ───────────────────────────────────────────────── */
+    .about-hero {
+      text-align: center;
+      padding: 48px 24px 40px;
+      margin-bottom: 48px;
+    }
+
+    .about-hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(28px, 5vw, 42px);
+      font-weight: 700;
+      color: var(--tp);
+      line-height: 1.2;
+      margin-bottom: 16px;
+    }
+
+    .about-hero-sub {
+      font-family: var(--font-body);
+      font-size: 15px;
+      color: var(--ts);
+      line-height: 1.75;
+      max-width: 640px;
+      margin: 0 auto 28px;
+    }
+
+    .about-cta {
+      display: inline-block;
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 600;
+      padding: 12px 32px;
+      border-radius: 8px;
+      background: var(--gr);
+      color: #fff;
+      text-decoration: none;
+      transition: opacity 0.15s ease;
+    }
+
+    .about-cta:hover { opacity: 0.88; }
+
+    /* ── Feature cards ──────────────────────────────────────── */
+    .feature-divider {
+      border: none;
+      border-top: 1px solid var(--bc);
+      margin: 0 0 40px;
+    }
+
+    .feature-label {
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--ac);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 56px;
+    }
+
+    .feature-card {
+      background: var(--pc);
+      border: 1px solid var(--bc);
+      border-radius: 12px;
+      padding: 22px 20px;
+      box-shadow: var(--sh);
+    }
+
+    .feature-card-icon {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    .feature-card h3 {
+      font-family: var(--font-display);
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--tp);
+      margin-bottom: 8px;
+    }
+
+    .feature-card p {
+      font-family: var(--font-body);
+      font-size: 13px;
+      color: var(--ts);
+      line-height: 1.65;
+    }
+
+    /* ── Team section ───────────────────────────────────────── */
+    .team-section {
+      margin-bottom: 56px;
+    }
+
+    .team-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--bc);
+    }
+
+    .team-header h2 {
+      font-family: var(--font-display);
+      font-size: 30px;
+      font-weight: 600;
+      color: var(--tp);
+      text-align: center;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .team-description {
+      font-family: var(--font-body);
+      font-size: 17px;
+      color: var(--ts);
+      line-height: 1.75;
+      margin-bottom: 36px;
+      max-width: 760px;
+      text-align: center;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* ── Team categories ────────────────────────────────────── */
+    .team-category {
+      margin-bottom: 36px;
+    }
+
+    .team-category-title {
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      text-align: center;
+      color: var(--ac);
+      margin-bottom: 14px;
+    }
+
+    .members-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 14px;
+    }
+
+    /* ── Member card ────────────────────────────────────────── */
+    .member-card {
+      background: var(--pc);
+      border: 1px solid var(--bc);
+      border-radius: 12px;
+      padding: 16px 12px;
+      width: 210px;
+      height: 210px;
+      flex-shrink: 0;
+      text-align: center;
+      box-shadow: var(--sh);
+      transition: box-shadow 0.15s ease;
+    }
+
+    .member-card:hover { box-shadow: var(--bs); }
+
+    .member-photo {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      margin: 0 auto 10px;
+      overflow: hidden;
+      background: var(--pi);
+      border: 2px solid var(--bc);
+    }
+
+    .member-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .member-photo-fallback {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      color: var(--tm);
+    }
+
+    .member-card h3 {
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--tp);
+      margin-bottom: 3px;
+    }
+
+    .member-card p {
+      font-family: var(--font-body);
+      font-size: 13px;
+      color: var(--ts);
+    }
+
+    .member-links {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .member-link {
+      width: 30px;
+      height: 30px;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      background: transparent;
+      border: 2px solid var(--bc);
+      transition: background 0.15s ease, border-color 0.15s ease;
+      flex-shrink: 0;
+    }
+
+    .member-link:hover {background: var(--al);
+      border-color: var(--ac);}
+
+    .member-link svg { display: block; fill: var(--ac)}
+
+    /* ── Responsive ─────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .feature-grid { grid-template-columns: 1fr; }
+      .members-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- ══════════════════════════════════════════════ NAVBAR ══ -->
+<nav class="navbar">
+  <div class="nav-left">
+    <a href="/about" class="nav-brand-link">
+      <img id="dav-icon" class="nav-logo" src="" alt="DAV">
+      <span class="nav-title">Data Analytics and Visualization Team</span>
+    </a>
+  </div>
+  <div class="nav-right">
+    <a href="/" class="nav-docs-link">Recommender</a>
+    <a href="/docs" class="nav-docs-link">Documentation</a>
+    <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">☀️</button>
+    <a href="https://ugac-iitb.github.io/UGAC-IITB/divisions/9" target="_blank" rel="noopener">
+        <img id="ugac-icon" class="nav-ugac"
+            src="https://dav-course-recommender-iitb.netlify.app/Images/ugac_logo.svg"
+            alt="UGAC">
+    </a>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════════════ CONTENT ══ -->
+<div class="about-layout">
+
+  <!-- ── Hero ─────────────────────────────────────────────── -->
+  <div class="about-hero">
+    <h1 class="about-hero-title">Welcome to the<br>Course Recommender</h1>
+    <p class="about-hero-sub">
+      Explore electives tailored to your academic background and interests.
+      The DAV Team at UGAC brings you personalised recommendations to help
+      you make the most of your time at IIT Bombay.
+    </p>
+    <a class="about-cta" href="/">Get Recommendations &rarr;</a>
+  </div>
+
+  <hr class="feature-divider">
+
+  <!-- ── Why Use It ───────────────────────────────────────── -->
+  <div class="feature-label">Why use our recommender?</div>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-card-icon">&#127775;</div>
+      <h3>Personalised for You</h3>
+      <p>
+        Recommendations are built around your course history, department,
+        and what you actually want to learn.
+      </p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-icon">&#128101;</div>
+      <h3>Peer-Informed Choices</h3>
+      <p>
+        See what students who walked a similar path chose. Collective
+        experience from thousands of IITB students, surfaced just for you.
+      </p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-icon">&#9989;</div>
+      <h3>Eligibility Pre-Checked</h3>
+      <p>
+        Every result is validated against restrictions, prerequisites, and
+        timetable clashes before it reaches you, no need for manual cross-checking.
+      </p>
+    </div>
+  </div>
+
+  <!-- ── About DAV Team ───────────────────────────────────── -->
+  <div class="team-section">
+    <div class="team-header">
+      <h2>About the DAV Team</h2>
+    </div>
+    <p class="team-description">
+      We are the <strong>Data Analytics and Visualization (DAV) Team</strong>,
+      a part of the Undergraduate Academic Council (UGAC) at IIT Bombay.
+      Founded in 2018, the DAV Team is an interdisciplinary group dedicated
+      to analysing institutional data to provide valuable insights for
+      students and actionable solutions for the administration. Our core
+      mission is to harness the power of data analytics to inform policy
+      development, while offering students hands-on experience with
+      real-world data and enhancing their expertise in data science.
+    </p>
+
+    <!-- Leadership -->
+    <div class="team-category">
+      <div class="team-category-title">Team Heads</div>
+      <div class="members-grid">
+        <div class="member-card">
+          <div class="member-photo">
+            <div class="member-photo-fallback">&#128100;</div>
+          </div>
+          <h3>Team Head</h3>
+          <p>Head</p>
+          <div class="member-links">
+            <a href="https://linkedin.com/in/username" target="_blank"
+               rel="noopener" class="member-link member-link-li" title="LinkedIn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+                <path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.37V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.59 0 4.26 2.36 4.26 5.44v6.3zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zm1.78 13.02H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/>
+              </svg>
+            </a>
+            <a href="mailto:rollno@iitb.ac.in"
+               class="member-link member-link-mail" title="IITB Webmail">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+                <path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+        <div class="member-card">
+          <div class="member-photo">
+            <div class="member-photo-fallback">&#128100;</div>
+          </div>
+          <h3>Team Head</h3>
+          <p>Head</p>
+          <div class="member-links">
+            <a href="https://linkedin.com/in/username" target="_blank"
+               rel="noopener" class="member-link member-link-li" title="LinkedIn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+                <path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.37V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.59 0 4.26 2.36 4.26 5.44v6.3zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zm1.78 13.02H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/>
+              </svg>
+            </a>
+            <a href="mailto:rollno@iitb.ac.in"
+               class="member-link member-link-mail" title="IITB Webmail">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+                <path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="team-category">
+      <div class="team-category-title">Team Members</div>
+      <div class="members-grid">
+        <div class="member-card">
+          <div class="member-photo">
+            <div class="member-photo-fallback">&#128100;</div>
+          </div>
+          <h3>Member Name</h3>
+          <p>Analyst</p>
+          <div class="member-links">
+            <a href="https://linkedin.com/in/username" target="_blank"
+               rel="noopener" class="member-link member-link-li" title="LinkedIn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+                <path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.37V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.59 0 4.26 2.36 4.26 5.44v6.3zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zm1.78 13.02H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/>
+              </svg>
+            </a>
+            <a href="mailto:rollno@iitb.ac.in"
+               class="member-link member-link-mail" title="IITB Webmail">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+                <path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+        <div class="member-card">
+          <div class="member-photo">
+            <div class="member-photo-fallback">&#128100;</div>
+          </div>
+          <h3>Member Name</h3>
+          <p>Analyst</p>
+          <div class="member-links">
+            <a href="https://linkedin.com/in/username" target="_blank"
+               rel="noopener" class="member-link member-link-li" title="LinkedIn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+                <path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.37V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.59 0 4.26 2.36 4.26 5.44v6.3zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zm1.78 13.02H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/>
+              </svg>
+            </a>
+            <a href="mailto:rollno@iitb.ac.in"
+               class="member-link member-link-mail" title="IITB Webmail">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+                <path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/>
+              </svg>
+            </a>
+          </div>
+            </div>
+            <div class="member-card">
+            <div class="member-photo">
+                <div class="member-photo-fallback">&#128100;</div>
+            </div>
+            <h3>Member Name</h3>
+            <p>Analyst</p>
+            <div class="member-links">
+                <a href="https://linkedin.com/in/username" target="_blank"
+                rel="noopener" class="member-link member-link-li" title="LinkedIn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+                    <path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.37V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.59 0 4.26 2.36 4.26 5.44v6.3zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zm1.78 13.02H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/>
+                </svg>
+                </a>
+                <a href="mailto:rollno@iitb.ac.in"
+                class="member-link member-link-mail" title="IITB Webmail">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+                    <path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/>
+                </svg>
+                </a>
+            </div>
+        </div>
+        <div class="member-card">
+          <div class="member-photo">
+            <div class="member-photo-fallback">&#128100;</div>
+          </div>
+          <h3>Member Name</h3>
+          <p>Analyst</p>
+          <div class="member-links">
+            <a href="https://linkedin.com/in/username" target="_blank"
+               rel="noopener" class="member-link member-link-li" title="LinkedIn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+                <path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.37V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.59 0 4.26 2.36 4.26 5.44v6.3zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zm1.78 13.02H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/>
+              </svg>
+            </a>
+            <a href="mailto:rollno@iitb.ac.in"
+               class="member-link member-link-mail" title="IITB Webmail">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+                <path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+        <div class="member-card">
+          <div class="member-photo">
+            <div class="member-photo-fallback">&#128100;</div>
+          </div>
+          <h3>Member Name</h3>
+          <p>Analyst</p>
+          <div class="member-links">
+            <a href="https://linkedin.com/in/username" target="_blank"
+               rel="noopener" class="member-link member-link-li" title="LinkedIn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+                <path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.37V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.59 0 4.26 2.36 4.26 5.44v6.3zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zm1.78 13.02H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/>
+              </svg>
+            </a>
+            <a href="mailto:rollno@iitb.ac.in"
+               class="member-link member-link-mail" title="IITB Webmail">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+                <path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+        <div class="member-card">
+          <div class="member-photo">
+            <div class="member-photo-fallback">&#128100;</div>
+          </div>
+          <h3>Member Name</h3>
+          <p>Analyst</p>
+          <div class="member-links">
+            <a href="https://linkedin.com/in/username" target="_blank"
+               rel="noopener" class="member-link member-link-li" title="LinkedIn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+                <path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.37V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.59 0 4.26 2.36 4.26 5.44v6.3zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zm1.78 13.02H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/>
+              </svg>
+            </a>
+            <a href="mailto:rollno@iitb.ac.in"
+               class="member-link member-link-mail" title="IITB Webmail">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+                <path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+        <div class="member-card">
+          <div class="member-photo">
+            <div class="member-photo-fallback">&#128100;</div>
+          </div>
+          <h3>Member Name</h3>
+          <p>Analyst</p>
+          <div class="member-links">
+            <a href="https://linkedin.com/in/username" target="_blank"
+               rel="noopener" class="member-link member-link-li" title="LinkedIn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+                <path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.37V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.59 0 4.26 2.36 4.26 5.44v6.3zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zm1.78 13.02H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/>
+              </svg>
+            </a>
+            <a href="mailto:rollno@iitb.ac.in"
+               class="member-link member-link-mail" title="IITB Webmail">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+                <path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /.about-layout -->
+
+<!-- Footer -->
+<footer style="text-align:center; padding:24px;
+               font-family:var(--font-body); font-size:12px; color:var(--tm);
+               border-top:1px solid var(--bc)">
+  &copy; 2026 DAV Team &nbsp;|&nbsp; UGAC, IIT Bombay
+</footer>
+
+<script>
+/* ── DAV icon (copy DAV_SRC + processIcon from index.html) ── */
+var DAV_SRC = "data:image/png;base64,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";
+
+function applyTheme(dark) {
+  document.documentElement.classList.toggle('dark', dark);
+  document.getElementById('theme-btn').textContent = dark ? '🌙' : '☀️';
+}
+
+function toggleTheme() {
+  var dark = !document.documentElement.classList.contains('dark');
+  applyTheme(dark);
+  localStorage.setItem('cr-theme', dark ? 'dark' : 'light');
+}
+
+
+document.addEventListener('DOMContentLoaded', function () {
+  applyTheme(localStorage.getItem('cr-theme') === 'dark');
+   /* Icons */
+function processIcon(src, invertDark, cb) {
+  var img = new Image();
+  img.onload = function () {
+    var c = document.createElement('canvas');
+    c.width = img.width; c.height = img.height;
+    var ctx = c.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    var id  = ctx.getImageData(0, 0, c.width, c.height);
+    var d   = id.data;
+    for (var i = 0; i < d.length; i += 4) {
+      var r = d[i], g = d[i+1], b = d[i+2];
+      var bright = (r + g + b) / 3;
+      if (bright > 235) {
+        d[i+3] = 0;                          /* fully transparent */
+      } else if (bright > 205) {
+        var a = Math.round(d[i+3] * (235 - bright) / 30);
+        d[i+3] = a;                          /* feathered edge     */
+        if (invertDark && a > 0) { d[i]=255-r; d[i+1]=255-g; d[i+2]=255-b; }
+      } else if (invertDark) {
+        d[i]=255-r; d[i+1]=255-g; d[i+2]=255-b; /* invert → white  */
+      }
+    }
+    ctx.putImageData(id, 0, 0);
+    cb(c.toDataURL());
+  };
+  img.src = src;
+}
+
+processIcon(DAV_SRC, true, function(url) {
+       document.getElementById('dav-icon').src = url;
+     });
+});
+</script>
+
+</body>
+</html>
