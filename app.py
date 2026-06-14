@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request
 from model.recommender import get_candidate_courses
-from eligibility.rules import recommender as eligibility_recommender
+from eligibility.rules import recommender as eligibility_recommender, get_llm_recommendations
 
 app = Flask(__name__)
 
@@ -22,7 +22,9 @@ def index():
         interest = request.form.get("interest")
 
         # --- NLP search ---
-        desired_courses = get_candidate_courses(interest, top_k=10)
+        from model.recommender import expand_abbreviations
+        expanded_interest = expand_abbreviations(interest)
+        desired_courses = get_candidate_courses(expanded_interest, top_k=60)
 
         # --- Manual history (second phase) ---
         manual_history_raw = request.form.get("manual_history")
@@ -50,10 +52,29 @@ def index():
             need_manual_history = True
         else:
             course_history = output["course_history"]
-            eligible = output["eligible"]
-            i_a_r = output["i_a_r"]
-            t_s_c = output["t_s_c"]
-            rejected = output["rejected"]
+            raw_eligible = output["eligible"]
+            raw_iar = output["i_a_r"]
+            raw_tsc = output["t_s_c"]
+            raw_rejected = output["rejected"]
+
+            # Use LLM to select the best (max 15)  courses from the combined lists
+            selected_codes = get_llm_recommendations(
+                interest=expanded_interest,
+                department=department,
+                degree=degree,
+                course_history=course_history,
+                eligible_list=raw_eligible,
+                iar_list=raw_iar,
+                rejected_list=raw_rejected,
+                tsc_list=raw_tsc,
+                x=15  #x is the max courses the LLM recommends
+            )
+
+            # Filter each list to only include courses selected by the LLM
+            eligible = [c for c in raw_eligible if c['code'].replace(" ", "").upper() in selected_codes]
+            i_a_r = [c for c in raw_iar if c['code'].replace(" ", "").upper() in selected_codes]
+            t_s_c = [c for c in raw_tsc if c['code'].replace(" ", "").upper() in selected_codes]
+            rejected = [c for c in raw_rejected if c['code'].replace(" ", "").upper() in selected_codes]
 
     return render_template(
         "index.html",

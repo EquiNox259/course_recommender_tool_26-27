@@ -49,12 +49,35 @@ def search_courses(query, top_k=10):
 '''res = search_courses("markov chain")
 print(res)'''
 
+import re
+
+def expand_abbreviations(text):
+    if not isinstance(text, str):
+        return text
+    
+    abbrev_dict = {
+        r"\bML\b": "Machine Learning",
+        r"\bAI\b": "Artificial Intelligence",
+        r"\bDSA\b": "Data Structures and Algorithms",
+        r"\bFintech\b": "Financial Technology",
+        r"\bQuant\b": "Quantitative Finance",
+        r"\bNLP\b": "Natural Language Processing",
+        r"\bDL\b": "Deep Learning",
+        r"\bRL\b": "Reinforcement Learning"
+    }
+    
+    expanded = text
+    for abbrev, full_form in abbrev_dict.items():
+        expanded = re.sub(abbrev, full_form, expanded, flags=re.IGNORECASE)
+    return expanded
+
 def get_candidate_courses(query, top_k=10):
     """
     Returns list of dicts:
     [{code: ..., name: ...}, ...]
     """
-    results = search_courses(query, top_k)
+    expanded_query = expand_abbreviations(query)
+    results = search_courses(expanded_query, top_k)
 
     return [
         {
