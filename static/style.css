@@ -1,406 +1,946 @@
-/* --- 1. Variables & Reset --- */
 :root {
-    /* Palette */
-    --bg-deep: #0f172a;
-    --glass-surface: rgba(30, 41, 59, 0.7);
-    --glass-border: rgba(255, 255, 255, 0.08);
-    --primary: #6366f1; /* Indigo */
-    --primary-glow: #818cf8;
-    --accent: #06b6d4; /* Cyan */
-    
-    /* Status Colors */
-    --success: #34d399; /* Emerald Mint */
-    --success-bg: rgba(16, 185, 129, 0.1);
-    --danger: #f43f5e; /* Rose */
-    --danger-bg: rgba(244, 63, 94, 0.1);
-
-    /* Text */
-    --text-main: #f8fafc;
-    --text-muted: #94a3b8;
-
-    /* Spacing & Radius */
-    --radius-lg: 24px;
-    --radius-md: 12px;
-    --shadow-glow: 0 0 40px -10px rgba(99, 102, 241, 0.3);
+  /* Page & surfaces */
+  --pg:  #F9F7F3;
+  --pc:  #FFFFFF;
+  --pi:  #F5F2EC;
+  --ph:  #EFF7F1;
+ 
+  /* Borders */
+  --bc:  #E5DDD0;
+  --bi:  #D6CDBF;
+  --bd:  #EDE8DF;
+ 
+  /* Primary (forest green) */
+  --gr:  #1D4B2F;
+  --gl:  #EAF3ED;
+  --gd:  #163D25;
+ 
+  /* Accent (amber-gold) */
+  --ac:  #9A6C0A;
+  --al:  #FDF4DC;
+ 
+  /* Eligible (success green) */
+  --ok:  #1A5C38;
+  --ob:  #EBF8F0;
+  --or:  #A3D9BA;
+ 
+  /* Not-eligible (muted red) */
+  --no:  #8B2E2E;
+  --nb2: #FBF0F0;
+  --nr:  #DDA8A8;
+ 
+  /* Warning / manual alert */
+  --wt:  #7A4E0A;
+  --wb:  #FDF6E6;
+  --wr:  #E8C97A;
+  --wa:  #D97706;   /* amber strip */
+ 
+  /* Typography */
+  --tp:  #1A150E;
+  --ts:  #5C5248;
+  --tm:  #9C9080;
+ 
+  /* Navigation */
+  --nv:  #1D4B2F;
+  --nt:  #FFFFFF;
+  --nm:  rgba(255,255,255,0.55);
+  --ns:  rgba(255,255,255,0.20);
+ 
+  /* Shadows & effects */
+  --sh:  0 1px 3px rgba(26,21,14,0.05), 0 6px 20px rgba(26,21,14,0.06);
+  --shh: 0 2px 6px rgba(26,21,14,0.07), 0 10px 28px rgba(26,21,14,0.09);
+  --fr:  0 0 0 3px rgba(29,75,47,0.20);
+  --bs:  0 2px 10px rgba(29,75,47,0.30);
+  --bt:  #FFFFFF;
+ 
+  /* Typefaces */
+  --font-display: 'Source Serif 4', serif;
+  --font-body:    'Karla', sans-serif;
+  --font-hero:    'Oswald', sans-serif,
+  --font-mono:    'IBM Plex Mono', monospace;
 }
-
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+ 
+/* ── 2. Dark Mode overrides ──────────────────────────────────────── */
+.dark {
+  --pg:  #0F1510;
+  --pc:  #181F15;
+  --pi:  #111810;
+  --ph:  #1E2B1A;
+  --bc:  #283522;
+  --bi:  #2E3D28;
+  --bd:  #232E1E;
+  --gr:  #5BAA78;
+  --gl:  #1A2E1C;
+  --gd:  #6DC48E;
+  --ac:  #D4A040;
+  --al:  #261E08;
+  --ok:  #4DB87A;
+  --ob:  #101E14;
+  --or:  #275237;
+  --no:  #CF7070;
+  --nb2: #1E0E0E;
+  --nr:  #4A2525;
+  --wt:  #D4A040;
+  --wb:  #1C1608;
+  --wr:  #4A380E;
+  --wa:  #D4A040;
+  --tp:  #F0EDE6;
+  --ts:  #A89E92;
+  --tm:  #6A6258;
+  --nv:  #0C1209;
+  --nt:  #F0EDE6;
+  --nm:  rgba(240,237,230,0.50);
+  --ns:  rgba(255,255,255,0.12);
+  --sh:  0 1px 3px rgba(0,0,0,0.25), 0 6px 20px rgba(0,0,0,0.30);
+  --shh: 0 2px 8px rgba(0,0,0,0.35), 0 12px 32px rgba(0,0,0,0.40);
+  --fr:  0 0 0 3px rgba(91,170,120,0.22);
+  --bs:  0 2px 10px rgba(0,0,0,0.40);
+  --bt:  #0F1510;
 }
-
+ 
+/* ── 3. Reset & Base ─────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+html {
+  /* Smooth colour transitions on theme toggle */
+  transition: background-color 0.2s ease;
+}
+ 
 body {
-    font-family: 'Outfit', sans-serif;
-    background-color: var(--bg-deep);
-    color: var(--text-main);
-    min-height: 100vh;
-    padding: 60px 20px;
-    position: relative;
-    overflow-x: hidden;
+  font-family: var(--font-body);
+  background: var(--pg);
+  color: var(--tp);
+  min-height: 100vh;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
-
-/* --- 2. Dynamic Background (Aurora Effect) --- */
-.bg-shape {
-    position: fixed;
-    border-radius: 50%;
-    filter: blur(100px);
-    z-index: -1;
-    opacity: 0.5;
-    animation: pulseFloat 15s infinite alternate;
+ 
+/* Global theme transition — background, border, colour only */
+div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
+  transition:
+    background-color 0.2s ease,
+    border-color     0.2s ease,
+    color            0.2s ease,
+    box-shadow       0.2s ease;
 }
-
-.shape-1 {
-    width: 600px;
-    height: 600px;
-    background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
-    top: -150px;
-    left: -100px;
+ 
+/* ── 4. Typography helpers ───────────────────────────────────────── */
+.sec-label {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ac);
 }
-
-.shape-2 {
-    width: 500px;
-    height: 500px;
-    background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
-    bottom: -100px;
-    right: -100px;
-    animation-delay: -5s;
+ 
+.mono { font-family: var(--font-mono); font-weight: 500; }
+ 
+.text-muted-italic {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--tm);
 }
-
-@keyframes pulseFloat {
-    0% { transform: translate(0, 0) scale(1); }
-    100% { transform: translate(40px, -40px) scale(1.1); }
+ 
+/* ── 5. Navigation bar ───────────────────────────────────────────── */
+.navbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 200;
+  height: 56px;
+  background: var(--nv);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
 }
-
-/* --- 3. Typography & Layout --- */
-.container {
-    max-width: 850px;
-    margin: 0 auto;
-    position: relative;
-    z-index: 1;
+ 
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  min-width: 0;
 }
-
-.main-header {
-    text-align: center;
-    margin-bottom: 50px;
+ 
+.nav-logo {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  flex-shrink: 0;
+  margin-right: 10px;
 }
-
-.icon-wrapper {
-    font-size: 3.5rem;
-    margin-bottom: 15px;
-    display: inline-block;
-    background: linear-gradient(135deg, var(--primary-glow), var(--accent));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.5));
+ 
+.nav-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--nt);
+  white-space: nowrap;
+  margin-right: 10px;
 }
-
-h1 {
-    font-size: 3rem;
-    font-weight: 700;
-    letter-spacing: -1px;
-    background: linear-gradient(to right, #fff, #cbd5e1);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+ 
+.nav-sep {
+  width: 1px;
+  height: 16px;
+  background: var(--ns);
+  flex-shrink: 0;
+  margin: 0 10px;
 }
-
-.subtitle {
-    color: var(--text-muted);
-    font-size: 1.1rem;
-    font-weight: 300;
-    margin-top: 8px;
+ 
+.nav-sub {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--nm);
+  white-space: nowrap;
 }
-
-/* --- 4. Glassmorphism Panels --- */
-.glass-panel {
-    background: var(--glass-surface);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius-lg);
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    padding: 40px;
-    margin-bottom: 40px;
-    transition: transform 0.3s ease, border-color 0.3s ease;
+ 
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
 }
-
-.glass-panel:hover {
-    border-color: rgba(255, 255, 255, 0.2);
+ 
+.theme-btn {
+  width: 68px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.28);
+  background: rgba(255,255,255,0.15);
+  cursor: pointer;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-
-/* --- 5. Inputs & Forms --- */
-.section-title {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    font-weight: 700;
-    color: var(--accent);
-    margin-bottom: 25px;
-    border-bottom: 1px solid var(--glass-border);
-    padding-bottom: 15px;
+ 
+.theme-btn:hover { background: rgba(255,255,255,0.25); }
+ 
+.nav-ugac {
+  width: 75px;
+  height: 75px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
-
-.grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 25px;
-    margin-bottom: 30px;
+ 
+/* ── 6. Page content wrapper ─────────────────────────────────────── */
+.content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 56px 24px 72px;
 }
-
+ 
+/* ── 7. Hero ─────────────────────────────────────────────────────── */
+.hero {
+  text-align: center;
+  padding: 48px 0 8px;
+}
+ 
+.hero-title {
+  font-family: var(--font-hero);
+  font-weight: 700;
+  font-size: 30px;
+  color: var(--tp);
+  letter-spacing: -0.5px;
+  margin-bottom: 10px;
+}
+ 
+.hero-sub {
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--ts);
+  max-width: 480px;
+  margin: 0 auto;
+  line-height: 1.65;
+}
+ 
+/* ── 8. Cards ────────────────────────────────────────────────────── */
+.card {
+  background: var(--pc);
+  border: 1px solid var(--bc);
+  border-radius: 12px;
+  box-shadow: var(--sh);
+  padding: 36px;
+  margin-top: 24px;
+}
+ 
+.card:hover { box-shadow: var(--shh); }
+ 
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+ 
+.help-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid var(--bi);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--tm);
+  cursor: default;
+  flex-shrink: 0;
+}
+ 
+.divider-dash {
+  height: 1px;
+  border-top: 1px dashed var(--bd);
+  margin-bottom: 24px;
+}
+ 
+/* ── 9. Form grid & floating-label fields ────────────────────────── */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+ 
+/* Field wrapper */
 .field {
-    display: flex;
-    flex-direction: column;
+  position: relative;
 }
-
-.field.full-width {
-    grid-column: 1 / -1;
+ 
+.field-full { margin-bottom: 24px; }
+ 
+/* All native controls share the same base styling */
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  height: 52px;
+  padding: 22px 14px 10px;
+  background: var(--pi);
+  border: 1px solid var(--bi);
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--tp);
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
 }
-
-label {
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: var(--text-muted);
-    margin-bottom: 10px;
-    margin-left: 4px;
+ 
+.field textarea {
+  height: auto;
+  min-height: 96px;
+  padding-top: 28px;
+  resize: vertical;
+  line-height: 1.6;
+  color: var(--ts);
 }
-
-/* Input Styling - The "Console" Look */
-input, select, textarea {
-    width: 100%;
-    padding: 14px 18px;
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius-md);
-    background: rgba(15, 23, 42, 0.6); /* Darker inner bg */
-    color: var(--text-main);
-    font-family: 'JetBrains Mono', monospace; /* Monospace for inputs looks techy */
-    font-size: 0.9rem;
-    transition: all 0.2s ease;
+ 
+/* Select: custom chevron via background SVG */
+.field select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%231D4B2F'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+  cursor: pointer;
 }
-
-input:focus, select:focus, textarea:focus {
-    outline: none;
-    border-color: var(--primary);
-    background: rgba(15, 23, 42, 0.9);
-    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+ 
+.dark .field select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%235BAA78'/%3E%3C/svg%3E");
 }
-
-textarea {
-    resize: vertical;
-    min-height: 100px;
+ 
+/* Student ID: monospace value, icon room */
+#student_id {
+  font-family: var(--font-mono);
+  padding-right: 40px;
 }
-
-/* Custom Select Dropdown Arrow */
-.select-wrapper {
-    position: relative;
+ 
+/* Field icon (👤) */
+.field-icon {
+  position: absolute;
+  right: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  color: var(--tm);
+  pointer-events: none;
 }
-.select-wrapper::after {
-    content: '▼';
-    font-size: 0.7rem;
-    color: var(--primary);
-    position: absolute;
-    right: 18px;
-    top: 50%;
-    transform: translateY(-50%);
-    pointer-events: none;
+ 
+/* Floating label — default (resting) */
+.field label {
+  position: absolute;
+  left: 14px;
+  top: 17px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--tm);
+  pointer-events: none;
+  transition:
+    top      0.16s ease,
+    font-size 0.16s ease,
+    color    0.16s ease,
+    font-weight 0.16s ease,
+    letter-spacing 0.16s ease;
 }
-
-select {
-    appearance: none;
-    cursor: pointer;
+ 
+/* Floating label — active/filled state for inputs & textarea */
+.field input:focus ~ label,
+.field input:not(:placeholder-shown) ~ label,
+.field textarea:focus ~ label,
+.field textarea:not(:placeholder-shown) ~ label {
+  top: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ac);
+  letter-spacing: 0.5px;
 }
-
-/* Button - Neon Glow */
-button.btn-primary {
-    width: 100%;
-    padding: 18px;
-    background: linear-gradient(135deg, var(--primary), #4f46e5);
-    color: white;
-    border: none;
-    border-radius: var(--radius-md);
-    font-size: 1rem;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: var(--shadow-glow);
-    text-transform: uppercase;
-    font-family: 'Outfit', sans-serif;
+ 
+/* Select floating label */
+.field select:focus ~ label,
+.field select.has-value ~ label {
+  top: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ac);
+  letter-spacing: 0.5px;
 }
-
-button.btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 0 30px rgba(99, 102, 241, 0.6);
+ 
+/* Focus ring */
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: var(--gr);
+  background: var(--pc);
+  box-shadow: var(--fr);
 }
-
-button.btn-primary:active {
-    transform: translateY(1px);
+ 
+/* ── 10. Primary button ───────────────────────────────────────────── */
+.btn-primary {
+  width: 100%;
+  height: 52px;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 15px;
+  cursor: pointer;
+  background: var(--gr);
+  color: var(--bt);
+  box-shadow: var(--bs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition:
+    background-color 0.18s ease,
+    box-shadow       0.18s ease,
+    transform        0.14s ease,
+    color            0.18s ease;
 }
-
-/* --- 6. Results & Cards --- */
-.status-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid var(--glass-border);
+ 
+.btn-primary:hover {
+  background: var(--gd);
+  box-shadow: 0 6px 20px rgba(29,75,47,0.35);
+  transform: translateY(-1px);
 }
-
-.status-header h2 {
-    font-size: 1.4rem;
-    margin: 0;
+ 
+.btn-primary:active { transform: translateY(0); }
+ 
+.btn-primary:disabled {
+  background: var(--bc);
+  color: var(--tm);
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+  border: 1px solid var(--bi);
 }
-
+ 
+/* ── 11. Reset / secondary button ────────────────────────────────── */
+.reset-row {
+  text-align: center;
+  margin-top: 36px;
+}
+ 
+.btn-reset {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--tm);
+  background: transparent;
+  border: 1px solid var(--bc);
+  border-radius: 8px;
+  padding: 10px 28px;
+  text-decoration: none;
+  cursor: pointer;
+}
+ 
+.btn-reset:hover { color: var(--gr); border-color: var(--or); }
+ 
+/* ── 12. Manual history alert ────────────────────────────────────── */
+.manual-alert {
+  background: var(--wb);
+  border: 1px solid var(--wr);
+  border-left: 3px solid var(--wa);
+  border-radius: 0 8px 8px 0;
+  padding: 16px 18px;
+  margin-bottom: 4px;
+}
+ 
+.manual-alert-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+ 
+.manual-warn-icon {
+  font-size: 16px;
+  color: var(--wt);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+ 
+.manual-alert-text {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--wt);
+  opacity: 0.88;
+  margin-top: 6px;
+  line-height: 1.5;
+}
+ 
+/* ── 13. Chips ───────────────────────────────────────────────────── */
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+ 
+.chip {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  border-radius: 6px;
+}
+ 
+.chip-primary {
+  font-size: 12px;
+  color: var(--gr);
+  background: var(--gl);
+  border: 1px solid var(--or);
+  padding: 5px 11px;
+}
+ 
+.chip-primary:hover {
+  background: var(--ob);
+  border-color: var(--or);
+}
+ 
+.chip-example {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+ 
+.chip-ex-label {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--tm);
+}
+ 
+/* ── 14. Badges ──────────────────────────────────────────────────── */
 .badge {
-    padding: 6px 14px;
-    border-radius: 30px;
-    font-size: 0.8rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+  display: inline-block;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 11px;
+  border-radius: 6px;
+  padding: 3px 10px;
 }
-.success-badge { background: rgba(52, 211, 153, 0.2); color: var(--success); border: 1px solid var(--success); }
-.danger-badge { background: rgba(244, 63, 94, 0.2); color: var(--danger); border: 1px solid var(--danger); }
-
-.course-list {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+ 
+.badge-accent {
+  background: var(--al);
+  border: 1px solid var(--wr);
+  color: var(--ac);
+}
+ 
+.badge-ok {
+  background: var(--ob);
+  border: 1px solid var(--or);
+  color: var(--ok);
 }
 
-/* Tech Cards */
-.course-card {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding: 20px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius-md);
-    transition: all 0.3s ease;
-    position: relative;
+.badge-consent {
+  background: var(--al);
+  border: 1px solid var(--wr);
+  color: var(--ac);
+}
+ 
+.badge-no {
+  background: var(--nb2);
+  border: 1px solid var(--nr);
+  color: var(--no);
+}
+ 
+/* ── 15. Results grid ────────────────────────────────────────────── */
+.results-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  margin-top: 24px;
+}
+ 
+.result-card {
+  border-radius: 12px;
+  box-shadow: var(--sh);
+  padding: 28px;
+}
+ 
+.card-ok {
+  background: var(--ob);
+  border: 1px solid var(--or);
+}
+
+.card-consent {
+  background: var(--al);
+  border: 1px solid var(--wr);
+}
+ 
+.card-no {
+  background: var(--nb2);
+  border: 1px solid var(--nr);
+}
+ 
+.result-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+ 
+.result-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 16px;
+}
+ 
+.result-ok { color: var(--ok); }
+.result-consent { color: var(--ac); }
+.result-no { color: var(--no); }
+ 
+.result-divider {
+  height: 1px;
+  margin-bottom: 8px;
+}
+ 
+.divider-ok { background: var(--or); opacity: 0.5; }
+.divider-consent { background: var(--wr); opacity: 0.6; }
+.divider-no { background: var(--nr); opacity: 0.5; }
+ 
+/* ── 16. Course entries ──────────────────────────────────────────── */
+.entry {
+  padding: 14px 12px 14px 18px;
+  border-left: 2px solid transparent;
+  border-radius: 8px;
+  border-bottom: 1px dashed transparent;
+  transition: background 0.18s ease;
+}
+ 
+.entry-ok {
+  border-left-color: var(--ok);
+  border-bottom-color: var(--or);
+}
+
+.entry-consent {
+  border-left-color: var(--ac);
+  border-bottom-color: var(--wr);
+}
+ 
+.entry-no {
+  border-left-color: var(--no);
+  border-bottom-color: var(--nr);
+}
+ 
+.entry-ok:hover  { background: var(--ph); }
+.entry-consent:hover { background: color-mix(in srgb, var(--al) 60%, transparent); }
+.entry-no:hover  { background: var(--nb2); filter: brightness(0.95); }
+ 
+/* Remove bottom divider from last entry */
+.entry-last { border-bottom: none; }
+ 
+.entry-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+ 
+.code-chip {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 11px;
+  border-radius: 6px;
+  padding: 3px 9px;
+}
+ 
+.code-ok {
+  background: var(--ob);
+  border: 1px solid var(--or);
+  color: var(--ok);
+}
+ 
+.code-consent {
+  background: var(--al);
+  border: 1px solid var(--wr);
+  color: var(--ac);
+}
+
+.code-no {
+  background: var(--nb2);
+  border: 1px solid var(--nr);
+  color: var(--no);
+}
+ 
+.entry-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--tp);
+  line-height: 1.3;
+  margin-bottom: 6px;
+}
+ 
+.entry-meta {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--ts);
+  line-height: 1.6;
+}
+ 
+.entry-reason {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--no);
+}
+
+/* ── Click-to-expand: chevron ─────────────────────────────────── */
+.entry { cursor: pointer; }
+ 
+.entry-chevron {
+  font-size: 14px;
+  color: var(--tm);
+  flex-shrink: 0;
+  transition: transform 0.25s ease, color 0.2s ease;
+  line-height: 1;
+  margin-left: 8px;
+}
+ 
+.entry.expanded .entry-chevron {
+  transform: rotate(180deg);
+}
+ 
+.entry:hover .entry-chevron { color: var(--ts); }
+ 
+/* ── Click-to-expand: description panel ──────────────────────── */
+.entry-desc-wrap {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.32s ease;
+}
+ 
+.entry.expanded .entry-desc-wrap {
+  max-height: None;
+}
+ 
+.entry-desc-divider {
+  height: 1px;
+  border-top: 1px dashed var(--bd);
+  margin: 12px 0 10px;
+}
+ 
+.entry-desc-label {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--tm);
+  margin-bottom: 6px;
+}
+ 
+.entry-desc-text {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--ts);
+  line-height: 1.65;
+  margin: 0;
+  padding-bottom: 4px;
+}
+ 
+/* ── 17. Empty states ────────────────────────────────────────────── */
+.empty-result {
+  text-align: center;
+  padding: 20px 0;
+  color: var(--ts);
+}
+ 
+.empty-icon {
+  font-size: 36px;
+  margin-bottom: 10px;
+  opacity: 0.5;
+}
+ 
+.empty-title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 15px;
+  color: var(--ts);
+}
+ 
+.empty-sub {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--tm);
+  margin-top: 4px;
+}
+ 
+/* ── 18. Animations ──────────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+ 
+.fade-up    { animation: fadeUp 0.38s ease both; }
+.fade-up-d1 { animation: fadeUp 0.38s 0.09s ease both; }
+ 
+/* ══════════════════════════════════════════════════════════════════
+   19. RESPONSIVE LAYOUT
+   Three breakpoints:
+     ≤ 900px  tablet  — tighten content column, stack results grid
+     ≤ 640px  mobile  — single column everything, abbreviate nav
+     ≤ 400px  small   — micro-phone adjustments
+══════════════════════════════════════════════════════════════════ */
+ 
+/* ── Tablet (641px – 900px) ──────────────────────────────────────── */
+@media (max-width: 900px) {
+  .results-grid { grid-template-columns: 1fr; }
+ 
+  .nav-title {
+    font-size: 14px;
+    /* Prevent very long title from pushing right-side controls off screen */
     overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 260px;
+  }
 }
-
-.course-card::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 100%;
-    width: 4px;
-}
-
-.success-card::before { background: var(--success); }
-.danger-card::before { background: var(--danger); }
-
-.course-card:hover {
-    background: rgba(255, 255, 255, 0.07);
-    transform: translateX(5px);
-}
-
-.card-content {
-    flex: 1;
-}
-
-.course-code {
-    display: inline-block;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem;
-    color: var(--accent);
-    background: rgba(6, 182, 212, 0.1);
-    padding: 2px 8px;
-    border-radius: 4px;
-    margin-bottom: 8px;
-}
-
-.course-name {
-    display: block;
+ 
+/* ── Mobile (≤ 640px) ────────────────────────────────────────────── */
+@media (max-width: 640px) {
+ 
+  /* ── Nav: show abbreviated title to save space ── */
+  .navbar { padding: 0 14px; height: 52px; }
+ 
+  .nav-logo  { width: 26px; height: 26px; margin-right: 8px; }
+  .nav-ugac  { width: 36px; height: 36px; }
+ 
+ 
+  .nav-title {
+    font-size: 0;    
+    max-width: none;
+    white-space: nowrap;
+    overflow: visible;
+  }
+  .nav-title::before {
+    content: "Course Recommender";
+    font-size: 14px;
+    font-family: var(--font-display);
     font-weight: 600;
-    font-size: 1.15rem;
-    color: #fff;
-    margin-bottom: 8px;
+    color: var(--nt);
+  }
+ 
+  /* Hide separator and UGAC sub-label in left cluster */
+  .nav-sep { display: none; }
+  .nav-sub { display: none; }
+ 
+  /* ── Content ── */
+  .content { padding: 52px 14px 56px; }
+ 
+  /* ── Hero ── */
+  .hero { padding: 32px 0 4px; }
+  .hero-title { font-size: 22px; }
+  .hero-sub   { font-size: 14px; }
+ 
+  /* ── Cards ── */
+  .card        { padding: 20px; margin-top: 16px; }
+  .result-card { padding: 18px; }
+ 
+  /* ── Form grid: single column ── */
+  .form-grid { grid-template-columns: 1fr; gap: 14px; margin-bottom: 14px; }
+ 
+  /* ── iOS Safari: prevent auto-zoom on input focus.
+       Safari zooms whenever font-size < 16px on a focused input.
+       Inputs are bumped to 16px on mobile and the label is adjusted accordingly. ── */
+  .field input,
+  .field select,
+  .field textarea {
+    font-size: 16px;
+  }
+ 
+  /* Re-tune floating label sizes for 16px base */
+  .field input:focus ~ label,
+  .field input:not(:placeholder-shown) ~ label,
+  .field textarea:focus ~ label,
+  .field textarea:not(:placeholder-shown) ~ label,
+  .field select:focus ~ label,
+  .field select.has-value ~ label {
+    top: 7px;
+    font-size: 10px;
+  }
+ 
+  /* ── Field icon stays vertically centred ── */
+  .field-icon { font-size: 12px; }
+ 
+  /* ── Buttons: make touch targets comfortably tappable ── */
+  .btn-primary { height: 50px; font-size: 15px; }
+  .btn-reset   { padding: 12px 24px; font-size: 14px; }
+ 
+  /* ── Manual alert ── */
+  .manual-alert { padding: 14px; }
+ 
+  /* ── Chips: smaller padding on small screens ── */
+  .chip-primary  { font-size: 11px; padding: 4px 9px; }
+  .chip-example  { gap: 6px; }
+ 
+  /* ── Course entries ── */
+  .entry { padding: 12px 10px 12px 14px; }
+ 
+  /* ── Badges ── */
+  .badge { font-size: 10px; padding: 2px 8px; }
+ 
+  /* ── Prevent any element from causing horizontal scroll ── */
+  .results-grid { gap: 14px; }
 }
-
-.meta-text {
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    line-height: 1.5;
+ 
+/* ── Small phones (≤ 400px) ──────────────────────────────────────── */
+@media (max-width: 400px) {
+  .navbar { padding: 0 10px; }
+  .content { padding: 52px 10px 48px; }
+  .card    { padding: 16px; }
+  .hero-title { font-size: 20px; }
+ 
+  /* Collapse the theme-btn label to icon only */
+  .theme-btn { width: 36px; }
 }
-
-.meta-text strong {
-    color: var(--text-main);
-}
-
-.reason-text {
-    font-size: 0.85rem;
-    color: var(--danger);
-    margin-top: 8px;
-    font-family: 'JetBrains Mono', monospace;
-}
-
-/* Add Button for courses */
-.add-btn {
-    background: transparent;
-    border: 1px solid var(--glass-border);
-    color: var(--text-main);
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-left: 15px;
-    font-size: 1.2rem;
-}
-
-.add-btn:hover {
-    background: var(--success);
-    border-color: var(--success);
-    color: #000;
-    transform: scale(1.1);
-}
-
-/* History Tags */
-.course-history-compact {
-    list-style: none;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.history-item {
-    font-family: 'JetBrains Mono', monospace;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid var(--glass-border);
-    color: var(--text-muted);
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 0.8rem;
-}
-
-/* --- 7. Animations --- */
-.animate-up {
-    animation: fadeInUp 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-    opacity: 0;
-    transform: translateY(30px);
-}
-
-.delay-1 { animation-delay: 0.1s; }
-.delay-2 { animation-delay: 0.2s; }
-
-@keyframes fadeInUp {
-    to { transform: translateY(0); opacity: 1; }
-}
-
-/* Mobile Tweaks */
-@media (max-width: 600px) {
-    .container { padding: 0 15px; }
-    h1 { font-size: 2.2rem; }
-    .glass-panel { padding: 25px; }
-    .course-card { flex-direction: column; }
-    .add-btn { margin-left: 0; margin-top: 15px; align-self: flex-end; }
-}
+ 
+/* ── Global overflow guard: never let content wider than viewport ── */
+html, body { overflow-x: hidden; max-width: 100%; }

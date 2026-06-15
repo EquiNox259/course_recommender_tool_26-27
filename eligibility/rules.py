@@ -2,20 +2,91 @@ import ast
 import numpy as np
 import re
 import pandas as pd
-from config import RUNNING_COURSES_PATH, PREREQ_PATH, COURSES_HISTORY_PATH
+from config import RUNNING_COURSES_PATH, PREREQ_PATH, COURSES_HISTORY_PATH, CORE_COURSES_PATH, SEMESTER
+from collections import defaultdict
+import google.generativeai as genai
 
+genai.configure(api_key="PUT YOUR API KEY IN HERE")
 data = pd.read_csv(COURSES_HISTORY_PATH)
 df = pd.read_csv(RUNNING_COURSES_PATH)
+rename_map = {
+    "Restrictions": "Restriction",
+    "Course Description": "Description",
+    "Instructor(s)": "Instructor",
+    "Biometric Attendance Enabled?": "Biometric Attendance Enabled",
+    "Division Defined": "Session/Division Defined",
+    "Self-Study": "Self Study"
+}
+df.rename(columns=rename_map, inplace=True)
 df_prereq = pd.read_excel(PREREQ_PATH)
+df_core = pd.read_csv(CORE_COURSES_PATH)
+df_core_sem = df_core[df_core['Sem'] == SEMESTER].copy()
 
-# Build quick lookup: course_code -> slot & instructor
-course_meta = {}
+# Build slot-number lookup from running courses: course_code -> set of slot numbers
+# (a course may appear in multiple divisions with different slots)
+def extract_slot_num(slot_str):
+    """Returns the slot number (e.g. '4', '11', 'L') from a raw Slot cell."""
+    if pd.isna(slot_str) or not str(slot_str).strip():
+        return None
+    first = str(slot_str).strip().split('\n')[0].strip()
+    return first if first else None
 
+running_slot_map = {}
+for _, _row in df.iterrows():
+    _code = str(_row['Course Code']).strip()
+    _sn   = extract_slot_num(_row['Slot'])
+    if _sn:
+        running_slot_map.setdefault(_code, set()).add(_sn)
+
+# course_meta : one default entry per code (first non-minor row)
+# course_divisions : all rows per code (for the division dropdown)
+from collections import defaultdict
+
+_raw = defaultdict(list)
 for _, row in df.iterrows():
-    code = row["Course Code"]
+    code = str(row['Course Code']).strip()
+    div  = str(row.get('Division', '')).strip()
+    _raw[code].append({
+        "slot":        str(row.get('Slot',        'N/A')),
+        "slot_num":    extract_slot_num(row.get('Slot', '')),
+        "instructor":  str(row.get('Instructor',  'N/A')).strip(),
+        "description": str(row.get('Description', '')),
+        "division":    div,
+        "is_minor":    (div == 'M'),
+        "label":       ("Minor"   if div == 'M'
+                        else "Regular" if not div
+                        else div.strip()),
+    })
+
+course_meta      = {}
+course_divisions = {}
+
+for code, rows in _raw.items():
+    course_divisions[code] = rows
+    default = next((r for r in rows if not r['is_minor']), rows[0])
     course_meta[code] = {
-        "slot": row.get("Slot", "N/A"),
-        "instructor": row.get("Instructor", "N/A")
+        "slot":        default['slot'],
+        "instructor":  default['instructor'],
+        "description": default['description'],
+    }
+
+# M-Tag course codes (no spaces) — for equiv filtering
+m_tag_set = {
+    str(row['Course Code']).strip().replace(' ', '')
+    for _, row in df.iterrows()
+    if str(row.get('Division', '')).strip() == 'M'
+}
+
+# Equivalent courses map: code → {regular: [...], minor: [...]}
+_peq = re.compile(r'[A-Z]{2,3}\d{3,4}')
+equiv_map = {}
+for _, erow in df_prereq[df_prereq['Type'] == 'equivalent'].iterrows():
+    code  = str(erow['CourseCode']).strip().replace(' ', '')
+    raw   = re.sub(r'\s+(\d)', r'\1', str(erow['Courses'])).upper()
+    codes = _peq.findall(raw)
+    equiv_map[code] = {
+        'regular': [c for c in codes if c not in m_tag_set],
+        'minor':   [c for c in codes if c in m_tag_set],
     }
 
 import re
@@ -43,13 +114,14 @@ for _, row in data_cleaned.iterrows():
         data_dict[student_id] = list(set(normalized))
 
 
-
 ''' this is to convert restriction from string to numpy array with transpose so that we can process it easily '''
 df_restrictions = df['Restriction']
 restrictions_modified = []
 
 for i in df_restrictions:
-    if isinstance(i, str):
+    if pd.isna(i):
+        i_array_np_T = 'No restrictions'
+    elif isinstance(i, str):
         if i == 'No restrictions':
             i_array_np_T = i
         else:
@@ -69,7 +141,6 @@ for i in df_restrictions:
 df['Restriction'] = restrictions_modified
 
 data_modified=df.copy()
-
 def check_restriction(Degree,year,department,course_code, data=data_modified):
     year=str(year)
     # Check if course_code exists in the data
@@ -79,68 +150,140 @@ def check_restriction(Degree,year,department,course_code, data=data_modified):
     # Fetch restriction value
     restrictions = data.loc[data['Course Code'] == course_code, 'Restriction'].values[0]
 
-    # If no restriction (a string 'No restrictions')
-    if isinstance(restrictions, str):
-        if restrictions.lower() == 'no restrictions':
-            return 'Valid'
-        else:
-            # You might parse restriction string here if needed
-            return 'Restricted'
+    # If no restriction (a string 'No restrictions' or NaN)
+    if (restrictions is None) or (isinstance(restrictions, float) and pd.isna(restrictions)) or (isinstance(restrictions, str) and restrictions.lower() == 'no restrictions'):
+        return 'Valid'
+    elif isinstance(restrictions, str):
+        return 'Restricted'
     else:
         # Handle degree-based restrictions
         if Degree in ['B.Tech.', 'M.Tech.', 'Ph.D.', 'M.Sc.', 'Dual Degree (B.Tech. + M.Tech.)', 'B.S.', 'B.Des.']:
 
-            '''restrictions array have format every element contain first year then dept,then degree, then tell allowed or deny'''
+            allowed_groups = []
+            for j in restrictions:
+                if j[3] == 'Allowed':
+                    parts = []
+                    if j[2] != 'ALL': parts.append(j[2])
+                    if j[1] != 'ALL': parts.append(j[1])
+                    if j[0] != 'ALL': parts.append(f"{j[0]}")
+                    allowed_groups.append(', '.join(parts) if parts else 'specific students')
+            if allowed_groups:
+                restricted_msg = f"Open only to {' / '.join(allowed_groups)}"
+            else:
+               restricted_msg = 'Restricted'
 
+            # Check if there are any 'Allowed' rules at all in the restrictions list
+            has_allowed_rule = any(rule[3] == 'Allowed' for rule in restrictions)
+
+            # Checks the restrictions fully to see if restricted
+            is_explicitly_denied = False
+            is_matched_allowed = False
             for i in restrictions:
               if i[0]==year or i[0]=='ALL':
                 if i[1]==department or i[1]=='ALL':
                   if i[2]==Degree or i[2]=='ALL':
-                    if i[3]=='Allowed':
-                      return 'Valid'
+                    if i[3]=='Deny':
+                      is_explicitly_denied = True
+                    elif i[3]=='Allowed':
+                      is_matched_allowed = True
+
+            # Year-Ignored check: see if branch & degree match but year is restricted
+            branch_allowed = False
+            for i in restrictions:
+              if i[1] == department or i[1] == 'ALL':
+                if i[2] == Degree or i[2] == 'ALL':
+                  if i[3] == 'Allowed':
+                    branch_allowed = True
+                    break
+
+            if is_explicitly_denied:
+                if branch_allowed:
+                    return 'Restricted by year'
+                else:
+                    return restricted_msg
+            else:
+                if has_allowed_rule:
+                    if is_matched_allowed:
+                        return 'Valid'
                     else:
-                      return 'Restricted'
+                        if branch_allowed:
+                            return 'Restricted by year'
+                        else:
+                            return restricted_msg
+                else:
+                    return 'Valid'
         else:
             return 'Invalid Degree'
-    return 'Restricted'
+
+    return restricted_msg
 
 #check prerequsite
 def check_prereq(course_code,course_hist,data=df_prereq):
     # Check if course_code exists in the data
     #course_hist is course history of student
-    if course_code not in data['CourseCode'].values:
-        return 'Not in available data'
-
-    # Fetch prerequsite course code
-    prereq = data.loc[data['CourseCode'] == course_code, 'Courses'].values[0]
-    pattern = r'(?:[A-Z]{2} \d{3}|[A-Z]{3}\d{3}|[A-Z]{2}\d{4})'
-    # no prereq
-    if pd.isna(prereq):
+    if course_code not in data['CourseCode'].values: # No prereq
         return 'Valid'
+
+    # Fetch prerequsite course code and instructor approval status
+    prereq = data.loc[data['CourseCode'] == course_code, 'Courses'].values[0]
+    approval = data.loc[data['CourseCode'] == course_code, 'InstructorConsent'].values[0]
+    type_    = data.loc[data['CourseCode'] == course_code, 'Type'].values[0]
+    
+    if isinstance(prereq, str):
+        prereq = re.sub(r'\s+(\d)', r'\1', prereq).upper()
+
+    pattern = r'(?:[A-Z]{2,3}\d{3,4})'
+
+    # Equivalent courses — inverted logic
+    if type_ == 'equivalent':
+        equiv_codes = re.findall(pattern, str(prereq).upper())
+        for eq in equiv_codes:
+            if eq in course_hist:
+                return f'Equivalent course already completed: {eq}.'
+        return 'Valid'
+    
+    #Blank cells => Instructor approval required
+    if pd.isna(prereq):
+        return 'Instructor approval required'
     # if single prereq
-    elif re.match(pattern, prereq) and (len(prereq)==6 or len(prereq)==7):
+    elif re.match(pattern, prereq) and (len(prereq) in [5, 6, 7]):
         if prereq in course_hist:
-          return 'Valid'
+          if approval == 'Required':
+            return 'Instructor approval required'
+          elif approval == 'Conditional':
+            return 'Instructor approval is conditional'
+          else:
+            return 'Valid'
         else:
-          return 'Prerequisite not met'
-    # some boolen expression (i.e. AND , OR)
+          return f'Prerequisite not met. You need to complete {prereq}.'
+    # some boolean expression (i.e. AND , OR)
     else:
       pre_course = re.findall(pattern, prereq)
-      pattern_2 = r'(?:[A-Z]{2} \d{3}|[A-Z]{3}\d{3}|[A-Z]{2}\d{4})|OR|AND|\(|\)'
+      pattern_2 = r'(?:[A-Z]{2,3}\d{3,4})|OR|AND|\(|\)'
       l = re.findall(pattern_2,prereq)
       #if prereq contain only OR
       if 'OR' in l and "AND" not in l:
         for i in pre_course:
           if i in course_hist:
-            return 'Valid'
-        return 'Prerequisite not met'
+            if approval == 'Required':
+                return 'Instructor approval required'
+            elif approval == 'Conditional':
+                return 'Instructor approval is conditional'
+            else:
+                return 'Valid'
+        return f'Prerequisite not met. You need to complete {prereq}.'
 
       # if prereq only contain AND
       elif 'OR' not in l and 'AND' in l:
         for i in pre_course:
           if i not in course_hist:
-            return 'Prerequisite not met'
-        return 'Valid'
+            return f'Prerequisite not met. You need to complete {prereq}.'
+        if approval == 'Required':
+          return 'Instructor approval required'
+        elif approval == 'Conditional':
+          return 'Instructor approval is conditional'
+        else:
+          return 'Valid'
 
       elif "OR" in l and 'AND' in l:
         open_close_idx = [(x,i) for i, x in enumerate(l) if x == '(' or x == ')']
@@ -159,7 +302,7 @@ def check_prereq(course_code,course_hist,data=df_prereq):
         res_ = l[p_idx[-1][1]+1:]
 
         if len(res_) == 2:
-         if re.match(pattern, res_[-1]) and len(res_[-1]) in [6,7]:
+         if re.match(pattern, res_[-1]) and len(res_[-1]) in [5, 6, 7]:
             res_val = res_[-1] in course_hist
 
         list_=[]
@@ -168,21 +311,21 @@ def check_prereq(course_code,course_hist,data=df_prereq):
           prereq_i_list = l[i[0]+1:i[1]]
           prereq_i = ' '.join(prereq_i_list)
           pre_course_i = re.findall(pattern, prereq_i)
-          pattern_2 = r'(?:[A-Z]{2} \d{3}|[A-Z]{3}\d{3}|[A-Z]{2}\d{4})|OR|AND|\(|\)'
+          pattern_2 = r'(?:[A-Z]{2,3}\d{3,4})|OR|AND|\(|\)'
           l_i = re.findall(pattern_2,prereq_i)
 
-          if re.match(pattern, prereq_i) and (len(prereq_i)==6 or len(prereq_i)==7):
+          if re.match(pattern, prereq_i) and (len(prereq_i) in [5, 6, 7]):
              if prereq_i in course_hist:
                valid=True
           else:
             if 'OR' in l_i and "AND" not in l_i:
-             for i in pre_course_i:
-               if i in course_hist:
+             for item in pre_course_i:
+               if item in course_hist:
                   valid=True
 
             elif 'OR' not in l_i and 'AND' in l_i:
-             for i in pre_course_i:
-               if i not in course_hist:
+             for item in pre_course_i:
+               if item not in course_hist:
                    break
              else:
               valid=True
@@ -206,12 +349,104 @@ def check_prereq(course_code,course_hist,data=df_prereq):
         r = t[0]
         for i in range(1, len(t), 2):
           r = r and t[i+1] if t[i] == 'AND' else r or t[i+1]
-          if r:
-            return 'Valid'
-
-      return 'Prerequisite not met'
+        if r:
+          if approval == 'Required':
+              return 'Instructor approval required'
+          elif approval == 'Conditional':
+              return 'Instructor approval is conditional'
+          else:
+              return 'Valid'
+      return f'Prerequisite not met. You need to complete {prereq}.'
     
+def check_clash(course_code, core_slot_to_courses):
+    slot_num = extract_slot_num(course_meta.get(course_code, {}).get("slot", ""))
+    if not slot_num or slot_num in ("N/A", "L", "X"):
+        return []
+    return core_slot_to_courses.get(slot_num, [])
+    
+def norm_code(x):
+    return str(x).replace(" ", "").upper().strip()
 
+import json
+
+def get_llm_recommendations(interest, department, degree, course_history, eligible_list, iar_list, rejected_list, tsc_list=None, x=15):
+    """
+    Asks the LLM to select the top X best courses from all classified lists combined.
+    Returns a list of course codes selected by the LLM.
+    """
+    candidates = []
+    for c in eligible_list:
+        candidates.append({
+            'code': c['code'], 
+            'name': c['name'], 
+            'description': c.get('description', ''),
+            'status': 'Eligible'
+        })
+    for c in iar_list:
+        candidates.append({
+            'code': c['code'], 
+            'name': c['name'], 
+            'description': c.get('description', ''),
+            'status': 'Instructor approval required'
+        })
+    if tsc_list:
+        for c in tsc_list:
+            candidates.append({
+                'code': c['code'],
+                'name': c['name'],
+                'description': c.get('description', ''),
+                'status': 'Time slot clash'
+            })
+    for c in rejected_list:
+        candidates.append({
+            'code': c['code'], 
+            'name': c['name'], 
+            'description': c.get('description', ''),
+            'status': c.get('reason', 'Prerequisite not met')
+        })
+
+    # We always query the LLM to filter out irrelevant results (even if pool size <= x)
+
+    prompt = f"""
+    You are an academic advisor. A student has the following profile:
+    - Degree: {degree}
+    - Department: {department}
+    - Past completed courses: {', '.join(course_history) if course_history else 'None'}
+    - Research interests & skills: "{interest}"
+
+    Here is a list of candidate courses:
+    {json.dumps(candidates, indent=2)}
+
+    Task:
+    Select the top {x} best matching courses from this list that are TRULY relevant to the student's research interests ("{interest}").
+    
+    CRITICAL RULES:
+    1. Read the course "description" carefully to evaluate the actual subject matter. Do not just rely on the course name.
+    2. Avoid choosing generic academic placeholder courses like "Seminar", "Mini Project", "Supervised Learning", "Supervised Learning Project", "Study", or "Practice Lab" unless their description explicitly shows they teach actual academic subject-matter content directly matching the student's interest. Note that "Supervised Learning" in this catalog refers to a research project under a supervisor, NOT the Machine Learning concept, unless the description states otherwise.
+    3. Choose courses where the actual description matches the technical subject matter of the interest prompt (e.g. for "ML", they should be about Machine Learning, AI, Neural Networks, Data Science, or related algorithms).
+    4. Only include courses that have a clear, direct connection to the student's interest. If there are fewer than {x} such courses, return only the ones that are relevant. Do NOT include irrelevant courses just to fill up the list to {x}.
+    
+    Return the output STRICTLY as a JSON list of course codes. Do not include any other text or markdown formatting.
+    
+    Format:
+    [
+      "CS 101",
+      "ME 228"
+    ]
+    """
+    
+    try:
+        model = genai.GenerativeModel("models/gemini-3-flash-preview")
+        response = model.generate_content(prompt)
+        
+        cleaned_text = response.text.strip().strip("```json").strip("```").strip()
+        selected_codes = json.loads(cleaned_text)
+        
+        return [code.replace(" ", "").upper() for code in selected_codes]
+        
+    except Exception as e:
+        print(f"LLM API Error: {e}")
+        return [c['code'].replace(" ", "").upper() for c in candidates]
 
 def recommender(student_id, Degree, year, department, desired_courses, manual_course_history=None):
     """
@@ -237,71 +472,197 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
         course_hist = manual_course_history
         history_source = "manual"
 
+    # Build slot-number → core course name map for this student
+    core_mask = (
+        (df_core_sem['Branch']  == department) &
+        (df_core_sem['Degree']  == Degree)
+    )
+    dept_core = df_core_sem[core_mask]
+
+    course_hist_norm = {norm_code(c) for c in course_hist}
+    core_slot_to_courses = {}
+    for _, crow in dept_core.iterrows():
+        code_norm = norm_code(crow['Course Code'])
+        code_orig = str(crow['Course Code']).strip()
+        if code_norm in course_hist_norm:
+            continue
+        for sn in running_slot_map.get(code_orig, set()):
+            core_slot_to_courses.setdefault(sn, []).append(code_orig)
+
     eligible_courses = []
     rejected_courses = []
+    i_a_r_courses = []
+    t_s_c_courses = []
 
     # 2. Loop over model-recommended courses
+    seen_codes = set()
     for course in desired_courses:
         course_code = course["code"]
+        if course_code in seen_codes:
+            continue
+        seen_codes.add(course_code)
+        
+        # some course names are NaN for some reason, this deals with that 
+        course_name = course.get("name")
+        if not isinstance(course_name, str) or pd.isna(course_name):
+            course_name = ""
+
+        # ignores any courses with the below words (for future DAV members, remove this and see what semantic search gives to know why its there)
+        blacklist = ["SEMINAR", "MINI PROJECT", "SUPERVISED"]
+        if any(term in course_name.upper() for term in blacklist):
+            continue
+
+        # Pre-compute division metadata once per course
+        divs       = course_divisions.get(course_code, [])
+        has_minor  = any(d['is_minor'] for d in divs)
+        minor_only = all(d['is_minor'] for d in divs) and bool(divs)
+
         # 3. Check restriction
+        if norm_code(course_code) in course_hist_norm:
+            continue
         r_status = check_restriction(
             Degree=Degree,
             year=year,
             department=department,
             course_code=course_code
         )
-
+        
         if r_status != 'Valid':
-            meta = course_meta.get(course_code, {})
-
-            rejected_courses.append({
-    "code": course_code,
-    "name": course["name"],
-    "slot": meta.get("slot", "N/A"),
-    "instructor": meta.get("instructor", "N/A"),
-    "reason": r_status
-})
-
+            if r_status == 'Restricted by year':
+                meta = course_meta.get(course_code, {})
+                rejected_courses.append({
+                    "code": course_code,
+                    "name": course_name,
+                    "divisions":  divs,
+                    "has_minor":  has_minor,
+                    "minor_only": minor_only,
+                    "slot": meta.get("slot", "N/A"),
+                    "instructor": meta.get("instructor", "N/A"),
+                    "description": meta.get("description", ""),
+                    "equiv": equiv_map.get(course_code.replace(' ', ''), {'regular': [], 'minor': []}),
+                    "score": course.get("score", 0),
+                    "reason": "Restricted by batch year."
+                })
             continue
 
-        # 4. Check prerequisite
+        # D) Check prerequisite
+        meta = course_meta.get(course_code, {})
         p_status = check_prereq(
             course_code=course_code,
             course_hist=course_hist
         )
 
         if p_status != 'Valid':
-            meta = course_meta.get(course_code, {})
+            if p_status == 'Instructor approval required':
+               i_a_r_courses.append({
+                  "code": course_code,
+                  "name": course_name,
+                  "divisions":  divs,
+                  "has_minor":  has_minor,
+                  "minor_only": minor_only,
+                  "slot": meta.get("slot", "N/A"),
+                  "instructor": meta.get("instructor", "N/A"),
+                  "description": meta.get("description", ""),
+                  "equiv": equiv_map.get(course_code.replace(' ', ''), {'regular': [], 'minor': []}),
+                  "score": course.get("score", 0)
+               })
 
-            rejected_courses.append({
-    "code": course_code,
-    "name": course["name"],
-    "slot": meta.get("slot", "N/A"),
-    "instructor": meta.get("instructor", "N/A"),
-    "reason": p_status
-})
+            elif p_status == 'Instructor approval is conditional':
+               i_a_r_courses.append({
+                  "code": course_code,
+                  "name": course_name,
+                  "divisions":  divs,
+                  "has_minor":  has_minor,
+                  "minor_only": minor_only,
+                  "slot": meta.get("slot", "N/A"),
+                  "instructor": meta.get("instructor", "N/A"),
+                  "description": meta.get("description", ""),
+                  "equiv": equiv_map.get(course_code.replace(' ', ''), {'regular': [], 'minor': []}),
+                  "score": course.get("score", 0),
+                  "reason": p_status + '. Contact them for more info.'
+               })
 
+            else:
+                rejected_courses.append({
+                    "code": course_code,
+                    "name": course_name,
+                    "divisions":  divs,
+                    "has_minor":  has_minor,
+                    "minor_only": minor_only,
+                    "slot": meta.get("slot", "N/A"),
+                    "instructor": meta.get("instructor", "N/A"),
+                    "description": meta.get("description", ""),
+                    "equiv": equiv_map.get(course_code.replace(' ', ''), {'regular': [], 'minor': []}),
+                    "score": course.get("score", 0),
+                    "reason": p_status
+                })
             continue
 
 
-        # 5. Passed all checks
+        # 5. Check slot clash , per division, if applicable
+        meta = course_meta.get(course_code, {})
+        divs_with_clash = [{
+            **d,
+            'clashes_with': (
+                core_slot_to_courses.get(d.get('slot_num'), [])
+                if d.get('slot_num') and d.get('slot_num') not in ('N/A', 'L', 'X')
+                else []
+            )
+        } for d in divs]
+
+        non_m = [d for d in divs_with_clash if not d['is_minor']] or divs_with_clash
+        all_clash   = all(bool(d['clashes_with']) for d in non_m)
+        default_div = next((d for d in non_m if not d['clashes_with']), non_m[0])
+        default_idx = next(i for i, d in enumerate(divs_with_clash) if d is default_div)
+
+        entry ={
+                "code":          course_code,
+                "name":          course_name,
+                "divisions":  divs_with_clash,
+                "has_minor":  has_minor,
+                "minor_only": minor_only,
+                "slot":          meta.get("slot",        "N/A"),
+                "instructor":    meta.get("instructor",  "N/A"),
+                "description":   meta.get("description", ""),
+                "default_idx": default_idx,
+                "equiv": equiv_map.get(course_code.replace(' ', ''), {'regular': [], 'minor': []}),
+                "score": course.get("score", 0)
+            }
+        
+        if all_clash:
+            t_s_c_courses.append({
+                **entry,
+                "clashing_with": default_div['clashes_with'],
+            })
+            continue
+        
+        # 6. Passed all checks
         meta = course_meta.get(course_code, {})
 
         eligible_courses.append({
-    "code": course_code,
-    "name": course["name"],
-    "slot": meta.get("slot", "N/A"),
-    "instructor": meta.get("instructor", "N/A")
-})
+            "code": course_code,
+            "name": course_name,
+            "divisions":  divs_with_clash,
+            "has_minor":  has_minor,
+            "minor_only": minor_only,
+            "slot": meta.get("slot", "N/A"),
+            "instructor": meta.get("instructor", "N/A"),
+            "description": meta.get("description", ""),
+            "default_idx": default_idx,
+            "equiv": equiv_map.get(course_code.replace(' ', ''), {'regular': [], 'minor': []}),
+            "score": course.get("score", 0)
+        })
 
         
 
     return {
-    "course_history": course_hist,
-    "history_source": history_source,
-    "eligible": eligible_courses,
-    "rejected": rejected_courses
-}
+        "course_history": course_hist,
+        "history_source": history_source,
+        "eligible": eligible_courses,
+        "i_a_r": i_a_r_courses,
+        "t_s_c": t_s_c_courses,
+        "rejected": rejected_courses
+    }
 
 
 '''list_= recommender('24b0350','B.tech','2024','Chemical Engineering',['CS 213','SI 505','SI 427','CL 603','CL 688','SI 402'])

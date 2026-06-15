@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Course Recommender — DAV Team · UGAC</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Karla:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@500&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+ 
+<!-- ═══════════════════════════════════════════════ NAVBAR ═══ -->
+<nav class="navbar">
+  <div class="nav-left">
+    <img id="dav-icon" class="nav-logo" src="" alt="DAV">
+    <span class="nav-title">Data Analytics and Visualization Team</span>
+  </div>
+  <div class="nav-right">
+    <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">☀️</button>
+    <img id="ugac-icon" class="nav-ugac" src="https://dav-course-recommender-iitb.netlify.app/Images/ugac_logo.svg" alt="UGAC">
+  </div>
+</nav>
+ 
+<!-- ═══════════════════════════════════════════════ CONTENT ══ -->
+<main class="content">
+ 
+  <!-- HERO -->
+  <div class="hero">
+    <h1 class="hero-title">COURSE RECOMMENDER</h1>
+    <p class="hero-sub">Enter your profile to get personalised course recommendations</p>
+  </div>
+ 
+  <!-- ─────────────────── MAIN FORM ─────────────────── -->
+  {% if not need_manual_history %}
+  <div class="card fade-up">
+    <div class="card-head">
+      <span class="sec-label">Student Profile</span>
+    </div>
+    <div class="divider-dash"></div>
+ 
+    <form method="POST" id="profile-form">
+      <div class="form-grid">
+ 
+        <!-- Student ID -->
+        <div class="field">
+          <input type="text" name="student_id" id="student_id"
+                 placeholder=" " autocomplete="off"
+                 value="{{ request.form.get('student_id', '') }}">
+          <label for="student_id">Student ID</label>
+          <span class="field-icon">👤</span>
+        </div>
+ 
+        <!-- Degree -->
+        <div class="field">
+          <select name="degree" id="degree">
+            <option value="">—</option>
+            {% for d in ['B.Tech.','M.Tech.','Ph.D.','M.Sc.','Dual Degree (B.Tech. + M.Tech.)','B.S.','B.Des.'] %}
+            <option value="{{ d }}" {{ 'selected' if request.form.get('degree') == d else '' }}>{{ d }}</option>
+            {% endfor %}
+          </select>
+          <label for="degree">Degree</label>
+        </div>
+ 
+        <!-- Year -->
+        <div class="field">
+          <select name="year" id="year">
+            <option value="">—</option>
+            {% for y in range(2026, 2015, -1) %}
+            <option value="{{ y }}" {{ 'selected' if request.form.get('year') == y|string else '' }}>{{ y }}</option>
+            {% endfor %}
+          </select>
+          <label for="year">Batch Year</label>
+        </div>
+ 
+        <!-- Department -->
+        <div class="field">
+          {% set depts = [
+            'Aerospace Engineering','Biosciences and Bioengineering',
+            'Chemical Engineering','Chemistry','Civil Engineering',
+            'Computer Science and Engineering','Earth Sciences','Economics',
+            'Electrical Engineering','Energy Science and Engineering',
+            'Environmental Science and Engineering','Humanities & Social Science',
+            'Industrial Engineering & Operations Research','Mathematics',
+            'Mechanical Engineering','Metallurgical Engineering & Materials Science',
+            'Physics'
+          ] %}
+          <select name="department" id="department">
+            <option value="">—</option>
+            {% for dept in depts %}
+            <option value="{{ dept }}" {{ 'selected' if request.form.get('department') == dept else '' }}>{{ dept }}</option>
+            {% endfor %}
+          </select>
+          <label for="department">Department</label>
+        </div>
+ 
+      </div><!-- /form-grid -->
+ 
+      <!-- Research Interests -->
+      <div class="field field-full">
+        <textarea name="interest" id="interest" placeholder=" " rows="3">{{ request.form.get('interest', '') }}</textarea>
+        <label for="interest">Research Interests &amp; Skills</label>
+      </div>
+ 
+      <!-- Submit -->
+      <button type="submit" class="btn-primary" id="submit-btn">
+        <span class="btn-label">Generate Recommendations &rarr;</span>
+        <span class="btn-loading" hidden>Checking eligibility&hellip;</span>
+      </button>
+    </form>
+  </div>
+  {% endif %}
+ 
+  <!-- ─────────────── MANUAL HISTORY CARD ──────────────── -->
+  {% if need_manual_history %}
+  <div class="card fade-up">
+    <div class="manual-alert">
+      <div class="manual-alert-inner">
+        <span class="manual-warn-icon">⚠</span>
+        <div>
+          <div class="sec-label">Student ID Not Found</div>
+          <p class="manual-alert-text">Enter your completed course codes below, separated by commas.</p>
+        </div>
+      </div>
+    </div>
+    <form method="POST">
+      <input type="hidden" name="student_id" value="{{ request.form.get('student_id','') }}">
+      <input type="hidden" name="degree"     value="{{ request.form.get('degree','') }}">
+      <input type="hidden" name="year"       value="{{ request.form.get('year','') }}">
+      <input type="hidden" name="department" value="{{ request.form.get('department','') }}">
+      <input type="hidden" name="interest"   value="{{ request.form.get('interest','') }}">
+ 
+      <div class="field field-full" style="margin-top:20px">
+        <textarea name="manual_history" id="manual_history" placeholder=" " rows="3"></textarea>
+        <label for="manual_history">Completed Course Codes</label>
+      </div>
+ 
+      <div class="chip-example">
+        <span class="chip-ex-label">Example format:</span>
+        <span class="chip chip-primary">MA105</span>
+        <span class="chip chip-primary">CS101</span>
+        <span class="chip chip-primary">PH107</span>
+      </div>
+ 
+      <button type="submit" class="btn-primary" style="margin-top:18px">Continue &rarr;</button>
+    </form>
+  </div>
+  {% endif %}
+ 
+  <!-- ─────────────── ACADEMIC HISTORY ──────────────── -->
+  {% if course_history is not none %}
+  <div class="card fade-up">
+    <div class="card-head">
+      <span class="sec-label">Academic History</span>
+      <span class="badge badge-accent">{{ course_history | length }} courses</span>
+    </div>
+    <div class="divider-dash"></div>
+    <div class="chip-row">
+      {% if course_history %}
+        {% for c in course_history %}
+        <span class="chip chip-primary">{{ c }}</span>
+        {% endfor %}
+      {% else %}
+        <span class="text-muted-italic">No prior course history on record.</span>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="filter-container" style="padding: 16px; margin-bottom: 20px; background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border-color);">
+    <div style="font-weight: 600; margin-bottom: 12px; color: inherit;">Recommendation Strategy:</div>
+    
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 14px;">
+            <input 
+                type="radio" 
+                name="weight_preset" 
+                value="semantic" 
+                style="cursor: pointer; transform: scale(1.1);"
+                onchange="syncAndSubmit()" 
+                {{ 'checked' if (w_ps == 0.0 or w_ps == 0) }}
+            >
+            <span><strong>More Interest-Based</strong> (100% Semantic Content Matching)</span>
+        </label>
+        
+        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 14px;">
+            <input 
+                type="radio" 
+                name="weight_preset" 
+                value="hybrid" 
+                style="cursor: pointer; transform: scale(1.1);"
+                onchange="syncAndSubmit()" 
+                {{ 'checked' if (w_ps == 0.5 or w_ps is none) }}
+            >
+            <span><strong>50-50 Balanced Split</strong> (Mix of Interests & Peer Trends)</span>
+        </label>
+        
+        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 14px;">
+            <input 
+                type="radio" 
+                name="weight_preset" 
+                value="people" 
+                style="cursor: pointer; transform: scale(1.1);"
+                onchange="syncAndSubmit()" 
+                {{ 'checked' if (w_ps == 1.0 or w_ps == 1) }}
+            >
+            <span><strong>More Safer Route</strong> (100% Peer History Alignment)</span>
+        </label>
+    </div>
+
+    <input type="hidden" name="w_rrf" id="hidden-w-rrf" value="{{ w_rrf if w_rrf is not none else 0.5 }}">
+    <input type="hidden" name="w_ps" id="hidden-w-ps" value="{{ w_ps if w_ps is not none else 0.5 }}">
+</div>
+
+<script>
+// Helper engine to convert option strings to the raw weights required by rules.py
+function getSelectedWeights() {
+    const selectedPreset = document.querySelector('input[name="weight_preset"]:checked').value;
+    let w_rrf = 0.5;
+    let w_ps = 0.5;
+
+    if (selectedPreset === "semantic") {
+        w_rrf = 1.0;
+        w_ps = 0.0;
+    } else if (selectedPreset === "hybrid") {
+        w_rrf = 0.5;
+        w_ps = 0.5;
+    } else if (selectedPreset === "people") {
+        w_rrf = 0.0;
+        w_ps = 1.0;
+    }
+    return { w_rrf, w_ps };
+}
+
+function syncAndSubmit() {
+    // Find whichever form is currently active on screen
+    let activeForm = document.getElementById('profile-form') || document.querySelector('form');
+    if (!activeForm) return;
+
+    const weights = getSelectedWeights();
+
+    // Dynamically update default component level fallbacks
+    document.getElementById('hidden-w-rrf').value = weights.w_rrf;
+    document.getElementById('hidden-w-ps').value = weights.w_ps;
+
+    // Clean out old parameter injections lingering within the active DOM boundary
+    ['w_rrf', 'w_ps'].forEach(name => {
+        let oldInput = activeForm.querySelector(`input[name="${name}"]`);
+        if (oldInput) oldInput.remove();
+    });
+
+    // Inject fresh inputs for execution
+    const inputRrf = document.createElement('input');
+    inputRrf.type = 'hidden';
+    inputRrf.name = 'w_rrf';
+    inputRrf.value = weights.w_rrf;
+    activeForm.appendChild(inputRrf);
+
+    const inputPs = document.createElement('input');
+    inputPs.type = 'hidden';
+    inputPs.name = 'w_ps';
+    inputPs.value = weights.w_ps;
+    activeForm.appendChild(inputPs);
+
+    // Auto-submit immediately if a search grid layout is active
+    if (document.querySelector('.results-grid')) {
+        activeForm.submit();
+    }
+}
+
+// Ensure normal submission events inherit data correctly from selection state
+document.addEventListener('DOMContentLoaded', function() {
+    const mainForm = document.getElementById('profile-form');
+    if (mainForm) {
+        mainForm.addEventListener('submit', function() {
+            const weights = getSelectedWeights();
+            
+            if (!mainForm.querySelector('input[name="w_rrf"]')) {
+                const inputRrf = document.createElement('input');
+                inputRrf.type = 'hidden';
+                inputRrf.name = 'w_rrf';
+                inputRrf.value = weights.w_rrf;
+                mainForm.appendChild(inputRrf);
+                
+                const inputPs = document.createElement('input');
+                inputPs.type = 'hidden';
+                inputPs.name = 'w_ps';
+                inputPs.value = weights.w_ps;
+                mainForm.appendChild(inputPs);
+            }
+        });
+    }
+});
+</script>
+
+  <!-- ─────────────── RESULTS GRID ──────────────── -->
+   {% if query_fallback %}
+    <div class="fallback-alert" style="padding: 14px 18px; margin-bottom: 24px; background-color: rgba(255, 193, 7, 0.15); border-left: 4px solid #ffc107; border-radius: 4px; color: inherit;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span>💡</span>
+            <strong>Smart Optimization Notice:</strong> 
+        </div>
+        <p style="margin: 6px 0 0 26px; font-size: 14px; opacity: 0.9;">
+            Since no specific interest keywords or course descriptions were entered, we automatically shifted your strategy to <strong>100% Safer Route (Peer History)</strong> to give you the most accurate trending courses among your peers.
+        </p>
+    </div>
+    {% endif %}
+  {% if eligible is not none %}
+  <div class="results-grid">
+ 
+    <!-- ✅ Eligible -->
+    <div class="result-card card-ok fade-up">
+      <div class="result-head">
+        <span class="result-title result-ok">Eligible Courses</span>
+        <span class="badge badge-ok">{{ eligible | length }} Found</span>
+      </div>
+      <div class="result-divider divider-ok"></div>
+ 
+      {% if eligible %}
+        {% for c in eligible %}
+        <div class="entry entry-ok{{ ' entry-last' if loop.last else '' }}" onclick="toggleEntry(this)">
+          <div class="entry-top">
+            <span class="code-chip code-ok">{{ c.code }}</span>
+            <span class="entry-chevron">&#9662;</span>
+          </div>
+          <div class="entry-name">{{ c.name }}</div>
+          <div class="entry-meta">
+            Slot&nbsp;&middot;&nbsp;<span class="mono">{{ c.slot }}</span><br>
+            Instructor&nbsp;&middot;&nbsp;{{ c.instructor }}
+            <div class="score-badge-row">
+              <span class="score-badge score-semantic"> Semantic Score: {{ ((c.raw_rrf or 0.0) * 100) | round(1) }}%</span>
+              <span class="score-badge score-people"> People Score: {{ ((c.raw_ps or 0.0) * 100) | round(1) }}%</span>
+              <span class ="score-badge score-final"> Final Score: {{ ((c.final_score or 0.0) * 100) | round(1) }}%</span>
+            </div>
+          </div>
+          {% if c.description %}
+          <div class="entry-desc-wrap">
+            <div class="entry-desc-divider"></div>
+            <div class="entry-desc-label">Description</div>
+            <p class="entry-desc-text">{{ c.description }}</p>
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty-result">
+          <div class="empty-icon">🎓</div>
+          <div class="empty-title">No eligible courses found.</div>
+          <div class="empty-sub">Try different interests or review your course history.</div>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- ⚠️ Instructor Consent Required -->
+    <div class="result-card card-consent fade-up-d1">
+      <div class="result-head">
+        <span class="result-title result-consent">Instructor Consent Required</span>
+        <span class="badge badge-consent">{{ i_a_r | length }} Courses</span>
+      </div>
+      <div class="result-divider divider-consent"></div>
+
+      {% if i_a_r %}
+        {% for c in i_a_r %}
+        <div class="entry entry-consent{{ ' entry-last' if loop.last else '' }}" onclick="toggleEntry(this)">
+          <div class="entry-top">
+            <span class="code-chip code-consent">{{ c.code }}</span>
+            <span class="entry-chevron">&#9662;</span>
+          </div>
+          <div class="entry-name">{{ c.name }}</div>
+          <div class="entry-meta">
+            Slot&nbsp;&middot;&nbsp;<span class="mono">{{ c.slot }}</span><br>
+            Instructor&nbsp;&middot;&nbsp;{{ c.instructor }}
+            {% if c.reason %}
+                <div class="entry-reason">&#9888; {{ c.reason }}</div>
+            {% endif %}
+          </div>
+          {% if c.description %}
+          <div class="entry-desc-wrap">
+            <div class="entry-desc-divider"></div>
+            <div class="entry-desc-label">Description</div>
+            <p class="entry-desc-text">{{ c.description }}</p>
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty-result">
+          <div class="empty-icon">✉</div>
+          <div class="empty-title">No courses require consent.</div>
+        </div>
+      {% endif %}
+    </div>
+ 
+    <!-- ❌ Not Eligible -->
+    <div class="result-card card-no fade-up-d2">
+      <div class="result-head">
+        <span class="result-title result-no">Not Eligible</span>
+        <span class="badge badge-no">{{ rejected | length }} Blocked</span>
+      </div>
+      <div class="result-divider divider-no"></div>
+ 
+      {% if rejected %}
+        {% for c in rejected %}
+        <div class="entry entry-no{{ ' entry-last' if loop.last else '' }}" onclick="toggleEntry(this)">
+          <div class="entry-top">
+            <span class="code-chip code-no">{{ c.code }}</span>
+            <span class="entry-chevron">&#9662;</span>
+          </div>
+          <div class="entry-name">{{ c.name }}</div>
+          <div class="entry-meta">
+            Slot&nbsp;&middot;&nbsp;<span class="mono">{{ c.slot }}</span><br>
+            Instructor&nbsp;&middot;&nbsp;{{ c.instructor }}
+          </div>
+          <div class="entry-reason">&#9888; {{ c.reason }}</div>
+          {% if c.description %}
+          <div class="entry-desc-wrap">
+            <div class="entry-desc-divider"></div>
+            <div class="entry-desc-label">Description</div>
+            <p class="entry-desc-text">{{ c.description }}</p>
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty-result">
+          <div class="empty-icon">✓</div>
+          <div class="empty-title">All courses are eligible.</div>
+        </div>
+      {% endif %}
+    </div>
+ 
+  </div><!-- /results-grid -->
+ 
+  <div class="reset-row">
+    <a href="/" class="btn-reset">&larr; Start New Search</a>
+  </div>
+  {% endif %}
+ 
+</main><!-- /content -->
+ 
+<!-- ═══════════════════════════════════════════════ SCRIPTS ══ -->
+<script>
+/* ── Embedded icon data URIs (base64 PNG) ─────────────────────── */
+var DAV_SRC  = "data:image/png;base64,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";
+var UGAC_SRC = "data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCABBAHQDASIAAhEBAxEB/8QAHAABAAICAwEAAAAAAAAAAAAAAAYHAwUBBAgC/8QANxAAAQMDAwIFBAECAwkAAAAAAQIDBAAFEQYSIQcxExRRYXEIIjJBgRVCIzM3UmJldYKRobKz/8QAGQEBAQEBAQEAAAAAAAAAAAAAAAMBAgUG/8QALREAAgEDAgMGBgMAAAAAAAAAAAECAxESITEEE0EiMlGhseEUUmFxkdEVYvH/2gAMAwEAAhEDEQA/APZdKVwpSUpKlKCUjuScAUBzSoh1J1ZdtMxLc5ZdNO35yc/4A2SUsobUR9u5R4+48D3+RXf0JqhjVGnk3Ix1wZDai3Miuq+6O4n8kk+nvxXeEscuhxzI5Y9SQUqGw9etStRsWxmx3NcWS8Wo89KQWlkDKiRnIA9amVZKLjuc0q0Kt3B3sKUpXJUUpSgFKUoBSlKAUpSgFVl1+ZtdwtFutd11tbdPxlSA9Ihy5IZFwbSR/hlWdwGfQHvVm1S3WWw2mx6ve6n6p1dHt9sbhNW5ll+1IlqZJc3K8IKyNyvUpOBmrUO+iVbuH1oRjTo81FiXdT1kdSW32oNyTPhpB4GcjxGTn9kcY7jFTvTtgjswLmqYl1MiSS1MdSceYCOA7gftQ5J/ZJ/Vauw6LbcaYvdi1zfW2JbSX2fAaiIYWhScpPhhgDGCDitDqS6L03qqzWLU/V+TGudxOy1xmbWy2hxZO0F4BKgoEkJAygZ7c81SXbbSfr+iMYYrtL0/ZL0tSLRHbcYXEZmSE7UIcSpamGh+LaUpyT6k85VkmvvTtxvrd5eZvCkrguthTD7iUsFKhwUhJwVA5HOKy+V1NEiOTJ2oLHF2IK5DotqgkAcklReGAPeo9JsVn6nWqPOc1BbL3CZUtCHIsdxAzlJUlW13PdKTg+gqdk9W9DOXJNY306fv/CwhLindiSydqtqsODg+nzXPmo24J8wzuKSoDeMkDufiqpndCtOyGnEtyPLKceQ8tbaXSpRSrdj7nSOeQf3zXaT0V04H0vZAKSsjYp9ON/5D/O7H07UxpfN5Fc63y+ZZhkxgEkyGgFK2pO8cn0Hvwa4MuKFBJks7ikqA8QZwO5+KrWV0y0Hp7Tcj+rBLNradTIUvxn0ltYSpAUD4hOcLUMD1rLY+l3TG7RIl4t0JybHUtTzTnnXilRJ+7IKu2Ryk8e1MIWvd2+3uZzZ5Y2V/C+voWE7PgtN+K5NjIRuCNynUgbicAZz3J4xWRcqMhBWuQylIG4krAGPWobD6VaJiW9y3x7a+3GcWhakebdP3JUVAjKuOSe3rWrunTDpnardIkzob7TLRC1qVPeUoZG3A+7ODnt8elZan4v8AHudSnUirtL8+xZTa0ONpcbUlaFAFKknIIP7Fc10NOqtxsMEWhQNvQwhEbBPCEjAHPPAGOa79SZWLuroUpShorz39ev8Ao3E/5s1/6Lr0JVIfWzZJd46ISX4ba3TbpjUt1KE5PhjKVH4AVn+KvwrtWj9yPEK9Nlg9GFb+kmk1f8Ijf/MVVn1Baxg2Trp07s8jSNluzr7za0zZaCXo/iPeGPDI4GD93Oecdu9SP6auoelr50mssRN4hx59siNxZkZ55KFtqQMA4J5SQMg1TPVu/W/qT9V2i4OkHk3JFpdYQ/IaOWleG8XnCk/sJTwT2zxV6VJ86WS0VyU5rlRs/Asj6zNRTYOl7TpyGsoRdXlqkYOCpDe3CPgqUD/01O+mGm7P0q6Yjz8oMJQ3526SXTwHCkbsY/QwEgDvj3qEfWNpiddNKWzUUBtTgtDq/MBKclLa9v3/AAkpGfnNb7pz1O0X1A0O3adSTYLM51gRp8KY4EB44wVJzjIV347GjTfDxx2vqLpVpX36GxvPW3QNs01br+qdKlRLi442wmPHJc3N437knGMZHf1FTfS97haj09Bvtu8Xyk1oOteInarafUfo15k+pOX06tujLTo7RyoKpEGap4oiq8UMpUkhYU5k/cpW3jJPHsKuvpzNGk+hNnnXdlccwrYla2nBtVnkpTj1OR/3rmrQiqalFO7fU2NdqTzaslciP1CXuTeL3bdCWjLry3ULfQk/k4rhtB+OVH+PSn09XuTaL3ctCXYFp5Dq3GEqP4uJ4cQPn8h/PrXz0Ds8nUGqLnr27p3rLqksEjguq/Ij2SnCR8+1dzrHpK9RtaWzWWlYTsiT4ifMJZTnatPZZ/3Sngn2q7wS+Hfhv9T52Kryl/Jq712/pt7+ZZ2s7x/QtNy7kkAuNow0D2KzwP8AzUN6b6YN1t8m/ahdXMVdEFPhLUcFGfyPvkcelSLX8Fy/aFlNxNrjuxLyUtqCgopOSkEd+xrWdKNS26TpyPa3pDbEyGnYUOKCd6c8KGe/v6V560joexVxnxkY1O7jp4N9fImkCJGgQ2ocNlLLDKdraE9kis9aqZqOxxJ8eC/co6ZEhQS2gK3Ek9s47fzW1rk9GEoPSL2FKUrDsVjksMyY7keQ0h1l1BQ42tOUqSRggg9wRWSlAedtW/SVoW73hydabrc7Gw6STEZCXW0kn+3dyB7ZNWN0d6P6R6YRnTZGHZNxfSEvz5JCnVpH9owMJTnnA/nOBVh0q0uIqzji5aE40YRd0j5eabeaWy82hxtaSlaFDIUD3BH7FUnqv6bNG3e5uTLbOnWZDpKlx2QlxoE/7IV+I9qu6lc06s6bvB2NnTjPvIqLp70A0bpW5t3OS5JvUplQUx5sJDbZHY7AME+5qf690xG1dpx2yypL0ZC1ocDjWCQUnI4PBrfUrZVpykpN6nMqFOUHTa0e5rNLWSHp2wRLNAB8CMjaFK7rPcqPuTzWXUFsavVkmWp9x1pqUyppS2zhSQR3Fd6lTyd79TpU4KGCWlrW+hodBaZjaR02zZIsl6S22tS/EdxklRyeBwB7VqdS9OLHeJapbSnYD6zlwsgFKj67T2PxU0pWucm8nuSlwlGVNUnHsrZEK0103slnmomuOPTn21BTZdwEpI7HA7n5qa0pWNt7ndGhToRxpqyFKUrCopSlAKUpQClKUApSlAKUpQClKUApSlAKUpQH/9k=";
+ 
+/* ── Canvas-based white-background removal ─────────────────────
+ *  Iterates every pixel; near-white → transparent.
+ *  invertDark=true  → also inverts dark pixels to white (for DAV icon).
+ *  invertDark=false → preserves original colours      (for UGAC icon).
+ * ─────────────────────────────────────────────────────────────── */
+function processIcon(src, invertDark, cb) {
+  var img = new Image();
+  img.onload = function () {
+    var c = document.createElement('canvas');
+    c.width = img.width; c.height = img.height;
+    var ctx = c.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    var id  = ctx.getImageData(0, 0, c.width, c.height);
+    var d   = id.data;
+    for (var i = 0; i < d.length; i += 4) {
+      var r = d[i], g = d[i+1], b = d[i+2];
+      var bright = (r + g + b) / 3;
+      if (bright > 235) {
+        d[i+3] = 0;                          /* fully transparent */
+      } else if (bright > 205) {
+        var a = Math.round(d[i+3] * (235 - bright) / 30);
+        d[i+3] = a;                          /* feathered edge     */
+        if (invertDark && a > 0) { d[i]=255-r; d[i+1]=255-g; d[i+2]=255-b; }
+      } else if (invertDark) {
+        d[i]=255-r; d[i+1]=255-g; d[i+2]=255-b; /* invert → white  */
+      }
+    }
+    ctx.putImageData(id, 0, 0);
+    cb(c.toDataURL());
+  };
+  img.src = src;
+}
+ 
+/* ── Select floating-label helper ──────────────────────────────
+ *  Native <select> can't use :placeholder-shown, so JS adds
+ *  .has-value when a non-empty value is chosen.
+ * ─────────────────────────────────────────────────────────────── */
+function initSelects() {
+  document.querySelectorAll('.field select').forEach(function (sel) {
+    function upd() { sel.classList.toggle('has-value', !!sel.value); }
+    sel.addEventListener('change', upd);
+    upd();
+  });
+}
+
+/* ── Entry expand / collapse ───────────────────────────────────────
+ * Toggling .expanded on the entry div is enough; CSS handles the
+ * chevron rotation and max-height reveal of .entry-desc-wrap.
+ * ─────────────────────────────────────────────────────────────────── */
+function toggleEntry(el) {
+  el.classList.toggle('expanded');
+}
+ 
+/* ── Theme toggle ──────────────────────────────────────────────── */
+function applyTheme(dark) {
+  document.documentElement.classList.toggle('dark', dark);
+  var btn = document.getElementById('theme-btn');
+  if (btn) btn.textContent = dark ? '🌙' : '☀️';
+}
+ 
+function toggleTheme() {
+  var dark = !document.documentElement.classList.contains('dark');
+  localStorage.setItem('cr-theme', dark ? 'dark' : 'light');
+  applyTheme(dark);
+}
+ 
+/* ── Submit loading state ──────────────────────────────────────── */
+function initSubmitBtn() {
+  var form = document.getElementById('profile-form');
+  if (!form) return;
+  form.addEventListener('submit', function () {
+    var btn  = document.getElementById('submit-btn');
+    var lbl  = btn.querySelector('.btn-label');
+    var load = btn.querySelector('.btn-loading');
+    lbl.hidden  = true;
+    load.hidden = false;
+    btn.disabled = true;
+  });
+}
+ 
+/* ── Boot ──────────────────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', function () {
+  /* Icons */
+  processIcon(DAV_SRC,  true,  function(url) { document.getElementById('dav-icon').src  = url; });
+ 
+  /* Selects */
+  initSelects();
+ 
+  /* Restore saved theme */
+  applyTheme(localStorage.getItem('cr-theme') === 'dark');
+ 
+  /* Submit button */
+  initSubmitBtn();
+});
+</script>
+ 
+</body>
+</html>
