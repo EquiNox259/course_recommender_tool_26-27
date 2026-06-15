@@ -6,7 +6,7 @@ class LLMService:
     def __init__(self):
         api_key = os.getenv("GEMINI_API_KEY")        
         if not api_key:
-            api_key = "AQ.Ab8RN6L_0QNUdlNVC014BHKiUj0doM5__hna1STNu2FzAquRew"
+            api_key = ""
             
         # Pass the key explicitly into the Client constructor
         self.client = genai.Client(api_key=api_key)
