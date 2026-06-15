@@ -22,7 +22,7 @@ except ImportError as e:
 try:
     import google.generativeai as genai
     HAS_GEMINI = True
-    genai.configure(api_key="AQ.Ab8RN6IKdyxwOq-0OWxsN_2GpHavltBqwUTkNe_vlrj9HKcw2w")
+    genai.configure(api_key="")
 except ImportError:
     HAS_GEMINI = False
     print("google-generativeai package not found. LLM evaluation step will be simulated.")
