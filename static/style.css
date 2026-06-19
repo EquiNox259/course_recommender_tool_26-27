@@ -141,8 +141,6 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   color: var(--ac);
 }
  
-.mono { font-family: var(--font-mono); font-weight: 500; }
- 
 .text-muted-italic {
   font-family: var(--font-body);
   font-style: italic;
