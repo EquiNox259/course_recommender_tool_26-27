@@ -62,7 +62,6 @@
   /* Typefaces */
   --font-display: 'Source Serif 4', serif;
   --font-body:    'Karla', sans-serif;
-  --font-hero:    'Oswald', sans-serif;
 }
  
 /* ── 2. Dark Mode overrides ──────────────────────────────────────── */
@@ -262,7 +261,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 }
  
 .hero-title {
-  font-family: var(--font-hero);
+  font-family: var(--font-body);
   font-weight: 700;
   font-size: 30px;
   color: var(--tp);
