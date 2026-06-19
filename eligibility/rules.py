@@ -8,7 +8,6 @@ import google.genai as genai
 import json
 from datetime import datetime
 
-genai.configure(api_key="PUT YOUR API KEY IN HERE")
 data = pd.read_csv(COURSES_HISTORY_PATH)
 df = pd.read_csv(RUNNING_COURSES_PATH)
 rename_map = {
