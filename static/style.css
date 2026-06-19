@@ -62,8 +62,7 @@
   /* Typefaces */
   --font-display: 'Source Serif 4', serif;
   --font-body:    'Karla', sans-serif;
-  --font-hero:    'Oswald', sans-serif,
-  --font-mono:    'IBM Plex Mono', monospace;
+  --font-hero:    'Oswald', sans-serif;
 }
  
 /* ── 2. Dark Mode overrides ──────────────────────────────────────── */
@@ -136,7 +135,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 .sec-label {
   font-family: var(--font-body);
   font-weight: 500;
-  font-size: 11px;
+  font-size: 15px;
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--ac);
@@ -182,7 +181,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 .nav-title {
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: 15px;
+  font-size: 17px;
   color: var(--nt);
   white-space: nowrap;
   margin-right: 10px;
@@ -276,7 +275,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 .hero-sub {
   font-family: var(--font-body);
   font-size: 15px;
-  color: var(--ts);
+  color: var(--tp);
   max-width: 480px;
   margin: 0 auto;
   line-height: 1.65;
@@ -349,7 +348,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   border: 1px solid var(--bi);
   border-radius: 8px;
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: 15px;
   color: var(--tp);
   outline: none;
   appearance: none;
@@ -380,20 +379,10 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
  
 /* Student ID: monospace value, icon room */
 #student_id {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   padding-right: 40px;
 }
  
-/* Field icon (👤) */
-.field-icon {
-  position: absolute;
-  right: 13px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 13px;
-  color: var(--tm);
-  pointer-events: none;
-}
  
 /* Floating label — default (resting) */
 .field label {
@@ -401,7 +390,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   left: 14px;
   top: 17px;
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 400;
   color: var(--tm);
   pointer-events: none;
@@ -419,7 +408,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 .field textarea:focus ~ label,
 .field textarea:not(:placeholder-shown) ~ label {
   top: 8px;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--ac);
   letter-spacing: 0.5px;
@@ -429,7 +418,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 .field select:focus ~ label,
 .field select.has-value ~ label {
   top: 8px;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--ac);
   letter-spacing: 0.5px;
@@ -452,7 +441,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   border-radius: 8px;
   font-family: var(--font-body);
   font-weight: 500;
-  font-size: 15px;
+  font-size: 18px;
   cursor: pointer;
   background: var(--gr);
   color: var(--bt);
@@ -548,16 +537,15 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
  
 .chip {
   display: inline-block;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-weight: 500;
-  border-radius: 6px;
+  border-radius: 50px;
 }
  
 .chip-primary {
   font-size: 12px;
   color: var(--gr);
   background: var(--gl);
-  border: 1px solid var(--or);
   padding: 5px 11px;
 }
  
@@ -592,31 +580,35 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
  
 .badge-accent {
   background: var(--al);
-  border: 1px solid var(--wr);
-  color: var(--ac);
+  border-radius: 50px;
+  color: var(--tp);
 }
  
 .badge-ok {
   background: var(--ob);
   border: 1px solid var(--or);
+  border-radius: 50px;
   color: var(--ok);
 }
 
 .badge-consent {
   background: var(--al);
   border: 1px solid var(--wr);
+  border-radius: 50px;
   color: var(--ac);
 }
 
 .badge-clash {
   background: var(--clb);
   border: 1px solid var(--clr);
+  border-radius: 50px;
   color: var(--cl);
 }
  
 .badge-no {
   background: var(--nb2);
   border: 1px solid var(--nr);
+  border-radius: 50px;
   color: var(--no);
 }
 
@@ -624,10 +616,10 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 .tag-minor {
   display: inline-block;
   font-family: var(--font-body);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
   padding: 2px 7px;
-  border-radius: 4px;
+  border-radius: 10px;
   background: var(--al);
   border: 1px solid var(--wr);
   color: var(--ac);
@@ -645,7 +637,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   width: 100%;
   padding: 6px 28px 6px 10px;
   border: 2px solid var(--bi);
-  border-radius: 6px;
+  border-radius: 50px;
   background: transparent;
   color: var(--tp);
   font-family: var(--font-body);
@@ -672,15 +664,30 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   margin-top: 8px;
   padding: 8px 12px;
   border-radius: 6px;
-  border-left: 3px solid var(--ac);
+  border: 1px solid var(--wr);
   background: var(--al);
-  border-top: 1px solid var(--wr);
-  border-right: 1px solid var(--wr);
-  border-bottom: 1px solid var(--wr);
   font-family: var(--font-body);
-  font-size: 12px;
-  color: var(--wt);
+  font-size: 11.75px;
+  color: var(--tp);
   line-height: 1.6;
+}
+
+/* ── Query fallback notice ───────────────────────────────────────── */
+.fallback-alert {
+  margin-bottom: 24px;
+  /*margin-left: 100px;*/
+  padding: 14px 18px;
+  background: var(--al);
+  border: 1px solid var(--wa);
+  border-radius: 10px;
+}
+
+.fallback-alert__body {
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  color: var(--tp);
+  margin: 0;
+  line-height: 1.55;
 }
 
 /* ── 15. Results grid ────────────────────────────────────────────── */
@@ -748,30 +755,30 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 /* ── 16. Course entries ──────────────────────────────────────────── */
 .entry {
   padding: 14px 12px 14px 18px;
-  border-left: 2px solid transparent;
+  border: 1px solid transparent;
   border-radius: 8px;
-  border-bottom: 1px dashed transparent;
   transition: background 0.18s ease;
+  margin-bottom: 8px;
 }
  
 .entry-ok {
-  border-left-color: var(--ok);
-  border-bottom-color: var(--or);
+  border-color: var(--ok);
+  /*border-bottom-color: var(--or);*/
 }
 
 .entry-consent {
-  border-left-color: var(--ac);
-  border-bottom-color: var(--wr);
+  border-color: var(--ac);
+  /*border-bottom-color: var(--wr);*/
 }
 
 .entry-clash {
-  border-left-color: var(--cl);
-  border-bottom-color: var(--clr);
+  border-color: var(--cl);
+  /*border-bottom-color: var(--clr);*/
 }
  
 .entry-no {
-  border-left-color: var(--no);
-  border-bottom-color: var(--nr);
+  border-color: var(--no);
+  /*border-bottom-color: var(--nr);*/
 }
  
 .entry-ok:hover  { background: var(--ph); }
@@ -780,7 +787,10 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 .entry-no:hover  { background: var(--nb2); filter: brightness(0.95); }
  
 /* Remove bottom divider from last entry */
-.entry-last { border-bottom: none; }
+.entry-last { 
+    border-bottom: none;
+    margin-bottom: 0;
+}
  
 .entry-top {
   display: flex;
@@ -791,10 +801,10 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
  
 .code-chip {
   display: inline-block;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-weight: 500;
-  font-size: 11px;
-  border-radius: 6px;
+  font-size: 12px;
+  border-radius: 20px;
   padding: 3px 9px;
 }
  
@@ -833,14 +843,19 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
  
 .entry-meta {
   font-family: var(--font-body);
-  font-size: 12px;
-  color: var(--ts);
+  font-size: 13px;
+  color: var(--tp);
   line-height: 1.6;
 }
 
 .div-slot {
   white-space: pre-line;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
+}
+
+.div-instructor {
+  white-space: pre-line;
+  font-family: var(--font-body);
 }
  
 .entry-reason {
@@ -849,7 +864,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   gap: 5px;
   margin-top: 8px;
   font-family: var(--font-body);
-  font-size: 12px;
+  font-size: 13px;
   color: var(--no);
 }
 
@@ -859,7 +874,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   gap: 5px;
   margin-top: 8px;
   font-family: var(--font-body);
-  font-size: 12px;
+  font-size: 13px;
   color: var(--cl);
   line-height: 1.5;
 }
@@ -871,7 +886,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   background: transparent;
   border: 2px solid var(--bi);
   font-family: var(--font-body);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: bold;
   color: var(--ts);
   line-height: 1.5;
@@ -914,8 +929,8 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
  
 .entry-desc-label {
   font-family: var(--font-body);
-  font-weight: 500;
-  font-size: 10px;
+  font-weight: 800;
+  font-size: 12px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--tm);
@@ -931,14 +946,103 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   padding-bottom: 4px;
 }
 
-.iss-score {
-  font-size: 0.75rem;
+.score {
+  font-size: 13px;
   opacity: 0.75;
-  color: var(--text-muted);
+  color: var(--tm);
   margin-top: 2px;
   margin-bottom: 4px;
-  font-family: var(--font-mono);
-  font-weight: bold;
+  font-family: var(--font-body);
+}
+
+/* ── Grade statistics ────────────────────────────────────────────── */
+.grade-stats-wrap { margin-bottom: 6px; }
+
+.grade-year-block { margin: 4px 0 8px; }
+
+.grade-stats-label {
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--tm);
+  margin-bottom: 6px;
+}
+
+.grade-year-name {
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--tp);
+  margin-bottom: 6px;
+}
+
+.grade-div-block { margin: 4px 0; }
+
+.grade-div-name {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--tp);
+  margin-bottom: 5px;
+}
+
+.grade-div-sep {
+  height: 1px;
+  border-top: 1px dotted var(--bd);
+  margin: 6px 0;
+}
+
+.grade-dist-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 6px;
+}
+
+.grade-chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 20px;
+  border: 1px solid var(--bc);
+  background: var(--nb2);
+  overflow: hidden;
+  font-family: var(--font-body);
+  font-size: 12px;
+}
+
+.grade-chip-label {
+  padding: 2px 7px;
+  background: var(--nr);
+  color: var(--tp);
+  font-weight: 600;
+}
+
+.grade-chip-count {
+  padding: 2px 8px;
+  color: var(--tp);
+}
+
+.grade-pct-text {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--tp);
+  margin-top: 4px;
+}
+
+.grade-year-sep {
+  height: 1px;
+  border-top: 1px dashed var(--bd);
+  margin: 8px 0;
+}
+
+.grade-stats-divider {
+  height: 1px;
+  border-top: 1px dashed var(--bd);
+  margin: 10px 0 8px;
 }
  
 /* ── 17. Empty states ────────────────────────────────────────────── */
@@ -966,6 +1070,38 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   font-size: 13px;
   color: var(--tm);
   margin-top: 4px;
+}
+
+/* ── Feedback ────────────────────────────────────────────────────── */
+.star-label {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--ts);
+  margin-bottom: 10px;
+}
+
+.star-row { display: flex; gap: 4px; margin-bottom: 12px; }
+
+.star {
+  font-size: 32px;
+  color: var(--bc);
+  cursor: pointer;
+  line-height: 1;
+  transition: color 0.12s ease, transform 0.1s ease;
+}
+
+.star.hover  { color: #D4A040; opacity: 0.65; transform: scale(1.1); }
+.star.active { color: #D4A040; }
+
+.feedback-success {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--ok);
+  background: var(--ob);
+  border: 1px solid var(--or);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
 }
  
 /* ── 18. Animations ──────────────────────────────────────────────── */

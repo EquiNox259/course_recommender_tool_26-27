@@ -2043,60 +2043,6 @@ Tue-15A-19:00:00-20:25:00-Class Room : LT 002", ,[], ,"3 weeks in summer vacatio
 GP 525,Computational Geophysics,Theory,Advanced Course.,I - Anand Singh,"13
 Mon-13A-19:00:00-20:25:00-Class Room : LT 005
 Thu-13B-19:00:00-20:25:00-Class Room : LT 005", ,[],6, 
-GP 101,Solid-Earth Geophysics,Theory,Advanced Course.,I - Kumar Hemant Singh,"4
-Mon-4A-11:35:00-12:30:00-Class Room : LT 103
-Thu-4C-09:30:00-10:25:00-Class Room : LT 103
-Tue-4B-08:30:00-09:25:00-Class Room : LT 103", ,[],6,"The Solar System and others terrestrial planets. Propagation of Elastic waves inside the Earth, Composition and Internal structure of the Earth. Spherical harmonics. Role of satellites for Geopotential fields. Gravity: shape, rotation, tidal deformation, isostasy of the Earth. Heat flow: continental and ocean heat flow, thermal structure of the Earth. Radiometric dating methods. Convection in the Mantle and Outer Core. Geomagnetism: origin of the Earth’s magnetic field, geomagnetic secular variation, Geodynamo. Plate Tectonics: Paleomagnetism, Continental Drift, Sea-floor spreading and polar wander paths."
-GP 401,Global Geophysics,Theory,Advanced Course.,I - Srinivasa Rao Gangumalla,"3
-Mon-3A-10:35:00-11:30:00-Room No. 113
-Thu-3C-08:30:00-09:25:00-Room No. 113
-Tue-3B-11:35:00-12:30:00-Room No. 113", ,"[['2025', 'ALL'], ['Applied Geophysics', 'ALL'], ['M.Sc.', 'ALL'], ['Allowed', 'Deny'], ['Non-Overridable', 'Non-Overridable']]",4,"The Solar system and evolution of the Earth; Structure and composition of the earth Geodynamics. Theory and fundamental concepts of Plate Tectonics: Rotation vectors, rotation poles, present day plate motions and triple junctions. Geophysical framework of the earth: Spherical harmonic representation of potential functions. Gravity: figure of the earth, shape, rotation, tidal friction, gravity field of earth and Isostasy. Geomagnetism: internal, external field & their causes, geodynamo theory. Paleomagnetism: Polar wander paths, Seafloor spreading and Continental drift. Heat flow: heat transfer mechanism, thermal regime, thermal structure of the earth, volcanism, Hot spots and mantle plumes. Elastic waves: internal structure and variation physical properties in the interior of the earth."
-GP 403,Earthquake and Engineering Seismology,Theory,Advanced Course.,"A - Gollapally Mohan
-I - Satish Maurya","4
-Mon-4A-11:35:00-12:30:00-Class Room : LT 104
-Thu-4C-09:30:00-10:25:00-Class Room : LT 104
-Tue-4B-08:30:00-09:25:00-Class Room : LT 104", ,"[['2025', 'ALL'], ['Applied Geophysics', 'ALL'], ['M.Sc.', 'ALL'], ['Allowed', 'Deny'], ['Non-Overridable', 'Non-Overridable']]",6,"Introduction to seismology, Elasticity, Stress-strain relationships, Equations of motion, seismic wave equations, Body waves and ray theory, Partitioning of energy, Attenuation, anisotropy and anelasticity, Travel times in layered media, Surface waves dispersion and free oscillations, Seismometry and Principles of Digital seismographs, Seismic observatory practices, Seismogram interpretation – Nomenclature of seismic phases, Body wave travel times in earth, Internal structure and composition of the earth, Earthquakes – Seismic sources, Directivity, Scaling laws, Magnitude scales, Location, Focal mechanisms, Moment tensors, Stress drop, Earthquake characteristics, effects and distribution, Seismotectonics, Earthquake prediction, Seismic hazard and risk, Waveform modeling and Inverse problems."
-GP 407,Seismology Lab,Lab,Advanced Course.,I - Satish Maurya,"L
-Tue-L2-14:00:00-16:55:00-", ,[],3,"Practical training in seismological data acquisition, processing and interpretation, Seismogram analysis and interpretation, Identification of seismic phases, Determination of earthquake parameters – location, magnitude, stress drop, focal mechanism, Seismological data analysis using standard seismological software’s."
-GP 413,Mineralogy & Petrology,Theory,Advanced Course.,"A - Sameer Ranjan
-I - Prabhakar Naraga","2
-Mon-2A-09:30:00-10:25:00-Class Room : LT 301
-Thu-2C-11:35:00-12:30:00-Class Room : LT 301
-Tue-2B-10:35:00-11:30:00-Class Room : LT 301", ,[],6,"Chemistry of minerals; atomic bonding; crystal structure & crystal systems; rock-forming and economic minerals; major silicate mineral groups (quartz, feldspar, pyroxene, amphibole, mica, olivine and garnet) & their diagnostic physical properties; common oxide, sulphide, sulphate and carbonate minerals; phase transformations in the Earth’s interior; basic optical mineralogy. Partial melting & generation of magmas; crystallization of magma; Bowen’s reaction series; forms of intrusive & extrusive igneous bodies; mineralogy, textures and structures of common felsic, mafic & ultramafic igneous rocks; magmatism in relation to tectonic settings; radioactivity & dating of rocks. Metamorphism and metamorphic facies; mineralogy, textures and structures of common metamorphic rocks; low grade and high grade metamorphic terranes. Formation of sediments & sedimentary rocks: their compositions, textures & structures; origin & classification of conglomerate, sandstone, shale & limestone; sedimentary environments & facies; characteristics of non-marine, transitional & marine environments."
-GP 415,Mineralogy & Petrology Lab,Lab,Advanced Course.,"A - Prabhakar Naraga
-I - Suresh Chandra Patel","L
-Wed-LX-14:00:00-16:55:00-", ,[],3,"Identification of rock forming minerals, megascopic and microscopic study. X-ray diffraction, Identification and classification of rocks, textures and mineral compositions of igneous, sedimentary and metamorphic rocks."
-GP 503,Geophysical Signal Processing,Theory,Advanced Course.,I - Enamundram Chandrasekhar,"2
-Mon-2A-09:30:00-10:25:00-Class Room : LT 204
-Thu-2C-11:35:00-12:30:00-Class Room : LT 204
-Tue-2B-10:35:00-11:30:00-Class Room : LT 204", ,[],6,"Introduction to signal processing in Geophysics; Auto correlation and cross correlation, Linear time invariant systems, Z- Transform; Laplace Transform, Transfer function, Impulse response and convolution; Fourier Transform and its properties. Bit-reversal algorithm, Fast Fourier Transform (FFT) and Discrete Fourier Transform (DFT); Power spectral estimation, Hilbert Transform, Mellin Transform; Applications in Geophysics; Introduction to digital filtering, Sampling theorem; Introduction to statistical signal processing; Introduction to Wavelet analysis in geophysics; Introduction to System modeling: auto regressive (AR), moving average (MA), Auto regressive moving average (ARMA), Maximum Entropy Method (MEM) of spectral analysis. Applications of signal processing in Geophysics."
-GP 505,Electromagnetic Methods,Theory,Advanced Course.,I - Enamundram Chandrasekhar,"6
-Fri-6B-11:05:00-12:30:00-Room No. 113
-Wed-6A-11:05:00-12:30:00-Room No. 113", ,[],6,"Differential and Integral forms of Maxwell’s Equations and Boundary conditions, Wave and Diffusion Equation, Introduction to Electromagnetic profiling and sounding methods; TURAM, SLINGRAM, VLF-EM techniques; Instrumentation for Electromagnetic field surveys; Telluric, Magnetotelluric (MT) and Transient Electromagnetic (TEM) methods of geophysical exploration; MT theory; Origin of the MT and telluric fields; Field instruments and operation for telluric, MT and TEM surveys; Data Processing and Interpretation of telluric, MT and TEM data and their uses in various geophysical studies; Introduction to Ground Penetrating Radar (GPR) technique for very shallow geophysical investigations."
-GP 517,Exploration Seismology II,Theory,Advanced Course.,I - Bharath Chandra Shekar,"1
-Mon-1A-08:30:00-09:25:00-Class Room : LT 301
-Thu-1C-10:35:00-11:30:00-Class Room : LT 301
-Tue-1B-09:30:00-10:25:00-Class Room : LT 301", ,[],6,"3-D marine and land seismic data acquisition, processing and interactive 3-D interpretation, Modeling, Synthetic seismograms, Seismic stratigraphy - seismic sequences, Time significance of reflections, Depositional models, Seismic Facies Analysis, Reflection Character Analysis, Hydrocarbon indicators, Amplitude variation with Offset, Vertical Seismic Profiling, Geological interpretation of seismic sections using 3-D seismic data, Reservoir Geophysics."
-GP 519,Engineering & Ground Water Geology Lab,Lab,Advanced Course.,"A - Vikram Vishal
-I - D Ramakrishnan","L
-Tue-L2-14:00:00-16:55:00-ESE 103", ,[],3,"Study of rocks for their mineralogical, textural, weathering and discontinuity aspects. Engineering properties of rocks, soils, clays and construction aggregates. Maps and numerical exercises. Instrumentation in engineering geology and hydrogeology. Geophysical Surveys resistivity, gravity and magnetic methods."
-GP 521,Electromagnetic Lab,Lab,Advanced Course.,I - Anand Singh,"L
-Fri-L4-14:00:00-16:55:00-", ,[],3,"Calculation of Electric field due to a point and dipole sources; Computations on Coulomb Forces and Electric field intensity; Analysis and interpretation of VLF EM, Transient Electromagnetic (TEM), Magnetotelluric (MT) data sets; Computer programming for data processing of geomagnetic deep sounding data."
-GP 523,Industrial Training,Non-credit,Advanced Course.,I - Gollapally Mohan,"15
-Fri-15B-19:00:00-20:25:00-Class Room : LT 002
-Tue-15A-19:00:00-20:25:00-Class Room : LT 002", ,[], ,"3 weeks in summer vacation after 2nd semester, P/NP on basis of certificate from training centre / lab."
-GP 525,Computational Geophysics,Theory,Advanced Course.,I - Anand Singh,"13
-Mon-13A-19:00:00-20:25:00-Class Room : LT 005
-Thu-13B-19:00:00-20:25:00-Class Room : LT 005", ,[],6, 
-GS 407,Structural Geology,Theory,Advanced Course.,I - Malay Mukul,"4
-Mon-4A-11:35:00-12:30:00-Class Room : LT 102
-Thu-4C-09:30:00-10:25:00-Class Room : LT 102
-Tue-4B-08:30:00-09:25:00-Class Room : LT 102", ,[],6,"Dynamic and kinematic analyses of rocks in two dimensions, stress and strain. Folds 302226 classification, mechanism of folding, Biot302222s law - strain within buckled layer, similar fold and shear fold, kink bands, chevron folds and conjugate fold; cleavage, lineation, boudinage; deformation of linear structures by flexural slip folding and shear folding; deformation of planar structures by flexural slip folding and shear folding; superimposed folding, type 1, 2 and 3 interference pattern; faults and ductile shear zone"
-GS 413,Structural Geology Lab,Lab,Advanced Course.,I - Malay Mukul,"L
-Fri-L4-14:00:00-16:55:00-", ,[],3,"Stereographic plotting and contouring of planes and lines. Analysis of folds, faults and ductile shear zone. Strain measurements from deformed fossils and other markers. Interpretation of geological maps. Computer aids to analysis of structural data."
-GS 415,Applied Mineralogy and X-Ray Crystallography,Theory,Advanced Course.,I - George Mathew,"6
-Fri-6B-11:05:00-12:30:00-Class Room : LT 004
-Wed-6A-11:05:00-12:30:00-Class Room : LT 004", ,[],6,"Crystallography: crystal growth, external and internal symmetry, space group. XRD: powder and single crystal diffraction, reciprocal lattice and mathematical crystallography. Crystal defects and chemistry: colour, cause and enhancement techniques, crystal field, molecular orbital and band theories. Electronic and vibrational spectroscopy methods. Electron microscopy and its mineralogical applications. Thermal analytical techniques (DTA, DSC, TG). Biological-mineralogical interactions. Medical mineralogy, Clays and Zeolites, Gemology."
 GS 421,Palaeontology,Theory,Advanced Course.,I - Nibedita Rakshit,"2
 Mon-2A-09:30:00-10:25:00-Class Room : LT 102
 Thu-2C-11:35:00-12:30:00-Class Room : LT 102

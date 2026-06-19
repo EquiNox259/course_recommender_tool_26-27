@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Karla:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@500&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -14,13 +15,10 @@
 <!-- ═══════════════════════════════════════════════ NAVBAR ═══ -->
 <nav class="navbar">
   <div class="nav-left">
-    <a href="/about" class="nav-brand-link">
-        <img id="dav-icon" class="nav-logo" src="" alt="DAV">
-        <span class="nav-title">Data Analytics and Visualization Team</span>
-    </a>
+    <img id="dav-icon" class="nav-logo" src="" alt="DAV">
+     <span class="nav-title">Data Analytics and Visualization Team</span>
   </div>
   <div class="nav-right">
-    <a href="/docs" class="nav-docs-link">Documentation</a>
     <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">☀️</button>
     <a href="https://ugac-iitb.github.io/UGAC-IITB/divisions/9" target="_blank" rel="noopener">
         <img id="ugac-icon" class="nav-ugac" src="https://dav-course-recommender-iitb.netlify.app/Images/ugac_logo.svg" alt="UGAC">
@@ -36,9 +34,60 @@
     <h1 class="hero-title">COURSE RECOMMENDER</h1>
     <p class="hero-sub">Enter your profile to get personalised course recommendations</p>
   </div>
+
+  {% if not otp_sent and not otp_verified %}
+  <div class="card fade-up">
+    <div class="card-head">
+      <span class="sec-label">Verify Identity</span>
+    </div>
+    <div class="divider-dash"></div>
+    {% with messages = get_flashed_messages(category_filter=["send_error"]) %}
+      {% if messages %}
+        <div class="entry-reason reason-no" style="margin:8px 0">&#9888;&nbsp;{{ messages[0] }}</div>
+      {% endif %}
+    {% endwith %}
+    <form method="POST">
+      <input type="hidden" name="action" value="send_otp">
+      <div class="field field-full">
+        <input type="text" name="student_id" id="student_id_otp"
+               placeholder=" " autocomplete="off"
+               pattern="[0-9]{2}[bBdD][0-9]{4}" title="Format: 24b1001">
+        <label for="student_id_otp">Student ID</label>
+      </div>
+      <button type="submit" class="btn-primary">
+        <span class="btn-label">Send OTP &rarr;</span>
+      </button>
+    </form>
+  </div>
+
+  {% elif otp_sent and not otp_verified %}
+  <div class="card fade-up">
+    <div class="card-head">
+      <span class="sec-label">Enter OTP</span>
+    </div>
+    <div class="divider-dash"></div>
+    <p style="font-size:13px; color:var(--ts); margin-bottom:16px;">
+      An OTP has been sent to <strong>{{ student_id }}@iitb.ac.in</strong>. Valid for 10 minutes.
+    </p>
+    {% if otp_error %}
+      <div class="entry-reason reason-no" style="margin:8px 0">&#9888;&nbsp;{{ otp_error }}</div>
+    {% endif %}
+    <form method="POST">
+      <input type="hidden" name="action" value="verify_otp">
+      <div class="field field-full">
+        <input type="text" name="otp_input" id="otp_input"
+               placeholder=" " autocomplete="off"
+               maxlength="6" inputmode="numeric">
+        <label for="otp_input">6-digit OTP</label>
+      </div>
+      <button type="submit" class="btn-primary">
+        <span class="btn-label">Verify &rarr;</span>
+      </button>
+    </form>
+  </div>
  
   <!-- ─────────────────── MAIN FORM ─────────────────── -->
-  {% if not need_manual_history %}
+    {% elif otp_verified and not need_manual_history %} 
   <div class="card fade-up">
     <div class="card-head">
       <span class="sec-label">Student Profile</span>
@@ -46,15 +95,15 @@
     <div class="divider-dash"></div>
  
     <form method="POST" id="profile-form">
+        <input type="hidden" name="action" value="recommend">
       <div class="form-grid">
  
         <!-- Student ID -->
         <div class="field">
           <input type="text" name="student_id" id="student_id"
                  placeholder=" " autocomplete="off"
-                 value="{{ request.form.get('student_id', '') }}">
+                 value="{{ student_id }}" readonly>
           <label for="student_id">Student ID</label>
-          <span class="field-icon">👤</span>
         </div>
  
         <!-- Degree -->
@@ -104,7 +153,7 @@
       <!-- Research Interests -->
       <div class="field field-full">
         <textarea name="interest" id="interest" placeholder=" " rows="3">{{ request.form.get('interest', '') }}</textarea>
-        <label for="interest">Research Interests &amp; Skills</label>
+        <label for="interest">Research Interests and Skills</label>
       </div>
  
       <!-- Submit -->
@@ -129,6 +178,7 @@
       </div>
     </div>
     <form method="POST">
+      <input type="hidden" name="action" value="recommend">
       <input type="hidden" name="student_id" value="{{ request.form.get('student_id','') }}">
       <input type="hidden" name="degree"     value="{{ request.form.get('degree','') }}">
       <input type="hidden" name="year"       value="{{ request.form.get('year','') }}">
@@ -166,13 +216,149 @@
         <span class="chip chip-primary">{{ c }}</span>
         {% endfor %}
       {% else %}
-        <span class="text-muted-italic">No prior course history on record.</span>
+        <span class="text-muted-italic">No prior course history on record</span>
       {% endif %}
     </div>
   </div>
   {% endif %}
+
+    <div class="filter-container" style="padding: 16px; margin-bottom: 20px; background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border-color);">
+    <div style="font-weight: 600; margin-bottom: 12px; color: inherit;">Recommendation Strategy:</div>
+    
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 14px;">
+            <input 
+                type="radio" 
+                name="weight_preset" 
+                value="semantic" 
+                style="cursor: pointer; transform: scale(1.1);"
+                onchange="syncAndSubmit()" 
+                {{ 'checked' if (w_ps == 0.0 or w_ps == 0) }}
+            >
+            <span><strong>More Interest-Based</strong> (100% Semantic Content Matching)</span>
+        </label>
+        
+        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 14px;">
+            <input 
+                type="radio" 
+                name="weight_preset" 
+                value="hybrid" 
+                style="cursor: pointer; transform: scale(1.1);"
+                onchange="syncAndSubmit()" 
+                {{ 'checked' if (w_ps == 0.5 or w_ps is none) }}
+            >
+            <span><strong>50-50 Balanced Split</strong> (Mix of Interests & Peer Trends)</span>
+        </label>
+        
+        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 14px;">
+            <input 
+                type="radio" 
+                name="weight_preset" 
+                value="people" 
+                style="cursor: pointer; transform: scale(1.1);"
+                onchange="syncAndSubmit()" 
+                {{ 'checked' if (w_ps == 1.0 or w_ps == 1) }}
+            >
+            <span><strong>More Safe Route</strong> (100% Peer History Alignment)</span>
+        </label>
+    </div>
+
+    <input type="hidden" name="w_rrf" id="hidden-w-rrf" value="{{ w_rrf if w_rrf is not none else 0.5 }}">
+    <input type="hidden" name="w_ps" id="hidden-w-ps" value="{{ w_ps if w_ps is not none else 0.5 }}">
+</div>
+
+<script>
+// Helper engine to convert option strings to the raw weights required by rules.py
+function getSelectedWeights() {
+    const selectedPreset = document.querySelector('input[name="weight_preset"]:checked').value;
+    let w_rrf = 0.5;
+    let w_ps = 0.5;
+
+    if (selectedPreset === "semantic") {
+        w_rrf = 1.0;
+        w_ps = 0.0;
+    } else if (selectedPreset === "hybrid") {
+        w_rrf = 0.5;
+        w_ps = 0.5;
+    } else if (selectedPreset === "people") {
+        w_rrf = 0.0;
+        w_ps = 1.0;
+    }
+    return { w_rrf, w_ps };
+}
+
+function syncAndSubmit() {
+    // Find whichever form is currently active on screen
+    let activeForm = document.getElementById('profile-form') || document.querySelector('form');
+    if (!activeForm) return;
+
+    const weights = getSelectedWeights();
+
+    // Dynamically update default component level fallbacks
+    document.getElementById('hidden-w-rrf').value = weights.w_rrf;
+    document.getElementById('hidden-w-ps').value = weights.w_ps;
+
+    // Clean out old parameter injections lingering within the active DOM boundary
+    ['w_rrf', 'w_ps'].forEach(name => {
+        let oldInput = activeForm.querySelector(`input[name="${name}"]`);
+        if (oldInput) oldInput.remove();
+    });
+
+    // Inject fresh inputs for execution
+    const inputRrf = document.createElement('input');
+    inputRrf.type = 'hidden';
+    inputRrf.name = 'w_rrf';
+    inputRrf.value = weights.w_rrf;
+    activeForm.appendChild(inputRrf);
+
+    const inputPs = document.createElement('input');
+    inputPs.type = 'hidden';
+    inputPs.name = 'w_ps';
+    inputPs.value = weights.w_ps;
+    activeForm.appendChild(inputPs);
+
+    // Auto-submit immediately if a search grid layout is active
+    if (document.querySelector('.results-grid')) {
+        activeForm.submit();
+    }
+}
+
+// Ensure normal submission events inherit data correctly from selection state
+document.addEventListener('DOMContentLoaded', function() {
+    const mainForm = document.getElementById('profile-form');
+    if (mainForm) {
+        mainForm.addEventListener('submit', function() {
+            const weights = getSelectedWeights();
+            
+            if (!mainForm.querySelector('input[name="w_rrf"]')) {
+                const inputRrf = document.createElement('input');
+                inputRrf.type = 'hidden';
+                inputRrf.name = 'w_rrf';
+                inputRrf.value = weights.w_rrf;
+                mainForm.appendChild(inputRrf);
+                
+                const inputPs = document.createElement('input');
+                inputPs.type = 'hidden';
+                inputPs.name = 'w_ps';
+                inputPs.value = weights.w_ps;
+                mainForm.appendChild(inputPs);
+            }
+        });
+    }
+});
+</script>
+
  
   <!-- ─────────────── RESULTS GRID ──────────────── -->
+    {% if query_fallback %}
+    <div class="fallback-alert">
+        <p class="fallback-alert__body">
+           &#9432;&nbsp;Since no specific interest keywords were entered, we automatically shifted your 
+           strategy to <strong>100% Safer Route</strong> to give you the most accurate trending courses
+        </p>
+    </div>
+    {% endif %}
+
   {% if eligible is not none %}
   <div class="results-grid">
  
@@ -192,6 +378,7 @@
             data-minor-only="{{ 'true' if c.minor_only else 'false' }}"
             data-divisions='{{ c.divisions | tojson }}'
             data-default-idx="{{ c.default_idx | default(0) }}"
+            data-home-section="eligible"
             data-section="eligible">
           <div class="entry-top">
             <div class="entry-top-left">
@@ -221,10 +408,10 @@
             </div>
             {% endif %}
           <div class="entry-meta">
-            Slot&nbsp;&middot;&nbsp;<span class="mono div-slot">
+            <strong>Slot</strong>&nbsp;:&nbsp;<span class="div-slot">
                 {{- (c.slot or 'N/A') | replace('\r\n', '\n') | replace('\r', '\n') -}}
             </span><br>
-            Instructor&nbsp;&middot;&nbsp;<span class="div-instructor">
+            <strong>Instructor</strong>&nbsp;:&nbsp;<span class="div-instructor">
                 {{- (c.instructor or 'N/A') | replace('\r\n', ', ') | replace('\r', ', ') | replace('\n', ', ') -}}
             </span>
           </div>
@@ -242,25 +429,55 @@
           {% if c.has_minor %}
             <div class="minor-msg" {% if not c.minor_only %}style="display:none"{% endif %}>
                 &#9432;&nbsp;Minor electives are registered in a <strong>separate process before</strong>
-                the regular registration window, and are allotted strictly on the basis of <strong>CPI</strong>.
+                the regular registration window, and are allotted strictly on the basis of <strong>CPI</strong>
             </div>
           {% endif %}
+          <div class="score">
+              <span> <strong>Semantic Score</strong>: {{ ((c.raw_rrf or 0.0) * 100) | round(1) }}%</span>
+              <span> <strong>People Score</strong>: {{ ((c.raw_ps or 0.0) * 100) | round(1) }}%</span>
+              <span> <strong>Final Score</strong>: {{ ((c.final_score or 0.0) * 100) | round(1) }}%</span>
+          </div>
           {% if c.description %}
           <div class="entry-desc-wrap">
             <div class="entry-desc-divider"></div>
+            {% if c.grade_stats %}
+            <div class="grade-stats-wrap">
+              <div class="grade-stats-label">Grading Statistics</div>
+              {% for year, divisions in c.grade_stats.items() %}
+              <div class="grade-year-block">
+                <p class="grade-year-name">{{ year }}</p>
+                {% for div_data in divisions %}
+                <div class="grade-div-block" data-stat-div="{{ 'minor' if div_data.division == 'M' else ('main' if div_data.division == 'Main' else 'other') }}">
+                    <p class="grade-div-name">{% if div_data.division == 'Main' %}Regular{% elif div_data.division == 'M' %}Minor{% else %}{{ div_data.division }}{% endif %} - {{ div_data.total }} students</p>
+                    <div class="grade-dist-row">
+                        {% for grade, count in div_data.grades.items() %}
+                        <span class="grade-chip">
+                            <span class="grade-chip-label">{{ grade }}</span>
+                            <span class="grade-chip-count">{{ count }}</span>
+                        </span>
+                        {% endfor %}
+                    </div>
+                <p class="grade-pct-text"><strong>%AP</strong>: {{ div_data.pct_ap }}% ; <strong>%AA</strong>: {{ div_data.pct_aa }}% ; <strong>%(AA+AB)</strong>: {{ div_data.pct_aa_ab }}%</p>
+              </div>
+              {% if not loop.last %}<div class="grade-div-sep"></div>{% endif %}
+              {% endfor %}
+              </div>
+              {% if not loop.last %}<div class="grade-year-sep"></div>{% endif %}
+              {% endfor %}
+            </div>
+            <div class="grade-stats-divider"></div>
+            {% endif %}            
             <div class="entry-desc-label">Description</div>
             <p class="entry-desc-text">{{ c.description }}</p>
           </div>
           {% endif %}
-          <div class="iss-score"> ISS: {{ (c.score * 100) | round(1) }}%</div>
         </div>
         {% endfor %}
       </div>
       {% endif %}
         <div id = "empty-eligible" class="empty-result" {% if eligible %}style="display:none"{% endif %}>
-          <div class="empty-icon">🎓</div>
           <div class="empty-title">No eligible courses found.</div>
-          <div class="empty-sub">Try different interests or review your course history.</div>
+          <div class="empty-sub">Try different interests or review your course history</div>
         </div>
     </div>
 
@@ -280,7 +497,8 @@
             data-minor-only="{{ 'true' if c.minor_only else 'false' }}"
             data-divisions='{{ c.divisions | tojson }}'
             data-default-idx="{{ c.default_idx | default(0) }}"
-            data-section="eligible">
+            data-home-section="consent"
+            data-section="consent">
           <div class="entry-top">
             <div class="entry-top-left">
                 <span class="code-chip code-consent">{{ c.code }}</span>
@@ -309,10 +527,10 @@
             </div>
           {% endif %}
           <div class="entry-meta">
-            Slot&nbsp;&middot;&nbsp;<span class="mono div-slot">
+            <strong>Slot</strong>&nbsp;:&nbsp;<span class="div-slot">
             {{- (c.slot or 'N/A') | replace('\r\n', '\n') | replace('\r', '\n') -}}
             </span><br>
-            Instructor&nbsp;&middot;&nbsp;<span class="div-instructor">
+            <strong>Instructor</strong>&nbsp;:&nbsp;<span class="div-instructor">
             {{- (c.instructor or 'N/A') | replace('\r\n', ', ') | replace('\r', ', ') | replace('\n', ', ') -}}
             </span>
            {% if c.equiv is defined and (c.equiv.regular or c.equiv.minor) %}
@@ -329,7 +547,7 @@
             {% if c.has_minor %}
             <div class="minor-msg" {% if not c.minor_only %}style="display:none"{% endif %}>
                 &#9432;&nbsp;Minor electives are registered in a <strong>separate process before</strong>
-                the regular registration window, and are allotted strictly on the basis of <strong>CPI</strong>.
+                the regular registration window, and are allotted strictly on the basis of <strong>CPI</strong>
             </div>
             {% endif %}
 
@@ -337,21 +555,51 @@
                 <div class="entry-reason">&#9888; {{ c.reason }}</div>
             {% endif %}
           </div>
+          <div class="score">
+              <span> <strong>Semantic Score</strong>: {{ ((c.raw_rrf or 0.0) * 100) | round(1) }}%</span>
+              <span> <strong>People Score</strong>: {{ ((c.raw_ps or 0.0) * 100) | round(1) }}%</span>
+              <span> <strong>Final Score</strong>: {{ ((c.final_score or 0.0) * 100) | round(1) }}%</span>
+          </div>
           {% if c.description %}
           <div class="entry-desc-wrap">
             <div class="entry-desc-divider"></div>
+            {% if c.grade_stats %}
+            <div class="grade-stats-wrap">
+              <div class="grade-stats-label">Grading Statistics</div>
+              {% for year, divisions in c.grade_stats.items() %}
+              <div class="grade-year-block">
+                <p class="grade-year-name">{{ year }}</p>
+                {% for div_data in divisions %}
+                <div class="grade-div-block" data-stat-div="{{ 'minor' if div_data.division == 'M' else ('main' if div_data.division == 'Main' else 'other') }}">
+                    <p class="grade-div-name">{% if div_data.division == 'Main' %}Regular{% elif div_data.division == 'M' %}Minor{% else %}{{ div_data.division }}{% endif %} - {{ div_data.total }} students</p>
+                    <div class="grade-dist-row">
+                        {% for grade, count in div_data.grades.items() %}
+                        <span class="grade-chip">
+                            <span class="grade-chip-label">{{ grade }}</span>
+                            <span class="grade-chip-count">{{ count }}</span>
+                        </span>
+                        {% endfor %}
+                    </div>
+                <p class="grade-pct-text"><strong>%AP</strong>: {{ div_data.pct_ap }}% ; <strong>%AA</strong>: {{ div_data.pct_aa }}% ; <strong>%(AA+AB)</strong>: {{ div_data.pct_aa_ab }}%</p>
+              </div>
+              {% if not loop.last %}<div class="grade-div-sep"></div>{% endif %}
+              {% endfor %}
+              </div>
+              {% if not loop.last %}<div class="grade-year-sep"></div>{% endif %}
+              {% endfor %}
+            </div>
+            <div class="grade-stats-divider"></div>
+            {% endif %}
             <div class="entry-desc-label">Description</div>
             <p class="entry-desc-text">{{ c.description }}</p>
           </div>
           {% endif %}
-          <div class="iss-score"> ISS: {{ (c.score * 100) | round(1) }}%</div>
         </div>
         {% endfor %}
       </div>
       {% endif %}
         <div id="empty-consent" class="empty-result" {% if i_a_r %}style="display:none"{% endif %}>
-          <div class="empty-icon">✉</div>
-          <div class="empty-title">No courses require consent.</div>
+          <div class="empty-title">No courses require consent</div>
         </div>
     </div>
 
@@ -400,10 +648,10 @@
             </div>
         {% endif %}
         <div class="entry-meta">
-            Slot&nbsp;&middot;&nbsp;<span class="mono div-slot">
+            <strong>Slot</strong>&nbsp;:&nbsp;<span class="div-slot">
             {{- (c.slot or 'N/A') | replace('\r\n', '\n') | replace('\r', '\n') -}}
             </span><br>
-            Instructor&nbsp;&middot;&nbsp;<span class="div-instructor">
+            <strong>Instructor</strong>&nbsp;:&nbsp;<span class="div-instructor">
             {{- (c.instructor or 'N/A') | replace('\r\n', ', ') | replace('\r', ', ') | replace('\n', ', ') -}}
             </span>
         </div>
@@ -421,28 +669,58 @@
         {% if c.has_minor %}
         <div class="minor-msg" {% if not c.minor_only %}style="display:none"{% endif %}>
             &#9432;&nbsp;Minor electives are registered in a <strong>separate process before</strong>
-            the regular registration window, and are allotted strictly on the basis of <strong>CPI</strong>.
+            the regular registration window, and are allotted strictly on the basis of <strong>CPI</strong>
         </div>
         {% endif %}
         <div class="entry-clash-msg">
             &#9203;&nbsp;Time slot clashes with 
             <span class="clash-courses">{{ c.clashing_with | join(', ') }}</span>
         </div>
+        <div class="score">
+              <span class="score"> <strong>Semantic Score</strong>: {{ ((c.raw_rrf or 0.0) * 100) | round(1) }}%</span>
+              <span class="score"> <strong>People Score</strong>: {{ ((c.raw_ps or 0.0) * 100) | round(1) }}%</span>
+              <span class ="score"> <strong>Final Score</strong>: {{ ((c.final_score or 0.0) * 100) | round(1) }}%</span>
+          </div>
         {% if c.description %}
         <div class="entry-desc-wrap">
             <div class="entry-desc-divider"></div>
+            {% if c.grade_stats %}
+            <div class="grade-stats-wrap">
+              <div class="grade-stats-label">Grading Statistics</div>
+              {% for year, divisions in c.grade_stats.items() %}
+              <div class="grade-year-block">
+                <p class="grade-year-name">{{ year }}</p>
+                {% for div_data in divisions %}
+                <div class="grade-div-block" data-stat-div="{{ 'minor' if div_data.division == 'M' else ('main' if div_data.division == 'Main' else 'other') }}">
+                    <p class="grade-div-name">{% if div_data.division == 'Main' %}Regular{% elif div_data.division == 'M' %}Minor{% else %}{{ div_data.division }}{% endif %} - {{ div_data.total }} students</p>
+                    <div class="grade-dist-row">
+                        {% for grade, count in div_data.grades.items() %}
+                        <span class="grade-chip">
+                            <span class="grade-chip-label">{{ grade }}</span>
+                            <span class="grade-chip-count">{{ count }}</span>
+                        </span>
+                        {% endfor %}
+                    </div>
+                <p class="grade-pct-text"><strong>%AP</strong>: {{ div_data.pct_ap }}% ; <strong>%AA</strong>: {{ div_data.pct_aa }}% ; <strong>%(AA+AB)</strong>: {{ div_data.pct_aa_ab }}%</p>
+              </div>
+              {% if not loop.last %}<div class="grade-div-sep"></div>{% endif %}
+              {% endfor %}
+              </div>
+              {% if not loop.last %}<div class="grade-year-sep"></div>{% endif %}
+              {% endfor %}
+            </div>
+            <div class="grade-stats-divider"></div>
+            {% endif %}
             <div class="entry-desc-label">Description</div>
             <p class="entry-desc-text">{{ c.description }}</p>
         </div>
         {% endif %}
-        <div class="iss-score"> ISS: {{ (c.score * 100) | round(1) }}%</div>
         </div>
         {% endfor %}
     </div>
     {% endif %}
         <div id="empty-tsc" class="empty-result" {% if t_s_c %}style="display:none"{% endif %}>
-        <div class="empty-icon">✓</div>
-        <div class="empty-title">No slot conflicts found.</div>
+        <div class="empty-title">No slot conflicts found</div>
         </div>    
     </div>
  
@@ -491,10 +769,10 @@
             </div>
           {% endif %}
           <div class="entry-meta">
-            Slot&nbsp;&middot;&nbsp;<span class="mono div-slot">
+            <strong>Slot</strong>&nbsp;:&nbsp;<span class="div-slot">
             {{- (c.slot or 'N/A') | replace('\r\n', '\n') | replace('\r', '\n') -}}
             </span><br>
-            Instructor&nbsp;&middot;&nbsp;<span class="div-instructor">
+            <strong>Instructor</strong>&nbsp;:&nbsp;<span class="div-instructor">
             {{- (c.instructor or 'N/A') | replace('\r\n', ', ') | replace('\r', ', ') | replace('\n', ', ') -}}
             </span>
           </div>
@@ -512,35 +790,100 @@
           {% if c.has_minor %}
             <div class="minor-msg" {% if not c.minor_only %}style="display:none"{% endif %}>
                 &#9432;&nbsp;Minor electives are registered in a <strong>separate process before</strong>
-                the regular registration window, and are allotted strictly on the basis of <strong>CPI</strong>.
+                the regular registration window, and are allotted strictly on the basis of <strong>CPI</strong>
             </div>
           {% endif %}
 
           <div class="entry-reason">&#9888; {{ c.reason }}</div>
+          <div class="score">
+              <span class="score"><strong> Semantic Score</strong>: {{ ((c.raw_rrf or 0.0) * 100) | round(1) }}%</span>
+              <span class="score"> <strong>People Score</strong>: {{ ((c.raw_ps or 0.0) * 100) | round(1) }}%</span>
+              <span class ="score"> <strong>Final Score</strong>: {{ ((c.final_score or 0.0) * 100) | round(1) }}%</span>
+          </div>
           {% if c.description %}
           <div class="entry-desc-wrap">
             <div class="entry-desc-divider"></div>
+            {% if c.grade_stats %}
+            <div class="grade-stats-wrap">
+              <div class="grade-stats-label">Grading Statistics</div>
+              {% for year, divisions in c.grade_stats.items() %}
+              <div class="grade-year-block">
+                <p class="grade-year-name">{{ year }}</p>
+                {% for div_data in divisions %}
+                <div class="grade-div-block" data-stat-div="{{ 'minor' if div_data.division == 'M' else ('main' if div_data.division == 'Main' else 'other') }}">
+                    <p class="grade-div-name">{% if div_data.division == 'Main' %}Regular{% elif div_data.division == 'M' %}Minor{% else %}{{ div_data.division }}{% endif %} - {{ div_data.total }} students</p>
+                    <div class="grade-dist-row">
+                        {% for grade, count in div_data.grades.items() %}
+                        <span class="grade-chip">
+                            <span class="grade-chip-label">{{ grade }}</span>
+                            <span class="grade-chip-count">{{ count }}</span>
+                        </span>
+                        {% endfor %}
+                    </div>
+                <p class="grade-pct-text"><strong>%AP</strong>: {{ div_data.pct_ap }}% ; <strong>%AA</strong>: {{ div_data.pct_aa }}% ; <strong>%(AA+AB)</strong>: {{ div_data.pct_aa_ab }}%</p>
+              </div>
+              {% if not loop.last %}<div class="grade-div-sep"></div>{% endif %}
+              {% endfor %}
+              </div>
+              {% if not loop.last %}<div class="grade-year-sep"></div>{% endif %}
+              {% endfor %}
+            </div>
+            <div class="grade-stats-divider"></div>
+            {% endif %}
             <div class="entry-desc-label">Description</div>
             <p class="entry-desc-text">{{ c.description }}</p>
           </div>
           {% endif %}
-          <div class="iss-score"> ISS: {{ (c.score * 100) | round(1) }}%</div>
         </div>
         {% endfor %}
       </div>
       {% endif %}
         <div id="empty-rejected" class="empty-result" {% if rejected %}style="display:none"{% endif %}>
-          <div class="empty-icon">✓</div>
-          <div class="empty-title">All courses are eligible.</div>
+          <div class="empty-title">All courses are eligible</div>
         </div>      
     </div>
- 
+  {% endif %} 
   </div><!-- /results-grid -->
  
-  <div class="reset-row">
-    <a href="/" class="btn-reset">&larr; Start New Search</a>
-  </div>
-  {% endif %}
+  <!-- ── Feedback ──────────────────────────────────────────────── -->
+    <div class="card fade-up" id="feedback-card">
+      <div class="card-head">
+        <span class="sec-label">Share Your Experience</span>
+      </div>
+      <div class="divider-dash"></div>
+
+      {% with messages = get_flashed_messages(category_filter=["feedback_success"]) %}
+        {% if messages %}
+          <div class="feedback-success">{{ messages[0] }}</div>
+        {% endif %}
+      {% endwith %}
+      {% with messages = get_flashed_messages(category_filter=["feedback_error"]) %}
+        {% if messages %}
+          <div class="entry-reason reason-no" style="margin-bottom:12px">&#9888;&nbsp;{{ messages[0] }}</div>
+        {% endif %}
+      {% endwith %}
+
+      <form method="POST" action="/feedback" id="feedback-form">
+        <div class="star-rating-wrap">
+          <p class="star-label">Rate your experience</p>
+          <div class="star-row" id="star-row">
+            <span class="star" data-value="1">&#9733;</span>
+            <span class="star" data-value="2">&#9733;</span>
+            <span class="star" data-value="3">&#9733;</span>
+            <span class="star" data-value="4">&#9733;</span>
+            <span class="star" data-value="5">&#9733;</span>
+          </div>
+          <input type="hidden" name="rating" id="rating-input" value="">
+        </div>
+        <div class="field field-full" style="margin-top:16px">
+          <textarea name="feedback_text" id="feedback_text" placeholder=" "></textarea>
+          <label for="feedback_text">Describe your experience</label>
+        </div>
+        <button type="submit" class="btn-primary" id="feedback-submit" disabled>
+          <span class="btn-label">Submit Feedback &rarr;</span>
+        </button>
+      </form>
+    </div>
  
 </main><!-- /content -->
 
@@ -608,6 +951,14 @@ function initSelects() {
  * ─────────────────────────────────────────────────────────────────── */
 function toggleEntry(el) {
   el.classList.toggle('expanded');
+  if (el.classList.contains('expanded')) {
+    var sel = el.querySelector('.div-select');
+    try {
+      var divs = JSON.parse(el.dataset.divisions);
+      var d    = sel ? divs[parseInt(sel.value)] : divs[0];
+      updateGradeStats(el, d.is_minor);
+    } catch(e) {}
+  }
 }
  
 /* ── Theme toggle ──────────────────────────────────────────────── */
@@ -635,6 +986,15 @@ function initSubmitBtn() {
     load.hidden = false;
     btn.disabled = true;
   });
+}
+
+/* ── Grade stats: show Regular or Minor based on dropdown ───────── */
+function updateGradeStats(entry, isMinor) {
+  var mainBlocks  = entry.querySelectorAll('.grade-div-block[data-stat-div="main"]');
+  var minorBlocks = entry.querySelectorAll('.grade-div-block[data-stat-div="minor"]');
+  if (mainBlocks.length === 0 || minorBlocks.length === 0) return;
+  mainBlocks.forEach(function(b)  { b.style.display = isMinor ? 'none' : ''; });
+  minorBlocks.forEach(function(b) { b.style.display = isMinor ? ''     : 'none'; });
 }
 
 /* ── Switch displayed slot/instructor when division changes ─────── */
@@ -682,13 +1042,15 @@ function switchDivision(sel) {
         equivMsg.style.display = 'none';
     }
   }
+    updateGradeStats(entry, d.is_minor);
 
-   var currentSection = entry.dataset.section;
+
+  var currentSection = entry.dataset.section;
   var isClash        = cw && cw.length > 0;    /* reuse cw from above */
-  var targetSection  = isClash ? 'tsc' : 'eligible';
+  var targetSection  = isClash ? 'tsc' : (entry.dataset.homeSection || 'eligible');
 
   if (currentSection !== targetSection &&
-      (currentSection === 'eligible' || currentSection === 'tsc')) {
+      (currentSection === 'eligible' || currentSection === 'tsc' || currentSection === 'consent')) {
     var targetList = document.getElementById('entries-' + targetSection);
     var wrap       = entry.closest('.entry-wrap') || entry;
     if (targetList) {
@@ -744,6 +1106,37 @@ function updateSectionCounts() {
     }
   });
 }
+
+/* ── Star rating ────────────────────────────────────────────────── */
+function initStars() {
+  var stars  = document.querySelectorAll('.star');
+  var input  = document.getElementById('rating-input');
+  var submit = document.getElementById('feedback-submit');
+  if (!stars.length) return;
+
+  stars.forEach(function(star) {
+    star.addEventListener('click', function() {
+      var val = parseInt(this.dataset.value);
+      input.value = val;
+      submit.disabled = false;
+      stars.forEach(function(s) {
+        s.classList.toggle('active', parseInt(s.dataset.value) <= val);
+        s.classList.remove('hover');
+      });
+    });
+
+    star.addEventListener('mouseover', function() {
+      var val = parseInt(this.dataset.value);
+      stars.forEach(function(s) {
+        s.classList.toggle('hover', parseInt(s.dataset.value) <= val);
+      });
+    });
+
+    star.addEventListener('mouseout', function() {
+      stars.forEach(function(s) { s.classList.remove('hover'); });
+    });
+  });
+}
  
 /* ── Boot ──────────────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', function () {
@@ -758,6 +1151,9 @@ document.addEventListener('DOMContentLoaded', function () {
  
   /* Submit button */
   initSubmitBtn();
+
+  /* Feedback Stars */
+  initStars();
 
 });
 </script>
