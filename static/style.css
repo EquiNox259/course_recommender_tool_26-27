@@ -62,6 +62,8 @@
   /* Typefaces */
   --font-display: 'Source Serif 4', serif;
   --font-body:    'Karla', sans-serif;
+  --font-hero:    'Oswald', sans-serif
+  --font-mono:    'IBM Plex Mono', monospace;
 }
  
 /* ── 2. Dark Mode overrides ──────────────────────────────────────── */
@@ -139,6 +141,8 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   text-transform: uppercase;
   color: var(--ac);
 }
+ 
+.mono { font-family: var(--font-mono); font-weight: 500; }
  
 .text-muted-italic {
   font-family: var(--font-body);
@@ -261,7 +265,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 }
  
 .hero-title {
-  font-family: var(--font-body);
+  font-family: var(--font-hero);
   font-weight: 700;
   font-size: 30px;
   color: var(--tp);
@@ -376,7 +380,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
  
 /* Student ID: monospace value, icon room */
 #student_id {
-  font-family: var(--font-body);
+  font-family: var(--font-mono);
   padding-right: 40px;
 }
  
@@ -534,7 +538,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
  
 .chip {
   display: inline-block;
-  font-family: var(--font-body);
+  font-family: var(--font-mono);
   font-weight: 500;
   border-radius: 50px;
 }
@@ -799,7 +803,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 .code-chip {
   display: inline-block;
   font-family: var(--font-body);
-  font-weight: 500;
+  font-weight: 600;
   font-size: 12px;
   border-radius: 20px;
   padding: 3px 9px;
@@ -847,12 +851,12 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 
 .div-slot {
   white-space: pre-line;
-  font-family: var(--font-body);
+  font-family: var(--font-mono);
 }
 
 .div-instructor {
   white-space: pre-line;
-  font-family: var(--font-body);
+  font-family: var(--font-mono);
 }
  
 .entry-reason {
@@ -946,10 +950,11 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 .score {
   font-size: 13px;
   opacity: 0.75;
-  color: var(--tm);
+  color: var(--tp);
   margin-top: 2px;
   margin-bottom: 4px;
-  font-family: var(--font-body);
+  font-family: var(--font-mono);
+  opacity: 0.75;
 }
 
 /* ── Grade statistics ────────────────────────────────────────────── */
@@ -958,7 +963,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 .grade-year-block { margin: 4px 0 8px; }
 
 .grade-stats-label {
-  font-family: var(--font-body);
+  font-family: var(--font-display);
   font-weight: 800;
   font-size: 14px;
   letter-spacing: 1.5px;
@@ -968,7 +973,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 }
 
 .grade-year-name {
-  font-family: var(--font-body);
+  font-family: var(--font-display);
   font-weight: 800;
   font-size: 13px;
   letter-spacing: 1.5px;
@@ -1007,7 +1012,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   border: 1px solid var(--bc);
   background: var(--nb2);
   overflow: hidden;
-  font-family: var(--font-body);
+  font-family: var(--font-mono);
   font-size: 12px;
 }
 
