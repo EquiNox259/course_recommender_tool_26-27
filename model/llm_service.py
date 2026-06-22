@@ -46,7 +46,6 @@ class LLMService:
         return response.text
     
     def rephrase_and_extract_intent(self, raw_query: str) -> dict:
-    def rephrase_and_extract_intent(self, raw_query: str) -> dict:
         """
         Validates the query for academic intent and extracts structured 
         n-gram keywords in a single, unified LLM API call.
