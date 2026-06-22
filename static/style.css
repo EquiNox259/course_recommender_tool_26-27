@@ -42,8 +42,8 @@
   --tm:  #9C9080;
  
   /* Navigation */
-  --nv:  #1D4B2F;
-  --nt:  #FFFFFF;
+  --nv:  #FFFFFF;
+  --nt:  #1D4B2F;
   --nm:  rgba(255,255,255,0.55);
   --ns:  rgba(255,255,255,0.20);
  
@@ -62,16 +62,16 @@
   /* Typefaces */
   --font-display: 'Source Serif 4', serif;
   --font-body:    'Karla', sans-serif;
-  --font-hero:    'Oswald', sans-serif
+  --font-hero:    'Poppins', sans-serif;
   --font-mono:    'IBM Plex Mono', monospace;
 }
  
 /* ── 2. Dark Mode overrides ──────────────────────────────────────── */
 .dark {
-  --pg:  #0F1510;
-  --pc:  #181F15;
-  --pi:  #111810;
-  --ph:  #1E2B1A;
+  --pg:  #0D2118;
+  --pc:  #183225;
+  --pi:  #102419;
+  --ph:  #1C3828;
   --bc:  #283522;
   --bi:  #2E3D28;
   --bd:  #232E1E;
@@ -134,7 +134,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
  
 /* ── 4. Typography helpers ───────────────────────────────────────── */
 .sec-label {
-  font-family: var(--font-body);
+  font-family: var(--font-hero);
   font-weight: 500;
   font-size: 15px;
   letter-spacing: 2px;
@@ -148,7 +148,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   font-family: var(--font-body);
   font-style: italic;
   font-size: 14px;
-  color: var(--tm);
+  color: var(--tp);
 }
  
 /* ── 5. Navigation bar ───────────────────────────────────────────── */
@@ -249,6 +249,10 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   height: 75px;
   object-fit: contain;
   flex-shrink: 0;
+}
+
+.dark #dav-icon {
+  filter: invert(1);
 }
  
 /* ── 6. Page content wrapper ─────────────────────────────────────── */
@@ -544,9 +548,9 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 }
  
 .chip-primary {
-  font-size: 12px;
-  color: var(--gr);
-  background: var(--gl);
+  font-size: 13px;
+  color: var(--tp);
+  font-weight: bold;
   padding: 5px 11px;
 }
  
@@ -580,37 +584,38 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 }
  
 .badge-accent {
-  background: var(--al);
-  border-radius: 50px;
   color: var(--tp);
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0.5;
 }
  
 .badge-ok {
-  background: var(--ob);
-  border: 1px solid var(--or);
-  border-radius: 50px;
   color: var(--ok);
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0.5;
 }
 
 .badge-consent {
-  background: var(--al);
-  border: 1px solid var(--wr);
-  border-radius: 50px;
   color: var(--ac);
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0.5;
 }
 
 .badge-clash {
-  background: var(--clb);
-  border: 1px solid var(--clr);
-  border-radius: 50px;
   color: var(--cl);
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0.5;
 }
  
 .badge-no {
-  background: var(--nb2);
-  border: 1px solid var(--nr);
-  border-radius: 50px;
   color: var(--no);
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0.5;
 }
 
 /* ── Minor badge on course chip row ──────────────────────────────── */
@@ -706,23 +711,23 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 }
  
 .card-ok {
-  background: var(--ob);
-  border: 1px solid var(--or);
+  background: var(--pc);
+  border: 1px solid var(--bc);
 }
 
 .card-consent {
-  background: var(--al);
-  border: 1px solid var(--wr);
+  background: var(--pc);
+  border: 1px solid var(--bc);
 }
 
 .card-clash {
-  background: var(--clb);
-  border: 1px solid var(--clr);
+  background: var(--pc);
+  border: 1px solid var(--bc);
 }
  
 .card-no {
-  background: var(--nb2);
-  border: 1px solid var(--nr);
+  background: var(--pc);
+  border: 1px solid var(--bc);
 }
  
 .result-head {
@@ -787,11 +792,6 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 .entry-clash:hover { background: var(--clb); filter: brightness(0.96); }
 .entry-no:hover  { background: var(--nb2); filter: brightness(0.95); }
  
-/* Remove bottom divider from last entry */
-.entry-last { 
-    border-bottom: none;
-    margin-bottom: 0;
-}
  
 .entry-top {
   display: flex;
@@ -799,38 +799,22 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   justify-content: space-between;
   margin-bottom: 8px;
 }
- 
-.code-chip {
-  display: inline-block;
-  font-family: var(--font-body);
-  font-weight: 600;
-  font-size: 12px;
-  border-radius: 20px;
-  padding: 3px 9px;
-}
- 
-.code-ok {
-  background: var(--ob);
-  border: 1px solid var(--or);
-  color: var(--ok);
-}
- 
-.code-consent {
-  background: var(--al);
-  border: 1px solid var(--wr);
-  color: var(--ac);
+
+.entry-top-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  flex-wrap: wrap;
 }
 
-.code-clash {
-  background: var(--clb);
-  border: 1px solid var(--clr);
-  color: var(--cl);
-}
-
-.code-no {
-  background: var(--nb2);
-  border: 1px solid var(--nr);
-  color: var(--no);
+.entry-code-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: nowrap;
+  margin-bottom: 6px;
 }
  
 .entry-name {
@@ -930,7 +914,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
  
 .entry-desc-label {
   font-family: var(--font-body);
-  font-weight: 800;
+  font-weight: 600;
   font-size: 12px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
@@ -941,7 +925,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 .entry-desc-text {
   font-family: var(--font-body);
   font-size: 13px;
-  color: var(--ts);
+  color: var(--tp);
   line-height: 1.65;
   margin: 0;
   padding-bottom: 4px;
@@ -951,18 +935,32 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   font-size: 13px;
   opacity: 0.75;
   color: var(--tp);
+  color: var(--tp);
   margin-top: 2px;
   margin-bottom: 4px;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   opacity: 0.75;
 }
 
 /* ── Grade statistics ────────────────────────────────────────────── */
-.grade-stats-wrap { margin-bottom: 6px; }
+.grade-stats-wrap {
+  margin-bottom: 6px;
+}
 
-.grade-year-block { margin: 4px 0 8px; }
+.grade-years-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.grade-year-block {
+  flex: 1;
+  min-width: 160px;
+}
 
 .grade-stats-label {
+  font-family: var(--font-display);
   font-family: var(--font-display);
   font-weight: 800;
   font-size: 14px;
@@ -974,15 +972,28 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 
 .grade-year-name {
   font-family: var(--font-display);
+  font-family: var(--font-display);
   font-weight: 800;
   font-size: 13px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--tp);
   margin-bottom: 6px;
+  opacity: 0.75;
 }
 
-.grade-div-block { margin: 4px 0; }
+.grade-years-col {
+  flex-direction: column;
+}
+
+.grade-div-block { margin: 0; }
+
+.grade-divs-row {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  align-items: flex-start;
+}
 
 .grade-div-name {
   font-family: var(--font-body);
@@ -998,47 +1009,38 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   margin: 6px 0;
 }
 
-.grade-dist-row {
+.grade-chart-row {
   display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-bottom: 6px;
+  align-items: center;
+  gap: 16px;
+  margin: 6px 0;
 }
 
-.grade-chip {
-  display: inline-flex;
+.grade-chart-wrap { flex-shrink: 0; }
+
+.grade-pct-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.grade-pct-item {
+  display: flex;
   align-items: center;
-  border-radius: 20px;
-  border: 1px solid var(--bc);
-  background: var(--nb2);
-  overflow: hidden;
-  font-family: var(--font-mono);
+  gap: 8px;
+  font-family: var(--font-body);
   font-size: 12px;
 }
 
-.grade-chip-label {
-  padding: 2px 7px;
-  background: var(--nr);
-  color: var(--tp);
-  font-weight: 600;
+.grade-pct-label {
+  color: var(--tm);
+  min-width: 44px;
 }
 
-.grade-chip-count {
-  padding: 2px 8px;
-  color: var(--tp);
-}
-
-.grade-pct-text {
+.grade-pct-val {
   font-family: var(--font-body);
-  font-size: 13px;
+  font-weight: 600;
   color: var(--tp);
-  margin-top: 4px;
-}
-
-.grade-year-sep {
-  height: 1px;
-  border-top: 1px dashed var(--bd);
-  margin: 8px 0;
 }
 
 .grade-stats-divider {

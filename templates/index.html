@@ -6,8 +6,9 @@
   <title>Course Recommender — DAV Team · UGAC</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=IBM+Plex+Mono:wght@500&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=IBM+Plex+Mono:wght@500&family=Poppins:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -15,13 +16,13 @@
 <!-- ═══════════════════════════════════════════════ NAVBAR ═══ -->
 <nav class="navbar">
   <div class="nav-left">
-    <img id="dav-icon" class="nav-logo" src="" alt="DAV">
+    <img id="dav-icon" class="nav-logo" src="/static/DAV_Logo.svg" alt="DAV">
      <span class="nav-title">Data Analytics and Visualization Team</span>
   </div>
   <div class="nav-right">
     <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">☀️</button>
     <a href="https://ugac-iitb.github.io/UGAC-IITB/divisions/9" target="_blank" rel="noopener">
-        <img id="ugac-icon" class="nav-ugac" src="https://dav-course-recommender-iitb.netlify.app/Images/ugac_logo.svg" alt="UGAC">
+        <img id="ugac-icon" class="nav-ugac" src="/static/ugac_logo.svg" alt="UGAC">
     </a>
   </div>
 </nav>
@@ -223,6 +224,7 @@
   {% endif %}
 
     {% if otp_verified %}
+    {% if otp_verified %}
     <div class="filter-container" style="padding: 16px; margin-bottom: 20px; background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border-color);">
     <div style="font-weight: 600; margin-bottom: 12px; color: inherit;">Recommendation Strategy:</div>
     
@@ -267,6 +269,7 @@
     <input type="hidden" name="w_rrf" id="hidden-w-rrf" value="{{ w_rrf if w_rrf is not none else 0.5 }}">
     <input type="hidden" name="w_ps" id="hidden-w-ps" value="{{ w_ps if w_ps is not none else 0.5 }}">
 </div>
+{% endif %}
 {% endif %}
 
 <script>
@@ -365,6 +368,7 @@ document.addEventListener('DOMContentLoaded', function() {
   <div class="results-grid">
  
     <!-- ✅ Eligible -->
+     {% if eligible %}
     <div class="result-card card-ok fade-up">
       <div class="result-head">
         <span class="result-title result-ok">Eligible Courses</span>
@@ -382,17 +386,22 @@ document.addEventListener('DOMContentLoaded', function() {
             data-default-idx="{{ c.default_idx | default(0) }}"
             data-home-section="eligible"
             data-section="eligible">
+         {% if c.has_minor %}
           <div class="entry-top">
-            <div class="entry-top-left">
-                <span class="code-chip code-ok">{{ c.code }}</span>
-                {% if c.has_minor %}
+            <div class="entry-top-left">                
                 {% set _dm = c.divisions[c.default_idx | default(0)]['is_minor'] if c.divisions else false %}
-                <span class="tag-minor" {% if not _dm %}style="display:none"{% endif %}>Minor</span>
-                {% endif %}
+                <span class="tag-minor" {% if not _dm %}style="display:none"{% endif %}>Minor</span>                
             </div>
             <span class="entry-chevron">&#9662;</span>
           </div>
-           <div class="entry-name">{{ c.name }}</div>
+         {% endif %}
+          <div class="entry-code-row">
+            <span style="font-family: 'Source Serif 4', serif; font-size: 17px; font-weight: 600; opacity: 0.75;">{{ c.code }}</span>
+            <span class="entry-name">: {{ c.name }}</span>
+            {% if not c.has_minor %}
+            <span class="entry-chevron" style="margin-left:auto;flex-shrink:0">&#9662;</span>
+            {% endif %}
+          </div>
           {% if c.divisions | length > 1 %}
             <div class="entry-div-wrap">
                 <select class="div-select"
@@ -445,30 +454,47 @@ document.addEventListener('DOMContentLoaded', function() {
             {% if c.grade_stats %}
             <div class="grade-stats-wrap">
               <div class="grade-stats-label">Grading Statistics</div>
+              {% set ns = namespace(max_divs=0) %}
+              {% for _y, _d in c.grade_stats.items() %}{% if _d|length > ns.max_divs %}{% set ns.max_divs = _d|length %}{% endif %}{% endfor %}
+              {% set pie_size = 200 if ns.max_divs <= 1 else (155 if ns.max_divs == 2 else (115 if ns.max_divs == 3 else 90)) %}
+            <div class="grade-years-row{% if ns.max_divs > 2 %} grade-years-col{% endif %}">
               {% for year, divisions in c.grade_stats.items() %}
               <div class="grade-year-block">
                 <p class="grade-year-name">{{ year }}</p>
+                <div class="grade-divs-row">
                 {% for div_data in divisions %}
                 <div class="grade-div-block" data-stat-div="{{ 'minor' if div_data.division == 'M' else ('main' if div_data.division == 'Main' else 'other') }}">
-                    <p class="grade-div-name">{% if div_data.division == 'Main' %}Regular{% elif div_data.division == 'M' %}Minor{% else %}{{ div_data.division }}{% endif %} - {{ div_data.total }} students</p>
-                    <div class="grade-dist-row">
-                        {% for grade, count in div_data.grades.items() %}
-                        <span class="grade-chip">
-                            <span class="grade-chip-label">{{ grade }}</span>
-                            <span class="grade-chip-count">{{ count }}</span>
-                        </span>
-                        {% endfor %}
+                    <p class="grade-div-name">{% if div_data.division == 'Main' %}Elective{% elif div_data.division == 'M' %}Minor{% else %}{{ div_data.division }}{% endif %} - {{ div_data.total }} students</p>
+                    <div class="grade-chart-row">
+                        <div class="grade-chart-wrap">
+                            <canvas class="grade-pie-chart"
+                                    data-grades='{{ div_data.grades | tojson }}'
+                                    width="{{ pie_size }}" height="{{ pie_size }}"></canvas>
+                        </div>
+                        <div class="grade-pct-col">
+                            <p class="grade-pct-item">
+                            <span class="grade-pct-label">%AP</span>
+                            <span class="grade-pct-val">{{ div_data.pct_ap }}%</span>
+                            </p>
+                            <p class="grade-pct-item">
+                            <span class="grade-pct-label">%AA</span>
+                            <span class="grade-pct-val">{{ div_data.pct_aa }}%</span>
+                            </p>
+                            <p class="grade-pct-item">
+                            <span class="grade-pct-label">AA+AB</span>
+                            <span class="grade-pct-val">{{ div_data.pct_aa_ab }}%</span>
+                            </p>
+                        </div>
                     </div>
-                <p class="grade-pct-text"><strong>%AP</strong>: {{ div_data.pct_ap }}% ; <strong>%AA</strong>: {{ div_data.pct_aa }}% ; <strong>%(AA+AB)</strong>: {{ div_data.pct_aa_ab }}%</p>
               </div>
-              {% if not loop.last %}<div class="grade-div-sep"></div>{% endif %}
               {% endfor %}
               </div>
-              {% if not loop.last %}<div class="grade-year-sep"></div>{% endif %}
+              </div>
               {% endfor %}
+              </div>
             </div>
             <div class="grade-stats-divider"></div>
-            {% endif %}            
+            {% endif %}
             <div class="entry-desc-label">Description</div>
             <p class="entry-desc-text">{{ c.description }}</p>
           </div>
@@ -482,8 +508,10 @@ document.addEventListener('DOMContentLoaded', function() {
           <div class="empty-sub">Try different interests or review your course history</div>
         </div>
     </div>
+    {% endif %}
 
     <!-- ⚠️ Instructor Consent Required -->
+     {% if i_a_r %}
     <div class="result-card card-consent fade-up-d1">
       <div class="result-head">
         <span class="result-title result-consent">Instructor Consent Required</span>
@@ -501,17 +529,22 @@ document.addEventListener('DOMContentLoaded', function() {
             data-default-idx="{{ c.default_idx | default(0) }}"
             data-home-section="consent"
             data-section="consent">
+           {% if c.has_minor %}
           <div class="entry-top">
-            <div class="entry-top-left">
-                <span class="code-chip code-consent">{{ c.code }}</span>
-                {% if c.has_minor %}
+            <div class="entry-top-left">                
                 {% set _dm = c.divisions[c.default_idx | default(0)]['is_minor'] if c.divisions else false %}
-                <span class="tag-minor" {% if not _dm %}style="display:none"{% endif %}>Minor</span>
-                {% endif %}
+                <span class="tag-minor" {% if not _dm %}style="display:none"{% endif %}>Minor</span>                
             </div>
             <span class="entry-chevron">&#9662;</span>
           </div>
-          <div class="entry-name">{{ c.name }}</div>
+         {% endif %}
+          <div class="entry-code-row">
+            <span style="font-family: 'Source Serif 4', serif; font-size: 17px; font-weight: 600; opacity: 0.75;">{{ c.code }}</span>
+            <span class="entry-name">: {{ c.name }}</span>
+            {% if not c.has_minor %}
+            <span class="entry-chevron" style="margin-left:auto;flex-shrink:0">&#9662;</span>
+            {% endif %}
+          </div>
           {% if c.divisions | length > 1 %}
             <div class="entry-div-wrap">
                 <select class="div-select"
@@ -568,27 +601,44 @@ document.addEventListener('DOMContentLoaded', function() {
             {% if c.grade_stats %}
             <div class="grade-stats-wrap">
               <div class="grade-stats-label">Grading Statistics</div>
+              {% set ns = namespace(max_divs=0) %}
+              {% for _y, _d in c.grade_stats.items() %}{% if _d|length > ns.max_divs %}{% set ns.max_divs = _d|length %}{% endif %}{% endfor %}
+              {% set pie_size = 200 if ns.max_divs <= 1 else (155 if ns.max_divs == 2 else (115 if ns.max_divs == 3 else 90)) %}
+            <div class="grade-years-row{% if ns.max_divs > 2 %} grade-years-col{% endif %}">
               {% for year, divisions in c.grade_stats.items() %}
               <div class="grade-year-block">
                 <p class="grade-year-name">{{ year }}</p>
+                <div class="grade-divs-row">
                 {% for div_data in divisions %}
                 <div class="grade-div-block" data-stat-div="{{ 'minor' if div_data.division == 'M' else ('main' if div_data.division == 'Main' else 'other') }}">
-                    <p class="grade-div-name">{% if div_data.division == 'Main' %}Regular{% elif div_data.division == 'M' %}Minor{% else %}{{ div_data.division }}{% endif %} - {{ div_data.total }} students</p>
-                    <div class="grade-dist-row">
-                        {% for grade, count in div_data.grades.items() %}
-                        <span class="grade-chip">
-                            <span class="grade-chip-label">{{ grade }}</span>
-                            <span class="grade-chip-count">{{ count }}</span>
-                        </span>
-                        {% endfor %}
+                    <p class="grade-div-name">{% if div_data.division == 'Main' %}Elective{% elif div_data.division == 'M' %}Minor{% else %}{{ div_data.division }}{% endif %} - {{ div_data.total }} students</p>
+                    <div class="grade-chart-row">
+                        <div class="grade-chart-wrap">
+                            <canvas class="grade-pie-chart"
+                                    data-grades='{{ div_data.grades | tojson }}'
+                                    width="{{ pie_size }}" height="{{ pie_size }}"></canvas>
+                        </div>
+                        <div class="grade-pct-col">
+                            <p class="grade-pct-item">
+                            <span class="grade-pct-label">%AP</span>
+                            <span class="grade-pct-val">{{ div_data.pct_ap }}%</span>
+                            </p>
+                            <p class="grade-pct-item">
+                            <span class="grade-pct-label">%AA</span>
+                            <span class="grade-pct-val">{{ div_data.pct_aa }}%</span>
+                            </p>
+                            <p class="grade-pct-item">
+                            <span class="grade-pct-label">AA+AB</span>
+                            <span class="grade-pct-val">{{ div_data.pct_aa_ab }}%</span>
+                            </p>
+                        </div>
                     </div>
-                <p class="grade-pct-text"><strong>%AP</strong>: {{ div_data.pct_ap }}% ; <strong>%AA</strong>: {{ div_data.pct_aa }}% ; <strong>%(AA+AB)</strong>: {{ div_data.pct_aa_ab }}%</p>
               </div>
-              {% if not loop.last %}<div class="grade-div-sep"></div>{% endif %}
               {% endfor %}
               </div>
-              {% if not loop.last %}<div class="grade-year-sep"></div>{% endif %}
+              </div>
               {% endfor %}
+              </div>
             </div>
             <div class="grade-stats-divider"></div>
             {% endif %}
@@ -604,8 +654,10 @@ document.addEventListener('DOMContentLoaded', function() {
           <div class="empty-title">No courses require consent</div>
         </div>
     </div>
+    {% endif %}
 
     <!-- ⏱️ Time Slot Clash -->
+    {% if t_s_c %}
     <div class="result-card card-clash fade-up-d2">
     <div class="result-head">
         <span class="result-title result-clash">Time Slot Clash</span>
@@ -622,17 +674,22 @@ document.addEventListener('DOMContentLoaded', function() {
             data-divisions='{{ c.divisions | tojson }}'
             data-default-idx="{{ c.default_idx | default(0) }}"
             data-section="tsc">
-        <div class="entry-top">
-            <div class="entry-top-left">
-                <span class="code-chip code-clash">{{ c.code }}</span>
-                {% if c.has_minor %}
+         {% if c.has_minor %}
+          <div class="entry-top">
+            <div class="entry-top-left">                
                 {% set _dm = c.divisions[c.default_idx | default(0)]['is_minor'] if c.divisions else false %}
-                <span class="tag-minor" {% if not _dm %}style="display:none"{% endif %}>Minor</span>
-                {% endif %}
+                <span class="tag-minor" {% if not _dm %}style="display:none"{% endif %}>Minor</span>                
             </div>
             <span class="entry-chevron">&#9662;</span>
-        </div>
-        <div class="entry-name">{{ c.name }}</div>
+          </div>
+         {% endif %}
+          <div class="entry-code-row">
+            <span style="font-family: 'Source Serif 4', serif; font-size: 17px; font-weight: 600; opacity: 0.75;">{{ c.code }}</span>
+            <span class="entry-name">: {{ c.name }}</span>
+            {% if not c.has_minor %}
+            <span class="entry-chevron" style="margin-left:auto;flex-shrink:0">&#9662;</span>
+            {% endif %}
+          </div>
         {% if c.divisions | length > 1 %}
             <div class="entry-div-wrap">
                 <select class="div-select"
@@ -689,27 +746,44 @@ document.addEventListener('DOMContentLoaded', function() {
             {% if c.grade_stats %}
             <div class="grade-stats-wrap">
               <div class="grade-stats-label">Grading Statistics</div>
+              {% set ns = namespace(max_divs=0) %}
+              {% for _y, _d in c.grade_stats.items() %}{% if _d|length > ns.max_divs %}{% set ns.max_divs = _d|length %}{% endif %}{% endfor %}
+              {% set pie_size = 200 if ns.max_divs <= 1 else (155 if ns.max_divs == 2 else (115 if ns.max_divs == 3 else 90)) %}
+            <div class="grade-years-row{% if ns.max_divs > 2 %} grade-years-col{% endif %}">
               {% for year, divisions in c.grade_stats.items() %}
               <div class="grade-year-block">
                 <p class="grade-year-name">{{ year }}</p>
+                <div class="grade-divs-row">
                 {% for div_data in divisions %}
                 <div class="grade-div-block" data-stat-div="{{ 'minor' if div_data.division == 'M' else ('main' if div_data.division == 'Main' else 'other') }}">
-                    <p class="grade-div-name">{% if div_data.division == 'Main' %}Regular{% elif div_data.division == 'M' %}Minor{% else %}{{ div_data.division }}{% endif %} - {{ div_data.total }} students</p>
-                    <div class="grade-dist-row">
-                        {% for grade, count in div_data.grades.items() %}
-                        <span class="grade-chip">
-                            <span class="grade-chip-label">{{ grade }}</span>
-                            <span class="grade-chip-count">{{ count }}</span>
-                        </span>
-                        {% endfor %}
+                    <p class="grade-div-name">{% if div_data.division == 'Main' %}Elective{% elif div_data.division == 'M' %}Minor{% else %}{{ div_data.division }}{% endif %} - {{ div_data.total }} students</p>
+                    <div class="grade-chart-row">
+                        <div class="grade-chart-wrap">
+                            <canvas class="grade-pie-chart"
+                                    data-grades='{{ div_data.grades | tojson }}'
+                                    width="{{ pie_size }}" height="{{ pie_size }}"></canvas>
+                        </div>
+                        <div class="grade-pct-col">
+                            <p class="grade-pct-item">
+                            <span class="grade-pct-label">%AP</span>
+                            <span class="grade-pct-val">{{ div_data.pct_ap }}%</span>
+                            </p>
+                            <p class="grade-pct-item">
+                            <span class="grade-pct-label">%AA</span>
+                            <span class="grade-pct-val">{{ div_data.pct_aa }}%</span>
+                            </p>
+                            <p class="grade-pct-item">
+                            <span class="grade-pct-label">AA+AB</span>
+                            <span class="grade-pct-val">{{ div_data.pct_aa_ab }}%</span>
+                            </p>
+                        </div>
                     </div>
-                <p class="grade-pct-text"><strong>%AP</strong>: {{ div_data.pct_ap }}% ; <strong>%AA</strong>: {{ div_data.pct_aa }}% ; <strong>%(AA+AB)</strong>: {{ div_data.pct_aa_ab }}%</p>
               </div>
-              {% if not loop.last %}<div class="grade-div-sep"></div>{% endif %}
               {% endfor %}
               </div>
-              {% if not loop.last %}<div class="grade-year-sep"></div>{% endif %}
+              </div>
               {% endfor %}
+              </div>
             </div>
             <div class="grade-stats-divider"></div>
             {% endif %}
@@ -725,8 +799,10 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="empty-title">No slot conflicts found</div>
         </div>    
     </div>
+    {% endif %}
  
     <!-- ❌ Not Eligible -->
+     {% if rejected %}
     <div class="result-card card-no fade-up-d2">
       <div class="result-head">
         <span class="result-title result-no">Not Eligible</span>
@@ -743,17 +819,22 @@ document.addEventListener('DOMContentLoaded', function() {
             data-divisions='{{ c.divisions | tojson }}'
             data-default-idx="{{ c.default_idx | default(0) }}"
             data-section="rejected">
+           {% if c.has_minor %}
           <div class="entry-top">
-            <div class="entry-top-left">
-                <span class="code-chip code-no">{{ c.code }}</span>
-                {% if c.has_minor %}
+            <div class="entry-top-left">                
                 {% set _dm = c.divisions[c.default_idx | default(0)]['is_minor'] if c.divisions else false %}
-                <span class="tag-minor" {% if not _dm %}style="display:none"{% endif %}>Minor</span>
-                {% endif %}
+                <span class="tag-minor" {% if not _dm %}style="display:none"{% endif %}>Minor</span>                
             </div>
             <span class="entry-chevron">&#9662;</span>
           </div>
-          <div class="entry-name">{{ c.name }}</div>
+         {% endif %}
+          <div class="entry-code-row">
+            <span style="font-family: 'Source Serif 4', serif; font-size: 17px; font-weight: 600; opacity: 0.75;">{{ c.code }}</span>
+            <span class="entry-name">: {{ c.name }}</span>
+            {% if not c.has_minor %}
+            <span class="entry-chevron" style="margin-left:auto;flex-shrink:0">&#9662;</span>
+            {% endif %}
+          </div>
           {% if c.divisions | length > 1 %}
             <div class="entry-div-wrap">
                 <select class="div-select"
@@ -808,27 +889,44 @@ document.addEventListener('DOMContentLoaded', function() {
             {% if c.grade_stats %}
             <div class="grade-stats-wrap">
               <div class="grade-stats-label">Grading Statistics</div>
+              {% set ns = namespace(max_divs=0) %}
+              {% for _y, _d in c.grade_stats.items() %}{% if _d|length > ns.max_divs %}{% set ns.max_divs = _d|length %}{% endif %}{% endfor %}
+              {% set pie_size = 200 if ns.max_divs <= 1 else (155 if ns.max_divs == 2 else (115 if ns.max_divs == 3 else 90)) %}
+            <div class="grade-years-row{% if ns.max_divs > 2 %} grade-years-col{% endif %}">
               {% for year, divisions in c.grade_stats.items() %}
               <div class="grade-year-block">
                 <p class="grade-year-name">{{ year }}</p>
+                <div class="grade-divs-row">
                 {% for div_data in divisions %}
                 <div class="grade-div-block" data-stat-div="{{ 'minor' if div_data.division == 'M' else ('main' if div_data.division == 'Main' else 'other') }}">
-                    <p class="grade-div-name">{% if div_data.division == 'Main' %}Regular{% elif div_data.division == 'M' %}Minor{% else %}{{ div_data.division }}{% endif %} - {{ div_data.total }} students</p>
-                    <div class="grade-dist-row">
-                        {% for grade, count in div_data.grades.items() %}
-                        <span class="grade-chip">
-                            <span class="grade-chip-label">{{ grade }}</span>
-                            <span class="grade-chip-count">{{ count }}</span>
-                        </span>
-                        {% endfor %}
+                    <p class="grade-div-name">{% if div_data.division == 'Main' %}Elective{% elif div_data.division == 'M' %}Minor{% else %}{{ div_data.division }}{% endif %} - {{ div_data.total }} students</p>
+                    <div class="grade-chart-row">
+                        <div class="grade-chart-wrap">
+                            <canvas class="grade-pie-chart"
+                                    data-grades='{{ div_data.grades | tojson }}'
+                                    width="{{ pie_size }}" height="{{ pie_size }}"></canvas>
+                        </div>
+                        <div class="grade-pct-col">
+                            <p class="grade-pct-item">
+                            <span class="grade-pct-label">%AP</span>
+                            <span class="grade-pct-val">{{ div_data.pct_ap }}%</span>
+                            </p>
+                            <p class="grade-pct-item">
+                            <span class="grade-pct-label">%AA</span>
+                            <span class="grade-pct-val">{{ div_data.pct_aa }}%</span>
+                            </p>
+                            <p class="grade-pct-item">
+                            <span class="grade-pct-label">AA+AB</span>
+                            <span class="grade-pct-val">{{ div_data.pct_aa_ab }}%</span>
+                            </p>
+                        </div>
                     </div>
-                <p class="grade-pct-text"><strong>%AP</strong>: {{ div_data.pct_ap }}% ; <strong>%AA</strong>: {{ div_data.pct_aa }}% ; <strong>%(AA+AB)</strong>: {{ div_data.pct_aa_ab }}%</p>
               </div>
-              {% if not loop.last %}<div class="grade-div-sep"></div>{% endif %}
               {% endfor %}
               </div>
-              {% if not loop.last %}<div class="grade-year-sep"></div>{% endif %}
+              </div>
               {% endfor %}
+              </div>
             </div>
             <div class="grade-stats-divider"></div>
             {% endif %}
@@ -844,6 +942,7 @@ document.addEventListener('DOMContentLoaded', function() {
           <div class="empty-title">All courses are eligible</div>
         </div>      
     </div>
+    {% endif %}
   </div><!-- /results-grid -->
  
   <!-- ── Feedback ──────────────────────────────────────────────── -->
@@ -886,55 +985,28 @@ document.addEventListener('DOMContentLoaded', function() {
       </form>
     </div>
   {% endif %}
+  {% endif %}
  
 </main><!-- /content -->
 
 <!-- Footer -->
 <footer style="text-align:center; padding:24px;
-               font-family:var(--font-body); font-size:12px; color:var(--tm);
+               font-family:var(--font-body); font-size:14px; color:var(--tp);
                border-top:1px solid var(--bc)">
   &copy; 2026 DAV Team &nbsp;|&nbsp; UGAC, IIT Bombay
+  <br>  
+  <span style="font-size: 14px; color:var(--tp); opacity:0.65;">
+    All course-related information is sourced from the
+    <a href="https://asc.iitb.ac.in/internalasc/studentsresource.php"
+       target="_blank"
+       style="color:inherit; text-decoration:underline; text-underline-offset:2px;">
+      Internal ASC Portal
+    </a>
+  </span>
 </footer>
  
 <!-- ═══════════════════════════════════════════════ SCRIPTS ══ -->
-<script>
-/* ── Embedded icon data URIs (base64 PNG) ─────────────────────── */
-var DAV_SRC  = "data:image/png;base64,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";
-var UGAC_SRC = "data:image/png;base64,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";
- 
-/* ── Canvas-based white-background removal ─────────────────────
- *  Iterates every pixel; near-white → transparent.
- *  invertDark=true  → also inverts dark pixels to white (for DAV icon).
- *  invertDark=false → preserves original colours      (for UGAC icon).
- * ─────────────────────────────────────────────────────────────── */
-function processIcon(src, invertDark, cb) {
-  var img = new Image();
-  img.onload = function () {
-    var c = document.createElement('canvas');
-    c.width = img.width; c.height = img.height;
-    var ctx = c.getContext('2d');
-    ctx.drawImage(img, 0, 0);
-    var id  = ctx.getImageData(0, 0, c.width, c.height);
-    var d   = id.data;
-    for (var i = 0; i < d.length; i += 4) {
-      var r = d[i], g = d[i+1], b = d[i+2];
-      var bright = (r + g + b) / 3;
-      if (bright > 235) {
-        d[i+3] = 0;                          /* fully transparent */
-      } else if (bright > 205) {
-        var a = Math.round(d[i+3] * (235 - bright) / 30);
-        d[i+3] = a;                          /* feathered edge     */
-        if (invertDark && a > 0) { d[i]=255-r; d[i+1]=255-g; d[i+2]=255-b; }
-      } else if (invertDark) {
-        d[i]=255-r; d[i+1]=255-g; d[i+2]=255-b; /* invert → white  */
-      }
-    }
-    ctx.putImageData(id, 0, 0);
-    cb(c.toDataURL());
-  };
-  img.src = src;
-}
- 
+<script>  
 /* ── Select floating-label helper ──────────────────────────────
  *  Native <select> can't use :placeholder-shown, so JS adds
  *  .has-value when a non-empty value is chosen.
@@ -959,6 +1031,7 @@ function toggleEntry(el) {
       var divs = JSON.parse(el.dataset.divisions);
       var d    = sel ? divs[parseInt(sel.value)] : divs[0];
       updateGradeStats(el, d.is_minor);
+      initGradeCharts(el);
     } catch(e) {}
   }
 }
@@ -1139,12 +1212,56 @@ function initStars() {
     });
   });
 }
+
+/* ── Grade pie charts ─────────────────────────────────────────── */
+function gradeColor(grade) {
+  var colors = {
+  'AA': '#D0F0C0', 'AB': '#ACE1AF', 'AP': '#98FB98',
+  'AU': '#D3D3D3', 'BB': '#AFEEEE', 'BC': '#87CEFA',
+  'CC': '#EEE8AA', 'CD': '#FFFDD0', 'DD': '#F7E7CE',
+  'FF': '#FFEFD5', 'FR': '#FBCEB1',
+  'DX': '#FFDDF4', 'II': '#FFB7C5', 'NP': '#DBD7D2', 'PP': '#F2F3F4'
+};
+  return colors[grade] || '#9C9080';
+}
+
+function initGradeCharts(entryEl) {
+  entryEl.querySelectorAll('.grade-pie-chart:not([data-initialized])').forEach(function(canvas) {
+    var grades = JSON.parse(canvas.dataset.grades);
+    var labels = Object.keys(grades);
+    var values = Object.values(grades);
+    new Chart(canvas, {
+      type: 'pie',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: values,
+          backgroundColor: labels.map(gradeColor),
+          borderWidth: 0,
+          borderColor: getComputedStyle(document.documentElement)
+                         .getPropertyValue('--pc').trim() || '#fff'
+        }]
+      },
+      options: {
+        responsive: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                return ' ' + ctx.label + ': ' + ctx.parsed;
+              }
+            }
+          }
+        }
+      }
+    });
+    canvas.setAttribute('data-initialized', 'true');
+  });
+}
  
 /* ── Boot ──────────────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', function () {
-  /* Icons */
-  processIcon(DAV_SRC,  true,  function(url) { document.getElementById('dav-icon').src  = url; });
- 
   /* Selects */
   initSelects();
  

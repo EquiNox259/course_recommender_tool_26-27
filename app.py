@@ -21,6 +21,17 @@ except Exception as e:
     print(f"[WARNING] Failed to pre-load student database: {e}")
     student_db = None
 
+try:
+    _email_df = pd.read_csv(STUDENT_DATA_PATH, dtype=str)
+    _email_df["Student ID"] = _email_df["Student ID"].str.strip().str.lower()
+    _email_df["Emails"]     = _email_df["Emails"].str.strip()
+    _email_df = _email_df.dropna(subset=["Student ID", "Emails"])
+    student_email_map = dict(zip(_email_df["Student ID"], _email_df["Emails"]))
+    print(f"[SUCCESS] Student email lookup loaded with {len(student_email_map)} entries.")
+except Exception as e:
+    print(f"[WARNING] Failed to load student email lookup: {e}")
+    student_email_map = {}
+
 def fetch_automatic_student_history(student_id):
     """
     Silently look up a student's historical completed courses from the CSV 
@@ -29,13 +40,11 @@ def fetch_automatic_student_history(student_id):
     if student_db is None or not student_id:
         return []
         
-    # Standardize input to match email prefixes (e.g., "24b1814" -> "24b1814@iitb.ac.in")
+    # Standardize input for better ID matching at the next step
     search_term = str(student_id).strip().lower()
-    if "@" not in search_term:
-        search_term = f"{search_term}@iitb.ac.in"
         
     # Query the dataframe
-    record = student_db[student_db["Emails"].str.lower() == search_term]
+    record = student_db[student_db["Student ID"].str.lower() == search_term]
     
     if record.empty:
         print(f"[LOOKUP EMPTY] No pre-existing history found for user: {search_term}")
@@ -67,9 +76,21 @@ def fetch_automatic_student_history(student_id):
             
     return list(set(clean_codes)) # return unique codes
 
+def resolve_student_email(student_id):
+    """
+    Return the registered webmail corresponding to a given roll number.
+    """
+    key   = str(student_id).strip().lower()
+    email = student_email_map.get(key)
+    if not email:
+        raise ValueError(
+            "No valid webmail address found for sending OTP."
+        )
+    return email
+
 def send_otp(student_id):
     otp = str(random.randint(100000, 999999))
-    to_email = f"{student_id}@iitb.ac.in"
+    to_email = resolve_student_email(student_id)
     msg = MIMEText(
         f"Hello,\n\nYour OTP for the DAV Course Recommender is:\n\n"
         f"    {otp}\n\nThis OTP is valid for 10 minutes.\n\n— DAV Team, IIT Bombay"
@@ -248,7 +269,7 @@ def feedback():
         return redirect(url_for('index'))
 
     student_id = session.get('otp_student_id', '')
-    email      = f"{student_id}@iitb.ac.in" if student_id else ''
+    email      = resolve_student_email(student_id) if student_id else ''
     rating     = request.form.get('rating', '').strip()
     text       = request.form.get('feedback_text', '').strip()
 

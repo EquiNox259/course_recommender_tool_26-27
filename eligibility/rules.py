@@ -4,8 +4,6 @@ import re
 import pandas as pd
 from config import RUNNING_COURSES_PATH, PREREQ_PATH, COURSES_HISTORY_PATH, CORE_COURSES_PATH, SEMESTER, GRADES_2024_PATH, GRADES_2025_PATH
 from collections import defaultdict
-import google.genai as genai
-import json
 from datetime import datetime
 
 data = pd.read_csv(COURSES_HISTORY_PATH)
@@ -64,7 +62,7 @@ for _, row in df.iterrows():
         "division":    div,
         "is_minor":    (div == 'M'),
         "label":       ("Minor"   if div == 'M'
-                        else "Regular" if not div
+                        else "Elective" if not div
                         else div.strip()),
     })
 
@@ -127,9 +125,6 @@ df_restrictions = df['Restriction']
 restrictions_modified = []
 
 for i in df_restrictions:
-    if pd.isna(i):
-        i_array_np_T = 'No restrictions'
-    elif isinstance(i, str):
     if pd.isna(i):
         i_array_np_T = 'No restrictions'
     elif isinstance(i, str):
