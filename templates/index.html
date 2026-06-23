@@ -224,7 +224,6 @@
   {% endif %}
 
     {% if otp_verified %}
-    {% if otp_verified %}
     <div class="filter-container" style="padding: 16px; margin-bottom: 20px; background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border-color);">
     <div style="font-weight: 600; margin-bottom: 12px; color: inherit;">Recommendation Strategy:</div>
     
@@ -269,7 +268,6 @@
     <input type="hidden" name="w_rrf" id="hidden-w-rrf" value="{{ w_rrf if w_rrf is not none else 0.5 }}">
     <input type="hidden" name="w_ps" id="hidden-w-ps" value="{{ w_ps if w_ps is not none else 0.5 }}">
 </div>
-{% endif %}
 {% endif %}
 
 <script>
@@ -985,7 +983,6 @@ document.addEventListener('DOMContentLoaded', function() {
       </form>
     </div>
   {% endif %}
-  {% endif %}
  
 </main><!-- /content -->
 
@@ -997,7 +994,7 @@ document.addEventListener('DOMContentLoaded', function() {
   <br>  
   <span style="font-size: 14px; color:var(--tp); opacity:0.65;">
     All course-related information is sourced from the
-    <a href="https://asc.iitb.ac.in/internalasc/studentsresource.php"
+    <a href="https://asc.iitb.ac.in"
        target="_blank"
        style="color:inherit; text-decoration:underline; text-underline-offset:2px;">
       Internal ASC Portal
