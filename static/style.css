@@ -63,7 +63,6 @@
   --font-display: 'Source Serif 4', serif;
   --font-body:    'Karla', sans-serif;
   --font-hero:    'Poppins', sans-serif;
-  --font-mono:    'IBM Plex Mono', monospace;
 }
  
 /* ── 2. Dark Mode overrides ──────────────────────────────────────── */
@@ -141,8 +140,6 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   text-transform: uppercase;
   color: var(--ac);
 }
- 
-.mono { font-family: var(--font-mono); font-weight: 500; }
  
 .text-muted-italic {
   font-family: var(--font-body);
@@ -384,7 +381,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
  
 /* Student ID: monospace value, icon room */
 #student_id {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   padding-right: 40px;
 }
  
@@ -542,7 +539,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
  
 .chip {
   display: inline-block;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-weight: 500;
   border-radius: 50px;
 }
@@ -835,12 +832,12 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 
 .div-slot {
   white-space: pre-line;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
 }
 
 .div-instructor {
   white-space: pre-line;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
 }
  
 .entry-reason {
@@ -1080,7 +1077,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 .star-label {
   font-family: var(--font-body);
   font-size: 13px;
-  color: var(--ts);
+  color: var(--tm);
   margin-bottom: 10px;
 }
 
@@ -1088,7 +1085,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 
 .star {
   font-size: 32px;
-  color: var(--bc);
+  color: var(--tm);
   cursor: pointer;
   line-height: 1;
   transition: color 0.12s ease, transform 0.1s ease;
