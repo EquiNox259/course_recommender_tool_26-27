@@ -165,8 +165,7 @@
 
     /* Info / warning boxes */
     .doc-infobox {
-      background: var(--al);
-      border-left: 3px solid var(--ac);
+      background: #FDF4DC;
       border-radius: 8px;
       padding: 12px 16px;
       font-family: var(--font-body);
@@ -178,7 +177,6 @@
 
     .doc-greenbox {
       background: var(--ob);
-      border-left: 3px solid var(--ok);
       border-radius: 8px;
       padding: 12px 16px;
       font-family: var(--font-body);
@@ -297,61 +295,6 @@
       .score-col:first-child { border-right: none; border-bottom: 1px solid var(--bc); }
     }
 
-    /* Slider illustration */
-    .slider-demo {
-      background: var(--pi);
-      border: 1px solid var(--bi);
-      border-radius: 10px;
-      padding: 20px 24px;
-      margin: 16px 0;
-    }
-
-    .slider-labels {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 10px;
-    }
-
-    .slider-label {
-      font-family: var(--font-body);
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--ts);
-    }
-
-    .slider-track {
-      width: 100%;
-      height: 6px;
-      border-radius: 3px;
-      background: linear-gradient(to right, var(--gr) 50%, var(--bc) 50%);
-      position: relative;
-      margin-bottom: 10px;
-    }
-
-    .slider-thumb {
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: var(--gr);
-      border: 3px solid var(--pc);
-      box-shadow: var(--bs);
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-    }
-
-    .slider-weights {
-      display: flex;
-      justify-content: space-between;
-    }
-
-    .slider-weight {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--tm);
-    }
-
     /* Flow diagram */
     .flow-row {
       display: flex;
@@ -409,7 +352,7 @@
     }
 
     .elig-card.green  { background: var(--ob);  border-color: var(--or); }
-    .elig-card.amber  { background: var(--al);  border-color: var(--wr); }
+    .elig-card.amber  { background: #FDF4DC;  border-color: var(--wr); }
     .elig-card.blue   { background: var(--clb); border-color: var(--clr); }
     .elig-card.red    { background: var(--nb2); border-color: var(--nr); }
 
@@ -482,7 +425,7 @@
 <!-- ══════════════════════════════════════════════ NAVBAR ══════ -->
 <nav class="navbar">
   <div class="nav-left">
-    <img id="dav-icon" class="nav-logo" src="" alt="DAV">
+    <img id="dav-icon" class="nav-logo" src="/static/DAV_Logo.svg" alt="DAV">
     <span class="nav-title">Data Analytics and Visualization Team</span>
   </div>
   <div class="nav-right">
@@ -490,7 +433,7 @@
     <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">☀️</button>
     <a href="https://ugac-iitb.github.io/UGAC-IITB/divisions/9" target="_blank" rel="noopener">
       <img id="ugac-icon" class="nav-ugac"
-          src="https://dav-course-recommender-iitb.netlify.app/Images/ugac_logo.svg"
+          src="/static/ugac_logo.svg"
           alt="UGAC">
     </a>
   </div>
@@ -507,7 +450,7 @@
       <li><a href="#scores">2. Score Computation</a></li>
       <li><a class="toc-sub" href="#ps">People's Score</a></li>
       <li><a class="toc-sub" href="#iss">Interest Similarity Score</a></li>
-      <li><a class="toc-sub" href="#final">Final Score & Slider</a></li>
+      <li><a class="toc-sub" href="#final">Final Score</a></li>
       <li><a href="#eligibility">3. Eligibility Engine</a></li>
       <li><a href="#interface">4. Interface</a></li>
       <li><a href="#summary">5. Summary</a></li>
@@ -542,14 +485,14 @@
           </li>
           <li>
             <strong>Interest Similarity Score (ISS)</strong> — uses semantic
-            embeddings to match course content against the student's stated
+            embeddings and keyword mapping to match course content against the student's stated
             research interests and skills. It answers:
             <em>"What courses are most relevant to what I actually want to learn?"</em>
           </li>
         </ul>
         <p>
           The final recommendation score is a <strong>weighted sum</strong> of PS
-          and ISS, with the weights controlled by a slider so each student can tune
+          and ISS, with the weights controlled by a set of options so each student can tune
           the balance to their preference. After scoring, every candidate course is
           passed through a multi-layer eligibility engine before being shown.
         </p>
@@ -606,8 +549,17 @@
       <div class="doc-body">
         <p>
           The Interest Similarity Score involves matching course descriptions with the interest(s)
-          of students using cosine similarity.
+          of students by using <strong>Reciprocal Rank Fusion (RRF)</strong>,
+          to merge two independent retrieval signals over the running course catalogue, one using cosine similarity,
+          and other using keyword matching.
         </p>
+      </div>
+      <div class="formula-block">
+        $$ RRF(c) \;=\; \sum_{r \;\in\; \text{lists}} \frac{1}{k + \text{rank}_r(c)} $$
+        <div class="formula-note">
+          k = 60 (smoothing constant) &nbsp;|&nbsp;
+          rank<sub>r</sub>(c) = rank of course c in retrieval list r
+        </div>
       </div>
       <div class="doc-body">
         <div class="doc-greenbox">
@@ -616,59 +568,47 @@
         </div>
       </div>
 
-      <!-- 2.3 Final Score & Slider -->
-      <h3 class="doc-subsection-title" id="final">2.3 Final Score &amp; Slider</h3>
+      <!-- 2.3 Final Score & Recommendation Strategy -->
+      <h3 class="doc-subsection-title" id="final">2.3 Final Score &amp; Recommendation Strategy</h3>
       <div class="doc-body">
         <p>
-          The two scores are combined into a single <strong>Final Score
+          The two scores are independently <strong>min-max normalised</strong> to [0, 1]
+           and combined into a single <strong>Final Score
           (FS)</strong> via a weighted sum. The weight parameter
-          <em>&alpha;</em> can be decided by the student by means of a slider.
+          <em>&alpha;</em> can be decided by the student by means of an option set.
         </p>
       </div>
       <div class="formula-block">
-        $$ FS \;=\; \alpha \cdot ISS \;+\; (1-\alpha) \cdot PS \qquad \alpha \in [0,\, 1] $$
+        $$ FS \;=\; w_{rrf} \cdot \widehat{RRF} \;+\; w_{ps} \cdot \widehat{PS} \qquad w_{rrf} + w_{ps} = 1 $$
         <div class="formula-note">
-          &alpha; = Semantic (ISS) weight &nbsp;|&nbsp;
-          1&minus;&alpha; = People's Score (PS) weight
+          " \(\widehat{\phantom{x}}\) " denotes min-max normalisation &nbsp;|&nbsp;
+          w<sub>rrf</sub> = Semantic weight &nbsp;|&nbsp; w<sub>ps</sub> = People's Score weight
         </div>
       </div>
       <div class="doc-body">
-        <p>The slider positions map to the following intent:</p>
-      </div>
-
-      <!-- Slider demo -->
-      <div class="slider-demo">
-        <div class="slider-labels">
-          <span class="slider-label">⬅ More Interest-Based</span>
-          <span class="slider-label">More Safer Route ➡</span>
-        </div>
-        <div class="slider-track">
-          <div class="slider-thumb"></div>
-        </div>
-        <div class="slider-weights">
-          <span class="slider-weight">Semantic Weight: 50%</span>
-          <span class="slider-weight">People's Score Weight: 50%</span>
-        </div>
+        <p>The three options and their corresponding weights are as follows:</p>
       </div>
 
       <div class="doc-body">
         <ul>
           <li>
-            <strong>Far left (&alpha; → 1):</strong> prioritise courses that match
+            <strong>More Interest-Based (w<sub>rrf</sub> = 1, w<sub>ps</sub> = 0):</strong> Prioritise courses that match
             stated interests. Best for students exploring a new area.
           </li>
           <li>
-            <strong>Far right (&alpha; → 0):</strong> recommendations driven
+            <strong>More Safe Route (w<sub>rrf</sub> = 0, w<sub>ps</sub> = 1):</strong> Recommendations driven
             entirely by what similar students have taken. Best for students
-            following a well-established path (within their department).
+            following a well-established path (usually within their department).
           </li>
           <li>
-            <strong>Centre (&alpha; = 0.5):</strong> balanced blend — the
+            <strong>50-50 Balanced Split (w<sub>rrf</sub> = 0.5, w<sub>ps</sub> = 0.5):</strong> Best of both the worlds. The
             default setting.
           </li>
         </ul>
         <p>
-          The top <em>10</em> courses by FS are then forwarded to the
+          If the interest field is left blank, the system automatically switches to
+          100% People's Score mode.<br>
+          The top <em>60</em> courses by FS are then forwarded to the
           eligibility engine.
         </p>
       </div>
@@ -681,7 +621,8 @@
       </h2>
       <div class="doc-body">
         <p>
-          Every recommended course passes through a sequential set of checks.
+          Every recommended course passes through a sequential set of checks
+          (<strong>Restrictions → Prerequisites → Time Slot Clash → Instructor Approval</strong>).
           Results are grouped into four sections based on the first blocking
           condition encountered:
         </p>
@@ -698,11 +639,11 @@
         </div>
         <div class="elig-card blue">
           <div class="elig-label">&#9203; Time Slot Clash</div>
-          <div class="elig-desc">This course clashes with an upcoming core course.</div>
+          <div class="elig-desc">This course clashes with an upcoming core course, or another elective in the basket.</div>
         </div>
         <div class="elig-card red">
           <div class="elig-label">&#9888; Not Eligible</div>
-          <div class="elig-desc">Fails restriction or prerequisite. Additional conditions shown.</div>
+          <div class="elig-desc">Fails restriction or prerequisite. Additional conditions are also shown.</div>
         </div>
       </div>
     </section>
@@ -725,7 +666,7 @@
         <div class="flow-step">
           <div class="flow-icon">⚙️</div>
           <h4>Scoring</h4>
-          <p>PS + ISS weighted by slider</p>
+          <p>PS + ISS weighted by chosen option</p>
         </div>
         <div class="flow-arrow">→</div>
         <div class="flow-step">
@@ -746,6 +687,13 @@
           eligibility sections. Each entry can be expanded to show the full
           course description. A division dropdown (where applicable) updates the
           displayed slot, instructor, and eligibility status in real time.
+
+          Expanding any entry reveals year-wise
+          <strong>grading statistics</strong> in the form of pie charts of grade distributions with
+          %AP, %AA, and %(AA+AB), along with the full course description. Only the statistics
+          corresponding to the selected division type are shown.
+
+          All course-related information has been taken from the <strong>Internal ASC Portal</strong>.
         </p>
       </div>
     </section>
@@ -757,24 +705,24 @@
       </h2>
       <ul class="check-list">
         <li>
-          <span class="check-icon">✓</span>
-          Recommendations are generated by combining interest matching
+          <strong>i.</strong> Recommendations are generated by combining interest matching
           (ISS) with prior enrollment patterns (PS) into a tunable Final Score.
         </li>
         <li>
-          <span class="check-icon">✓</span>
-          The &alpha; slider lets students shift emphasis from pure interest
+          <strong>ii.</strong> The recommendation options let students shift emphasis from pure interest
           exploration to safer, well-trodden academic paths.
         </li>
         <li>
-          <span class="check-icon">✓</span>
-          Every recommended course is validated against department restrictions,
+          <strong>iii.</strong> Every recommended course is validated against department restrictions,
           prerequisite expressions, and time-slot constraints before display.
         </li>
         <li>
-          <span class="check-icon">✓</span>
-          Division-level navigation allows students to check time-slot clash,
+          <strong>iv.</strong> Division-level navigation allows students to check time-slot clash,
           for their specific division.
+        </li>
+        <li>
+          <strong>v.</strong> Year-wise grading statistics are shown
+          per division upon expanding each course entry.
         </li>
       </ul>
       <div class="doc-body" style="margin-top:20px">

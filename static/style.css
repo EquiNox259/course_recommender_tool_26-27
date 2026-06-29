@@ -1,108 +1,107 @@
 /* ── 1. CSS Custom Properties (Light Mode defaults) ─────────────── */
 :root {
-  /* Page & surfaces */
-  --pg:  #F9F7F3;
+  /* Page & surfaces — GF uses clean white/near-white */
+  --pg:  #FFFFFF;
   --pc:  #FFFFFF;
-  --pi:  #F5F2EC;
-  --ph:  #EFF7F1;
- 
-  /* Borders */
-  --bc:  #E5DDD0;
-  --bi:  #D6CDBF;
-  --bd:  #EDE8DF;
- 
-  /* Primary (forest green) */
-  --gr:  #1D4B2F;
-  --gl:  #EAF3ED;
-  --gd:  #163D25;
- 
-  /* Accent (amber-gold) */
-  --ac:  #9A6C0A;
-  --al:  #FDF4DC;
- 
-  /* Eligible (success green) */
-  --ok:  #1A5C38;
-  --ob:  #EBF8F0;
-  --or:  #A3D9BA;
- 
-  /* Not-eligible (muted red) */
-  --no:  #8B2E2E;
-  --nb2: #FBF0F0;
-  --nr:  #DDA8A8;
- 
+  --pi:  #F8F9FA;
+  --ph:  #F1F3F4;
+
+  /* Borders — GF's signature light grey */
+  --bc:  #DADCE0;
+  --bi:  #BDC1C6;
+  --bd:  #E8EAED;
+
+  /* Primary — Google Blue */
+  --gr:  #1A73E8;
+  --gl:  #E8F0FE;
+  --gd:  #1557B0;
+
+  /* Accent — Google Green (used for eligible / positive signals) */
+  --ac:  #137333;
+  --al:  #E6F4EA;
+
+  /* Eligible (success green — unchanged) */
+  --ok:  #137333;
+  --ob:  #E6F4EA;
+  --or:  #81C995;
+
+  /* Not-eligible (red — unchanged) */
+  --no:  #B31412;
+  --nb2: #FCE8E6;
+  --nr:  #F28B82;
+
   /* Warning / manual alert */
-  --wt:  #7A4E0A;
-  --wb:  #FDF6E6;
-  --wr:  #E8C97A;
-  --wa:  #D97706;   /* amber strip */
- 
-  /* Typography */
-  --tp:  #1A150E;
-  --ts:  #5C5248;
-  --tm:  #9C9080;
- 
+  --wt:  #B06000;
+  --wb:  #FEF7E0;
+  --wr:  #FDD663;
+  --wa:  #F9AB00;
+
+  /* Typography — GF uses near-black + medium grey */
+  --tp:  #202124;
+  --ts:  #5F6368;
+  --tm:  #80868B;
+
   /* Navigation */
-  --nv:  #FFFFFF;
-  --nt:  #1D4B2F;
-  --nm:  rgba(255,255,255,0.55);
-  --ns:  rgba(255,255,255,0.20);
- 
+  --nv:  #1A73E8;
+  --nt:  #E8EAED;
+  --nm:  rgba(232,234,237,0.55);
+  --ns:  rgba(32,33,36,0.12);
+
   /* Shadows & effects */
-  --sh:  0 1px 3px rgba(26,21,14,0.05), 0 6px 20px rgba(26,21,14,0.06);
-  --shh: 0 2px 6px rgba(26,21,14,0.07), 0 10px 28px rgba(26,21,14,0.09);
-  --fr:  0 0 0 3px rgba(29,75,47,0.20);
-  --bs:  0 2px 10px rgba(29,75,47,0.30);
+  --sh:  0 1px 2px rgba(60,64,67,0.08), 0 2px 6px rgba(60,64,67,0.06);
+  --shh: 0 1px 3px rgba(60,64,67,0.12), 0 4px 12px rgba(60,64,67,0.10);
+  --fr:  0 0 0 3px rgba(26,115,232,0.20);
+  --bs:  0 2px 10px rgba(26,115,232,0.28);
   --bt:  #FFFFFF;
 
-    /* Time Slot Clash */
+  /* Time Slot Clash */
   --cl:  #174A7E;
   --clb: #EEF4FB;
   --clr: #85B7D9;
- 
+
   /* Typefaces */
   --font-display: 'Source Serif 4', serif;
   --font-body:    'Karla', sans-serif;
   --font-hero:    'Poppins', sans-serif;
-  --font-mono:    'IBM Plex Mono', monospace;
 }
  
 /* ── 2. Dark Mode overrides ──────────────────────────────────────── */
 .dark {
-  --pg:  #0D2118;
-  --pc:  #183225;
-  --pi:  #102419;
-  --ph:  #1C3828;
-  --bc:  #283522;
-  --bi:  #2E3D28;
-  --bd:  #232E1E;
-  --gr:  #5BAA78;
-  --gl:  #1A2E1C;
-  --gd:  #6DC48E;
-  --ac:  #D4A040;
-  --al:  #261E08;
-  --ok:  #4DB87A;
-  --ob:  #101E14;
-  --or:  #275237;
-  --no:  #CF7070;
-  --nb2: #1E0E0E;
-  --nr:  #4A2525;
-  --wt:  #D4A040;
-  --wb:  #1C1608;
-  --wr:  #4A380E;
-  --wa:  #D4A040;
-  --tp:  #F0EDE6;
-  --ts:  #A89E92;
-  --tm:  #6A6258;
-  --nv:  #0C1209;
-  --nt:  #F0EDE6;
-  --nm:  rgba(240,237,230,0.50);
-  --ns:  rgba(255,255,255,0.12);
-  --sh:  0 1px 3px rgba(0,0,0,0.25), 0 6px 20px rgba(0,0,0,0.30);
-  --shh: 0 2px 8px rgba(0,0,0,0.35), 0 12px 32px rgba(0,0,0,0.40);
-  --fr:  0 0 0 3px rgba(91,170,120,0.22);
+  --pg:  #202124;
+  --pc:  #292A2D;
+  --pi:  #1C1D1F;
+  --ph:  #35363A;
+  --bc:  #3C4043;
+  --bi:  #5F6368;
+  --bd:  #303134;
+  --gr:  #8AB4F8;
+  --gl:  rgba(138,180,248,0.14);
+  --gd:  #93C5FD;
+  --ac:  #81C995;
+  --al:  rgba(129,201,149,0.14);
+  --ok:  #81C995;
+  --ob:  rgba(129,201,149,0.12);
+  --or:  #34A853;
+  --no:  #F28B82;
+  --nb2: rgba(242,139,130,0.12);
+  --nr:  #C5221F;
+  --wt:  #FDD663;
+  --wb:  rgba(253,214,99,0.10);
+  --wr:  #594300;
+  --wa:  #FDD663;
+  --tp:  #E8EAED;
+  --ts:  #9AA0A6;
+  --tm:  #5F6368;
+  --nv:  #202124;
+  --nt:  #E8EAED;
+  --nm:  rgba(232,234,237,0.55);
+  --ns:  rgba(255,255,255,0.10);
+  --sh:  0 1px 3px rgba(0,0,0,0.30), 0 4px 12px rgba(0,0,0,0.25);
+  --shh: 0 2px 6px rgba(0,0,0,0.35), 0 8px 24px rgba(0,0,0,0.30);
+  --fr:  0 0 0 3px rgba(138,180,248,0.24);
   --bs:  0 2px 10px rgba(0,0,0,0.40);
-  --bt:  #0F1510;
-  --cl:  #5B9BD5;
+  --bt:  #202124;
+  --cl:  #8AB4F8;
   --clb: #0D1A2E;
   --clr: #1F3D5C;
 }
@@ -122,7 +121,7 @@ body {
   min-height: 100vh;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
- 
+
 /* Global theme transition — background, border, colour only */
 div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   transition:
@@ -139,10 +138,8 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   font-size: 15px;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: var(--ac);
+  color: var(--tp);
 }
- 
-.mono { font-family: var(--font-mono); font-weight: 500; }
  
 .text-muted-italic {
   font-family: var(--font-body);
@@ -271,7 +268,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 .hero-title {
   font-family: var(--font-hero);
   font-weight: 700;
-  font-size: 30px;
+  font-size: 35px;
   color: var(--tp);
   letter-spacing: -0.5px;
   margin-bottom: 10px;
@@ -295,8 +292,6 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   padding: 36px;
   margin-top: 24px;
 }
- 
-.card:hover { box-shadow: var(--shh); }
  
 .card-head {
   display: flex;
@@ -349,7 +344,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   width: 100%;
   height: 52px;
   padding: 22px 14px 10px;
-  background: var(--pi);
+  background: var(--pg);
   border: 1px solid var(--bi);
   border-radius: 8px;
   font-family: var(--font-body);
@@ -371,7 +366,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
  
 /* Select: custom chevron via background SVG */
 .field select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%231D4B2F'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%231A73E8'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 14px center;
   padding-right: 36px;
@@ -379,12 +374,12 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 }
  
 .dark .field select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%235BAA78'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238AB4F8'/%3E%3C/svg%3E");
 }
  
 /* Student ID: monospace value, icon room */
 #student_id {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   padding-right: 40px;
 }
  
@@ -414,7 +409,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 .field textarea:not(:placeholder-shown) ~ label {
   top: 8px;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 700;
   color: var(--ac);
   letter-spacing: 0.5px;
 }
@@ -424,19 +419,19 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 .field select.has-value ~ label {
   top: 8px;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 700;
   color: var(--ac);
   letter-spacing: 0.5px;
 }
  
-/* Focus ring */
+/* Focus ring
 .field input:focus,
 .field select:focus,
 .field textarea:focus {
   border-color: var(--gr);
   background: var(--pc);
   box-shadow: var(--fr);
-}
+}*/
  
 /* ── 10. Primary button ───────────────────────────────────────────── */
 .btn-primary {
@@ -460,12 +455,6 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
     box-shadow       0.18s ease,
     transform        0.14s ease,
     color            0.18s ease;
-}
- 
-.btn-primary:hover {
-  background: var(--gd);
-  box-shadow: 0 6px 20px rgba(29,75,47,0.35);
-  transform: translateY(-1px);
 }
  
 .btn-primary:active { transform: translateY(0); }
@@ -505,7 +494,6 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 .manual-alert {
   background: var(--wb);
   border: 1px solid var(--wr);
-  border-left: 3px solid var(--wa);
   border-radius: 0 8px 8px 0;
   padding: 16px 18px;
   margin-bottom: 4px;
@@ -542,7 +530,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
  
 .chip {
   display: inline-block;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-weight: 500;
   border-radius: 50px;
 }
@@ -553,12 +541,6 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   font-weight: bold;
   padding: 5px 11px;
 }
- 
-.chip-primary:hover {
-  background: var(--ob);
-  border-color: var(--or);
-}
- 
 .chip-example {
   display: flex;
   align-items: center;
@@ -618,19 +600,12 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   opacity: 0.5;
 }
 
-/* ── Minor badge on course chip row ──────────────────────────────── */
-.tag-minor {
-  display: inline-block;
+/* ── Minor label on course code + name row ──────────────────────────────── */
+.entry-minor-label {
   font-family: var(--font-body);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
-  padding: 2px 7px;
-  border-radius: 10px;
-  background: var(--al);
-  border: 1px solid var(--wr);
   color: var(--ac);
-  margin-left: 6px;
-  vertical-align: middle;
   flex-shrink: 0;
 }
 
@@ -651,18 +626,13 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   cursor: pointer;
   outline: none;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%231D4B2F'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%231A73E8'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 10px center;
 }
 
 .dark .div-select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%235BAA78'/%3E%3C/svg%3E");
-}
-
-.div-select:focus {
-  border-color: var(--gr);
-  box-shadow: var(--fr);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238AB4F8'/%3E%3C/svg%3E");
 }
 
 /* ── Minor registration message ──────────────────────────────────── */
@@ -670,13 +640,15 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   margin-top: 8px;
   padding: 8px 12px;
   border-radius: 6px;
-  border: 1px solid var(--wr);
-  background: var(--al);
+  background: #FDF4DC;
   font-family: var(--font-body);
   font-size: 11.75px;
   color: var(--tp);
   line-height: 1.6;
 }
+
+
+.dark .minor-msg{background: #1C1608;}
 
 /* ── Query fallback notice ───────────────────────────────────────── */
 .fallback-alert {
@@ -757,56 +729,60 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 .divider-consent { background: var(--wr); opacity: 0.6; }
 .divider-clash { background: var(--clr); opacity: 0.5; }
 .divider-no { background: var(--nr); opacity: 0.5; }
+
+/* ── Tabs (X/Twitter Style) ── */
+.tabs-container {
+  display: flex;
+  border-bottom: 1px solid var(--bd);
+  margin-bottom: 24px;
+  overflow-x: auto;
+}
+.tab-btn {
+  background: transparent;
+  border: none;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--tm);
+  padding: 16px 24px;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s ease;
+  white-space: nowrap;
+}
+.tab-btn:hover {
+  color: var(--tp);
+  background: var(--ph);
+}
+.tab-btn.active {
+  color: var(--tp);
+}
+.tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--gr);
+  border-radius: 4px 4px 0 0;
+}
+.tab-content {
+  display: none;
+}
+.tab-content.active {
+  display: block;
+}
  
 /* ── 16. Course entries ──────────────────────────────────────────── */
 .entry {
-  padding: 14px 12px 14px 18px;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  transition: background 0.18s ease;
-  margin-bottom: 8px;
-}
- 
-.entry-ok {
-  border-color: var(--ok);
-  /*border-bottom-color: var(--or);*/
-}
-
-.entry-consent {
-  border-color: var(--ac);
-  /*border-bottom-color: var(--wr);*/
-}
-
-.entry-clash {
-  border-color: var(--cl);
-  /*border-bottom-color: var(--clr);*/
-}
- 
-.entry-no {
-  border-color: var(--no);
-  /*border-bottom-color: var(--nr);*/
-}
- 
-.entry-ok:hover  { background: var(--ph); }
-.entry-consent:hover { background: color-mix(in srgb, var(--al) 60%, transparent); }
-.entry-clash:hover { background: var(--clb); filter: brightness(0.96); }
-.entry-no:hover  { background: var(--nb2); filter: brightness(0.95); }
- 
- 
-.entry-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-
-.entry-top-left {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-  min-width: 0;
-  flex-wrap: wrap;
+  background: var(--pc);
+  padding: 24px;
+  border: 1px solid var(--bc);
+  border-radius: 12px;
+  box-shadow: var(--sh);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  margin-bottom: 16px;
 }
 
 .entry-code-row {
@@ -835,12 +811,12 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 
 .div-slot {
   white-space: pre-line;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
 }
 
 .div-instructor {
   white-space: pre-line;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
 }
  
 .entry-reason {
@@ -892,8 +868,6 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 .entry.expanded .entry-chevron {
   transform: rotate(180deg);
 }
- 
-.entry:hover .entry-chevron { color: var(--ts); }
  
 /* ── Click-to-expand: description panel ──────────────────────── */
 .entry-desc-wrap {
@@ -1080,7 +1054,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 .star-label {
   font-family: var(--font-body);
   font-size: 13px;
-  color: var(--ts);
+  color: var(--tm);
   margin-bottom: 10px;
 }
 
@@ -1088,7 +1062,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 
 .star {
   font-size: 32px;
-  color: var(--bc);
+  color: var(--tm);
   cursor: pointer;
   line-height: 1;
   transition: color 0.12s ease, transform 0.1s ease;
@@ -1096,6 +1070,23 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 
 .star.hover  { color: #D4A040; opacity: 0.65; transform: scale(1.1); }
 .star.active { color: #D4A040; }
+
+.feedback-section {
+    margin-top: 72px;
+    padding-top: 32px;
+}
+
+.feedback-header h2 {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.feedback-header p {
+    color: var(--ts);
+    max-width: 42rem;
+}
 
 .feedback-success {
   font-family: var(--font-body);
@@ -1241,3 +1232,109 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
  
 /* ── Global overflow guard: never let content wider than viewport ── */
 html, body { overflow-x: hidden; max-width: 100%; }
+
+/* ── 20. Profile section ─────────────────────────────────────────── */
+/* Flat layout — no card box; a rule replaces the card chrome.        */
+.profile-section {
+  margin-top: 32px;
+}
+
+/* ── Profile rule ────────────────────────────────────────────────── */
+.profile-rule {
+  height: 1px;
+  background: var(--bd);
+  margin: 16px 0;
+}
+
+/* ── Profile header — Student ID  ───────────── */
+.profile-hd {
+  display: flex;
+  flex-direction: column;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-bottom: 4px;
+}
+
+.profile-id {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 20px;
+  color: var(--gr);
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+
+/* ── Two-column row for Degree / Batch Year ──────────────────────── */
+.form-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+/* ── 21. History section ─────────────────────────────────────────── */
+/* Flat layout, no card box. Dead code once history is hidden,        */
+/* kept here so toggling it back on costs nothing.                    */
+.history-section {
+  margin-top: 32px;
+}
+
+.history-hd {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.history-title {
+  font-family: var(--font-hero);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--tp);
+}
+
+.history-count {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--ts);
+}
+
+/* ── Course grid — plain multi-column text, no per-item decoration ─ */
+.course-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 8px 16px;
+  padding: 4px 0 8px;
+}
+
+.course-code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--gr);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+ 
+/* Remark note shown inside each minor-mode course card */
+.minor-remark-note {
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  color: var(--tp);
+  background: var(--gl);
+  border-radius: 4px;
+  padding: 7px 11px;
+  margin: 8px 0 4px;
+  line-height: 1.5;
+}
+.minor-remark-warning {
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  color: var(--tp);
+  background: var(--wb);
+  border-radius: 4px;
+  padding: 7px 11px;
+  margin: 8px 0 4px;
+  line-height: 1.5;
+}

@@ -8,8 +8,10 @@ DATASET_DIR = os.path.join(BASE_DIR, "dataset")
 
 COURSES_HISTORY_PATH = os.path.join(DATASET_DIR, "Student_data_combined.csv")
 RUNNING_COURSES_PATH = os.path.join(DATASET_DIR, "courses_autumn_2025-2026.csv")
+RUNNING_COURSES_PATH_ALT = os.path.join(DATASET_DIR, "courses_spring_2025-2026.csv")
 PREREQ_PATH = os.path.join(DATASET_DIR, "Prerequisite_new.xlsx")
 CORE_COURSES_PATH = os.path.join(DATASET_DIR, "ASC_Core_Courses.csv")
+MINOR_COURSES_PATH = os.path.join(DATASET_DIR, "ASC_Minor_Courses.csv")
 SEMESTER = 'Autumn'
 GRADES_2024_PATH = os.path.join(DATASET_DIR, "Grades2024Autumn.csv")
 GRADES_2025_PATH = os.path.join(DATASET_DIR, "Grades2025Autumn.csv")

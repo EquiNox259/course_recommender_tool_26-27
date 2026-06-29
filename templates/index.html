@@ -20,6 +20,7 @@
      <span class="nav-title">Data Analytics and Visualization Team</span>
   </div>
   <div class="nav-right">
+    <a href="/documentation" class="nav-docs-link">Documentation</a>
     <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">☀️</button>
     <a href="https://ugac-iitb.github.io/UGAC-IITB/divisions/9" target="_blank" rel="noopener">
         <img id="ugac-icon" class="nav-ugac" src="/static/ugac_logo.svg" alt="UGAC">
@@ -32,7 +33,7 @@
  
   <!-- HERO -->
   <div class="hero">
-    <h1 class="hero-title">COURSE RECOMMENDER</h1>
+    <h1 class="hero-title">Course Recommender</h1>
     <p class="hero-sub">Enter your profile to get personalised course recommendations</p>
   </div>
 
@@ -68,7 +69,7 @@
     </div>
     <div class="divider-dash"></div>
     <p style="font-size:13px; color:var(--ts); margin-bottom:16px;">
-      An OTP has been sent to <strong>{{ student_id }}@iitb.ac.in</strong>. Valid for 10 minutes.
+      An OTP has been sent to <strong>{{ otp_email }}</strong>. Valid for 10 minutes.
     </p>
     {% if otp_error %}
       <div class="entry-reason reason-no" style="margin:8px 0">&#9888;&nbsp;{{ otp_error }}</div>
@@ -89,25 +90,19 @@
  
   <!-- ─────────────────── MAIN FORM ─────────────────── -->
     {% elif otp_verified and not need_manual_history %} 
-  <div class="card fade-up">
-    <div class="card-head">
-      <span class="sec-label">Student Profile</span>
+  <div class="profile-section fade-up">
+
+    <!-- Flat header — no card box, no banner -->
+    <div class="profile-hd">
+      <div class="profile-id">Student Profile </div>
     </div>
-    <div class="divider-dash"></div>
- 
+
+    <div class="profile-rule"></div>
+
     <form method="POST" id="profile-form">
-        <input type="hidden" name="action" value="recommend">
-      <div class="form-grid">
- 
-        <!-- Student ID -->
-        <div class="field">
-          <input type="text" name="student_id" id="student_id"
-                 placeholder=" " autocomplete="off"
-                 value="{{ student_id }}" readonly>
-          <label for="student_id">Student ID</label>
-        </div>
- 
-        <!-- Degree -->
+      <input type="hidden" name="action" value="recommend">
+
+      <div class="form-pair">
         <div class="field">
           <select name="degree" id="degree">
             <option value="">—</option>
@@ -117,8 +112,7 @@
           </select>
           <label for="degree">Degree</label>
         </div>
- 
-        <!-- Year -->
+
         <div class="field">
           <select name="year" id="year">
             <option value="">—</option>
@@ -128,36 +122,32 @@
           </select>
           <label for="year">Batch Year</label>
         </div>
- 
-        <!-- Department -->
-        <div class="field">
-          {% set depts = [
-            'Aerospace Engineering','Biosciences and Bioengineering',
-            'Chemical Engineering','Chemistry','Civil Engineering',
-            'Computer Science and Engineering','Earth Sciences','Economics',
-            'Electrical Engineering','Energy Science and Engineering','Engineering Physics',
-            'Environmental Science and Engineering','Humanities & Social Science',
-            'Industrial Engineering and Operations Research','Mathematics',
-            'Mechanical Engineering','Metallurgical Engineering and Materials Science'
-          ] %}
-          <select name="department" id="department">
-            <option value="">—</option>
-            {% for dept in depts %}
-            <option value="{{ dept }}" {{ 'selected' if request.form.get('department') == dept else '' }}>{{ dept }}</option>
-            {% endfor %}
-          </select>
-          <label for="department">Department</label>
-        </div>
- 
-      </div><!-- /form-grid -->
- 
-      <!-- Research Interests -->
+      </div>
+
+      <div class="field" style="margin-bottom:20px;">
+        {% set depts = [
+          'Aerospace Engineering','Biosciences and Bioengineering',
+          'Chemical Engineering','Chemistry','Civil Engineering',
+          'Computer Science and Engineering','Earth Sciences','Economics',
+          'Electrical Engineering','Energy Science and Engineering','Engineering Physics',
+          'Environmental Science and Engineering','Humanities & Social Science',
+          'Industrial Engineering and Operations Research','Mathematics',
+          'Mechanical Engineering','Metallurgical Engineering and Materials Science'
+        ] %}
+        <select name="department" id="department">
+          <option value="">—</option>
+          {% for dept in depts %}
+          <option value="{{ dept }}" {{ 'selected' if request.form.get('department') == dept else '' }}>{{ dept }}</option>
+          {% endfor %}
+        </select>
+        <label for="department">Department</label>
+      </div>
+
       <div class="field field-full">
         <textarea name="interest" id="interest" placeholder=" " rows="3">{{ request.form.get('interest', '') }}</textarea>
         <label for="interest">Research Interests and Skills</label>
       </div>
- 
-      <!-- Submit -->
+
       <button type="submit" class="btn-primary" id="submit-btn">
         <span class="btn-label">Generate Recommendations &rarr;</span>
         <span class="btn-loading" hidden>Checking eligibility&hellip;</span>
@@ -165,6 +155,7 @@
     </form>
   </div>
   {% endif %}
+
  
   <!-- ─────────────── MANUAL HISTORY CARD ──────────────── -->
   {% if need_manual_history %}
@@ -203,27 +194,8 @@
   </div>
   {% endif %}
  
-  <!-- ─────────────── ACADEMIC HISTORY ──────────────── -->
-  {% if course_history is not none %}
-  <div class="card fade-up">
-    <div class="card-head">
-      <span class="sec-label">Academic History</span>
-      <span class="badge badge-accent">{{ course_history | length }} courses</span>
-    </div>
-    <div class="divider-dash"></div>
-    <div class="chip-row">
-      {% if course_history %}
-        {% for c in course_history %}
-        <span class="chip chip-primary">{{ c }}</span>
-        {% endfor %}
-      {% else %}
-        <span class="text-muted-italic">No prior course history on record</span>
-      {% endif %}
-    </div>
-  </div>
-  {% endif %}
 
-    {% if otp_verified %}
+
     {% if otp_verified %}
     <div class="filter-container" style="padding: 16px; margin-bottom: 20px; background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border-color);">
     <div style="font-weight: 600; margin-bottom: 12px; color: inherit;">Recommendation Strategy:</div>
@@ -269,7 +241,6 @@
     <input type="hidden" name="w_rrf" id="hidden-w-rrf" value="{{ w_rrf if w_rrf is not none else 0.5 }}">
     <input type="hidden" name="w_ps" id="hidden-w-ps" value="{{ w_ps if w_ps is not none else 0.5 }}">
 </div>
-{% endif %}
 {% endif %}
 
 <script>
@@ -365,18 +336,34 @@ document.addEventListener('DOMContentLoaded', function() {
     {% endif %}
 
   {% if eligible is not none %}
-  <div class="results-grid">
- 
-    <!-- ✅ Eligible -->
-     {% if eligible %}
-    <div class="result-card card-ok fade-up">
-      <div class="result-head">
-        <span class="result-title result-ok">Eligible Courses</span>
-        <span id = "badge-eligible" class="badge badge-ok">{{ eligible | length }} Found</span>
-      </div>
-      <div class="result-divider divider-ok"></div>
- 
-      {% if eligible %}
+
+  
+  <div class="tabs-container fade-up">
+    {% if eligible %}
+    <button class="tab-btn active" onclick="switchTab('eligible')" id="tab-btn-eligible">
+      Eligible <span id="badge-eligible" class="badge-count">({{ eligible | length }})</span>
+    </button>
+    {% endif %}
+    {% if i_a_r %}
+    <button class="tab-btn" onclick="switchTab('consent')" id="tab-btn-consent">
+      Instructor Consent Required <span id="badge-consent" class="badge-count">({{ i_a_r | length }})</span>
+    </button>
+    {% endif %}
+    {% if t_s_c %}
+    <button class="tab-btn" onclick="switchTab('tsc')" id="tab-btn-tsc">
+      Time Slot Clash <span id="badge-tsc" class="badge-count">({{ t_s_c | length }})</span>
+    </button>
+    {% endif %}
+    {% if rejected %}
+    <button class="tab-btn" onclick="switchTab('rejected')" id="tab-btn-rejected">
+      Not Eligible <span id="badge-rejected" class="badge-count">({{ rejected | length }})</span>
+    </button>
+    {% endif %}
+  </div>
+
+  <div class="results-grid fade-up-d1">
+    {% if eligible %}
+    <div id="tab-content-eligible" class="tab-content active">
       <div id="entries-eligible">
         {% for c in eligible %}
         <div class="entry entry-ok{{ ' entry-last' if loop.last else '' }}" onclick="toggleEntry(this)"
@@ -385,23 +372,19 @@ document.addEventListener('DOMContentLoaded', function() {
             data-divisions='{{ c.divisions | tojson }}'
             data-default-idx="{{ c.default_idx | default(0) }}"
             data-home-section="eligible"
-            data-section="eligible">
-         {% if c.has_minor %}
-          <div class="entry-top">
-            <div class="entry-top-left">                
-                {% set _dm = c.divisions[c.default_idx | default(0)]['is_minor'] if c.divisions else false %}
-                <span class="tag-minor" {% if not _dm %}style="display:none"{% endif %}>Minor</span>                
-            </div>
-            <span class="entry-chevron">&#9662;</span>
-          </div>
-         {% endif %}
-          <div class="entry-code-row">
-            <span style="font-family: 'Source Serif 4', serif; font-size: 17px; font-weight: 600; opacity: 0.75;">{{ c.code }}</span>
-            <span class="entry-name">: {{ c.name }}</span>
-            {% if not c.has_minor %}
-            <span class="entry-chevron" style="margin-left:auto;flex-shrink:0">&#9662;</span>
-            {% endif %}
-          </div>
+            data-section="eligible"
+            data-code="{{ c.code }}"
+            data-name="{{ c.name }}"
+            data-credits="{{ c.credits | default(6) }}"
+            data-slot-num="{{ c.divisions[c.default_idx | default(0)]['slot_num'] if c.divisions else 'N/A' }}"
+            data-is-minor="{{ 'true' if c.minor_only else 'false' }}">
+         {% if c.has_minor %}{% set _dm = c.divisions[c.default_idx | default(0)]['is_minor'] if c.divisions else false %}{% endif %}
+        <div class="entry-code-row">
+          <span style="font-family: 'Source Serif 4', serif; font-size: 17px; font-weight: 600; opacity: 0.75;">{{ c.code }}</span>
+          <span class="entry-name">: {{ c.name }}</span>
+          {% if is_minor_mode and c.minor_type %}<span class="entry-minor-label">{{ c.minor_type }}</span>{% elif c.has_minor %}<span class="entry-minor-label" {% if not _dm %}style="display:none"{% endif %}>  Minor</span>{% endif %}
+          <span class="entry-chevron" style="margin-left:auto;flex-shrink:0">&#9662;</span>
+        </div>
           {% if c.divisions | length > 1 %}
             <div class="entry-div-wrap">
                 <select class="div-select"
@@ -437,17 +420,44 @@ document.addEventListener('DOMContentLoaded', function() {
                 <span class="equiv-text">{{ init_equiv | join(', ') }}</span>
             </div>
             {% endif %}
-          {% if c.has_minor %}
-            <div class="minor-msg" {% if not c.minor_only %}style="display:none"{% endif %}>
-                &#9432;&nbsp;Minor electives are registered in a <strong>separate process before</strong>
-                the regular registration window, and are allotted strictly on the basis of <strong>CPI</strong>
+            {% if c.has_minor %}
+              <div class="minor-msg" {% if not c.minor_only %}style="display:none"{% endif %}>
+                  &#9432;&nbsp;Minor electives are registered in a <strong>separate process before</strong>
+                  the regular registration window, and are allotted strictly on the basis of <strong>CPI</strong>
+              </div>
+            {% endif %}
+            {% if is_minor_mode %}
+            {% if c.minor_remark_warning %}
+            <div class="minor-remark-warning">
+              &#9432;&nbsp;{{ c.minor_remark_warning }}
             </div>
-          {% endif %}
-          <div class="score">
+            {% elif c.minor_remark_note %}
+            <div class="minor-remark-note">
+              &#9432;&nbsp;{{ c.minor_remark_note }}
+            </div>
+            {% endif %}
+            {% if c.minor_prereq_note is defined and c.minor_prereq_note %}
+            <div class="minor-remark-warning">
+              &#9432;&nbsp;{{ c.minor_prereq_note }}
+            </div>
+            {% endif %}
+            {% endif %}
+            {% if not is_minor_mode %}
+            <div class="score">
               <span> <strong>Semantic Score</strong>: {{ ((c.raw_rrf or 0.0) * 100) | round(1) }}%</span>
               <span> <strong>People Score</strong>: {{ ((c.raw_ps or 0.0) * 100) | round(1) }}%</span>
               <span> <strong>Final Score</strong>: {{ ((c.final_score or 0.0) * 100) | round(1) }}%</span>
           </div>
+            {% endif %}
+          <!--<button class="btn-add-bucket"
+                  onclick="event.stopPropagation(); addToBucket(this)"
+                  data-code="{{ c.code }}"
+                  data-name="{{ c.name }}"
+                  data-credits="{{ c.credits | default(6) }}"
+                  data-slot-num="{{ c.divisions[c.default_idx | default(0)]['slot_num'] if c.divisions else 'N/A' }}"
+                  data-is-minor="{{ 'true' if c.minor_only else 'false' }}">
+            + Add to Bucket
+          </button> -->
           {% if c.description %}
           <div class="entry-desc-wrap">
             <div class="entry-desc-divider"></div>
@@ -504,23 +514,16 @@ document.addEventListener('DOMContentLoaded', function() {
       </div>
       {% endif %}
         <div id = "empty-eligible" class="empty-result" {% if eligible %}style="display:none"{% endif %}>
-          <div class="empty-title">No eligible courses found.</div>
+          <div class="empty-title">No eligible courses found</div>
           <div class="empty-sub">Try different interests or review your course history</div>
         </div>
-    </div>
-    {% endif %}
+      </div>
+      {% endif %}
 
     <!-- ⚠️ Instructor Consent Required -->
-     {% if i_a_r %}
-    <div class="result-card card-consent fade-up-d1">
-      <div class="result-head">
-        <span class="result-title result-consent">Instructor Consent Required</span>
-        <span id = 'badge-consent' class="badge badge-consent">{{ i_a_r | length }} Courses</span>
-      </div>
-      <div class="result-divider divider-consent"></div>
-
-      {% if i_a_r %}
-      <div id = 'entries-consent'>
+    {% if i_a_r %}
+    <div id="tab-content-consent" class="tab-content">
+      <div id="entries-consent">
         {% for c in i_a_r %}
         <div class="entry entry-consent{{ ' entry-last' if loop.last else '' }}" onclick="toggleEntry(this)"
             data-has-minor="{{ 'true' if c.has_minor else 'false' }}"
@@ -529,22 +532,13 @@ document.addEventListener('DOMContentLoaded', function() {
             data-default-idx="{{ c.default_idx | default(0) }}"
             data-home-section="consent"
             data-section="consent">
-           {% if c.has_minor %}
-          <div class="entry-top">
-            <div class="entry-top-left">                
-                {% set _dm = c.divisions[c.default_idx | default(0)]['is_minor'] if c.divisions else false %}
-                <span class="tag-minor" {% if not _dm %}style="display:none"{% endif %}>Minor</span>                
-            </div>
-            <span class="entry-chevron">&#9662;</span>
-          </div>
-         {% endif %}
-          <div class="entry-code-row">
-            <span style="font-family: 'Source Serif 4', serif; font-size: 17px; font-weight: 600; opacity: 0.75;">{{ c.code }}</span>
-            <span class="entry-name">: {{ c.name }}</span>
-            {% if not c.has_minor %}
-            <span class="entry-chevron" style="margin-left:auto;flex-shrink:0">&#9662;</span>
-            {% endif %}
-          </div>
+        {% if c.has_minor %}{% set _dm = c.divisions[c.default_idx | default(0)]['is_minor'] if c.divisions else false %}{% endif %}
+        <div class="entry-code-row">
+          <span style="font-family: 'Source Serif 4', serif; font-size: 17px; font-weight: 600; opacity: 0.75;">{{ c.code }}</span>
+          <span class="entry-name">: {{ c.name }}</span>
+          {% if is_minor_mode and c.minor_type %}<span class="entry-minor-label">{{ c.minor_type }}</span>{% elif c.has_minor %}<span class="entry-minor-label" {% if not _dm %}style="display:none"{% endif %}>  Minor</span>{% endif %}
+          <span class="entry-chevron" style="margin-left:auto;flex-shrink:0">&#9662;</span>
+        </div>
           {% if c.divisions | length > 1 %}
             <div class="entry-div-wrap">
                 <select class="div-select"
@@ -586,15 +580,33 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
             {% endif %}
 
-            {% if c.reason %}
-                <div class="entry-reason">&#9888; {{ c.reason }}</div>
+            {% if is_minor_mode %}
+            {% if c.minor_remark_warning %}
+            <div class="minor-remark-warning">
+              &#9432;&nbsp;{{ c.minor_remark_warning }}
+            </div>
+            {% elif c.minor_remark_note %}
+            <div class="minor-remark-note">
+              &#9432;&nbsp;{{ c.minor_remark_note }}
+            </div>
             {% endif %}
-          </div>
-          <div class="score">
-              <span> <strong>Semantic Score</strong>: {{ ((c.raw_rrf or 0.0) * 100) | round(1) }}%</span>
-              <span> <strong>People Score</strong>: {{ ((c.raw_ps or 0.0) * 100) | round(1) }}%</span>
-              <span> <strong>Final Score</strong>: {{ ((c.final_score or 0.0) * 100) | round(1) }}%</span>
-          </div>
+            {% if c.minor_prereq_note is defined and c.minor_prereq_note %}
+            <div class="minor-remark-warning">
+              &#9432;&nbsp;{{ c.minor_prereq_note }}
+            </div>
+            {% endif %}
+            {% endif %}
+              {% if c.reason %}
+                  <div class="entry-reason">&#9888; {{ c.reason }}</div>
+              {% endif %}
+            </div>
+            {% if not is_minor_mode %}
+            <div class="score">
+                <span> <strong>Semantic Score</strong>: {{ ((c.raw_rrf or 0.0) * 100) | round(1) }}%</span>
+                <span> <strong>People Score</strong>: {{ ((c.raw_ps or 0.0) * 100) | round(1) }}%</span>
+                <span> <strong>Final Score</strong>: {{ ((c.final_score or 0.0) * 100) | round(1) }}%</span>
+            </div>
+            {% endif %}
           {% if c.description %}
           <div class="entry-desc-wrap">
             <div class="entry-desc-divider"></div>
@@ -649,24 +661,16 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
         {% endfor %}
       </div>
-      {% endif %}
         <div id="empty-consent" class="empty-result" {% if i_a_r %}style="display:none"{% endif %}>
           <div class="empty-title">No courses require consent</div>
         </div>
-    </div>
-    {% endif %}
+      </div>
+      {% endif %}
 
     <!-- ⏱️ Time Slot Clash -->
     {% if t_s_c %}
-    <div class="result-card card-clash fade-up-d2">
-    <div class="result-head">
-        <span class="result-title result-clash">Time Slot Clash</span>
-        <span id = "badge-tsc" class="badge badge-clash">{{ t_s_c | length }} Clashes</span>
-    </div>
-    <div class="result-divider divider-clash"></div>
-
-    {% if t_s_c %}
-    <div id="entries-tsc">
+    <div id="tab-content-tsc" class="tab-content">
+      <div id="entries-tsc">
         {% for c in t_s_c %}
         <div class="entry entry-clash{{ ' entry-last' if loop.last else '' }}" onclick="toggleEntry(this)"
             data-has-minor="{{ 'true' if c.has_minor else 'false' }}"
@@ -674,22 +678,13 @@ document.addEventListener('DOMContentLoaded', function() {
             data-divisions='{{ c.divisions | tojson }}'
             data-default-idx="{{ c.default_idx | default(0) }}"
             data-section="tsc">
-         {% if c.has_minor %}
-          <div class="entry-top">
-            <div class="entry-top-left">                
-                {% set _dm = c.divisions[c.default_idx | default(0)]['is_minor'] if c.divisions else false %}
-                <span class="tag-minor" {% if not _dm %}style="display:none"{% endif %}>Minor</span>                
-            </div>
-            <span class="entry-chevron">&#9662;</span>
-          </div>
-         {% endif %}
-          <div class="entry-code-row">
-            <span style="font-family: 'Source Serif 4', serif; font-size: 17px; font-weight: 600; opacity: 0.75;">{{ c.code }}</span>
-            <span class="entry-name">: {{ c.name }}</span>
-            {% if not c.has_minor %}
-            <span class="entry-chevron" style="margin-left:auto;flex-shrink:0">&#9662;</span>
-            {% endif %}
-          </div>
+        {% if c.has_minor %}{% set _dm = c.divisions[c.default_idx | default(0)]['is_minor'] if c.divisions else false %}{% endif %}
+        <div class="entry-code-row">
+          <span style="font-family: 'Source Serif 4', serif; font-size: 17px; font-weight: 600; opacity: 0.75;">{{ c.code }}</span>
+          <span class="entry-name">: {{ c.name }}</span>
+          {% if is_minor_mode and c.minor_type %}<span class="entry-minor-label">{{ c.minor_type }}</span>{% elif c.has_minor %}<span class="entry-minor-label" {% if not _dm %}style="display:none"{% endif %}>  Minor</span>{% endif %}
+          <span class="entry-chevron" style="margin-left:auto;flex-shrink:0">&#9662;</span>
+        </div>
         {% if c.divisions | length > 1 %}
             <div class="entry-div-wrap">
                 <select class="div-select"
@@ -731,15 +726,28 @@ document.addEventListener('DOMContentLoaded', function() {
             the regular registration window, and are allotted strictly on the basis of <strong>CPI</strong>
         </div>
         {% endif %}
+        {% if is_minor_mode %}
+          {% if c.minor_remark_warning %}
+          <div class="minor-remark-warning">
+            &#9432;&nbsp;{{ c.minor_remark_warning }}
+          </div>
+          {% elif c.minor_remark_note %}
+          <div class="minor-remark-note">
+            &#9432;&nbsp;{{ c.minor_remark_note }}
+          </div>
+          {% endif %}
+          {% endif %}
         <div class="entry-clash-msg">
             &#9203;&nbsp;Time slot clashes with 
             <span class="clash-courses">{{ c.clashing_with | join(', ') }}</span>
         </div>
+          {% if not is_minor_mode %}
         <div class="score">
               <span class="score"> <strong>Semantic Score</strong>: {{ ((c.raw_rrf or 0.0) * 100) | round(1) }}%</span>
               <span class="score"> <strong>People Score</strong>: {{ ((c.raw_ps or 0.0) * 100) | round(1) }}%</span>
               <span class ="score"> <strong>Final Score</strong>: {{ ((c.final_score or 0.0) * 100) | round(1) }}%</span>
           </div>
+          {% endif %}
         {% if c.description %}
         <div class="entry-desc-wrap">
             <div class="entry-desc-divider"></div>
@@ -794,24 +802,16 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
         {% endfor %}
     </div>
-    {% endif %}
         <div id="empty-tsc" class="empty-result" {% if t_s_c %}style="display:none"{% endif %}>
         <div class="empty-title">No slot conflicts found</div>
         </div>    
-    </div>
-    {% endif %}
+      </div>
+      {% endif %}
  
     <!-- ❌ Not Eligible -->
-     {% if rejected %}
-    <div class="result-card card-no fade-up-d2">
-      <div class="result-head">
-        <span class="result-title result-no">Not Eligible</span>
-        <span id = 'badge-rejected' class="badge badge-no">{{ rejected | length }} Blocked</span>
-      </div>
-      <div class="result-divider divider-no"></div>
- 
-      {% if rejected %}
-      <div id = "entries-rejected">
+    {% if rejected %}
+    <div id="tab-content-rejected" class="tab-content">
+      <div id="entries-rejected">
         {% for c in rejected %}
         <div class="entry entry-no{{ ' entry-last' if loop.last else '' }}" onclick="toggleEntry(this)"
             data-has-minor="{{ 'true' if c.has_minor else 'false' }}"
@@ -819,22 +819,13 @@ document.addEventListener('DOMContentLoaded', function() {
             data-divisions='{{ c.divisions | tojson }}'
             data-default-idx="{{ c.default_idx | default(0) }}"
             data-section="rejected">
-           {% if c.has_minor %}
-          <div class="entry-top">
-            <div class="entry-top-left">                
-                {% set _dm = c.divisions[c.default_idx | default(0)]['is_minor'] if c.divisions else false %}
-                <span class="tag-minor" {% if not _dm %}style="display:none"{% endif %}>Minor</span>                
-            </div>
-            <span class="entry-chevron">&#9662;</span>
-          </div>
-         {% endif %}
-          <div class="entry-code-row">
-            <span style="font-family: 'Source Serif 4', serif; font-size: 17px; font-weight: 600; opacity: 0.75;">{{ c.code }}</span>
-            <span class="entry-name">: {{ c.name }}</span>
-            {% if not c.has_minor %}
-            <span class="entry-chevron" style="margin-left:auto;flex-shrink:0">&#9662;</span>
-            {% endif %}
-          </div>
+           {% if c.has_minor %}{% set _dm = c.divisions[c.default_idx | default(0)]['is_minor'] if c.divisions else false %}{% endif %}
+        <div class="entry-code-row">
+          <span style="font-family: 'Source Serif 4', serif; font-size: 17px; font-weight: 600; opacity: 0.75;">{{ c.code }}</span>
+          <span class="entry-name">: {{ c.name }}</span>
+          {% if is_minor_mode and c.minor_type %}<span class="entry-minor-label">{{ c.minor_type }}</span>{% elif c.has_minor %}<span class="entry-minor-label" {% if not _dm %}style="display:none"{% endif %}>  Minor</span>{% endif %}
+          <span class="entry-chevron" style="margin-left:auto;flex-shrink:0">&#9662;</span>
+        </div>
           {% if c.divisions | length > 1 %}
             <div class="entry-div-wrap">
                 <select class="div-select"
@@ -877,12 +868,30 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
           {% endif %}
 
+          {% if is_minor_mode %}
+          {% if c.minor_remark_warning %}
+          <div class="minor-remark-warning">
+            &#9432;&nbsp;{{ c.minor_remark_warning }}
+          </div>
+          {% elif c.minor_remark_note %}
+          <div class="minor-remark-note">
+            &#9432;&nbsp;{{ c.minor_remark_note }}
+          </div>
+          {% endif %}
+          {% if c.minor_prereq_note is defined and c.minor_prereq_note %}
+          <div class="minor-remark-warning">
+            &#9432;&nbsp;{{ c.minor_prereq_note }}
+          </div>
+          {% endif %}
+          {% endif %}
           <div class="entry-reason">&#9888; {{ c.reason }}</div>
+          {% if not is_minor_mode %}
           <div class="score">
               <span class="score"><strong> Semantic Score</strong>: {{ ((c.raw_rrf or 0.0) * 100) | round(1) }}%</span>
               <span class="score"> <strong>People Score</strong>: {{ ((c.raw_ps or 0.0) * 100) | round(1) }}%</span>
               <span class ="score"> <strong>Final Score</strong>: {{ ((c.final_score or 0.0) * 100) | round(1) }}%</span>
           </div>
+          {% endif %}
           {% if c.description %}
           <div class="entry-desc-wrap">
             <div class="entry-desc-divider"></div>
@@ -937,7 +946,6 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
         {% endfor %}
       </div>
-      {% endif %}
         <div id="empty-rejected" class="empty-result" {% if rejected %}style="display:none"{% endif %}>
           <div class="empty-title">All courses are eligible</div>
         </div>      
@@ -946,10 +954,11 @@ document.addEventListener('DOMContentLoaded', function() {
   </div><!-- /results-grid -->
  
   <!-- ── Feedback ──────────────────────────────────────────────── -->
-    <div class="card fade-up" id="feedback-card">
-      <div class="card-head">
-        <span class="sec-label">Share Your Experience</span>
-      </div>
+   {% if otp_verified and eligible is not none %}
+    <div class="feedback-section fade-up" id="feedback-section">
+      <header class="feedback-header">
+        <h2>Share Your Experience</h2>
+      </header>
       <div class="divider-dash"></div>
 
       {% with messages = get_flashed_messages(category_filter=["feedback_success"]) %}
@@ -984,9 +993,7 @@ document.addEventListener('DOMContentLoaded', function() {
         </button>
       </form>
     </div>
-  {% endif %}
-  {% endif %}
- 
+ {% endif %}
 </main><!-- /content -->
 
 <!-- Footer -->
@@ -997,7 +1004,7 @@ document.addEventListener('DOMContentLoaded', function() {
   <br>  
   <span style="font-size: 14px; color:var(--tp); opacity:0.65;">
     All course-related information is sourced from the
-    <a href="https://asc.iitb.ac.in/internalasc/studentsresource.php"
+    <a href="https://asc.iitb.ac.in"
        target="_blank"
        style="color:inherit; text-decoration:underline; text-underline-offset:2px;">
       Internal ASC Portal
@@ -1063,6 +1070,17 @@ function initSubmitBtn() {
   });
 }
 
+/* ── Tab Switching Logic ─────────────────────────────────────────── */
+function switchTab(tabId) {
+  // Remove active class from all buttons and contents
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+  // Add active class to selected
+  document.getElementById('tab-btn-' + tabId).classList.add('active');
+  document.getElementById('tab-content-' + tabId).classList.add('active');
+}
+
 /* ── Grade stats: show Regular or Minor based on dropdown ───────── */
 function updateGradeStats(entry, isMinor) {
   var mainBlocks  = entry.querySelectorAll('.grade-div-block[data-stat-div="main"]');
@@ -1081,9 +1099,9 @@ function switchDivision(sel) {
   entry.querySelector('.div-slot').textContent       = (d.slot || 'N/A').replace(/\r\n|\r/g, '\n');
   entry.querySelector('.div-instructor').textContent = (d.instructor || 'N/A').replace(/\r\n|\r|\n/g, ', ');
 
-  var badge = entry.querySelector('.tag-minor');
-  if (badge) {
-  badge.style.display = d.is_minor ? 'inline-block' : 'none';
+  var minorLabel = entry.querySelector('.entry-minor-label');
+  if (minorLabel) {
+    minorLabel.style.display = d.is_minor ? 'inline' : 'none';
   }
 
   var clashMsg = entry.querySelector('.entry-clash-msg');
@@ -1259,6 +1277,9 @@ function initGradeCharts(entryEl) {
     canvas.setAttribute('data-initialized', 'true');
   });
 }
+
+/*<!-- ── Core courses from server ───────────────────────────── -->
+/const SERVER_CORE_COURSES = {{ core_courses_for_bucket | default([]) | tojson }};*/
  
 /* ── Boot ──────────────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', function () {
@@ -1274,8 +1295,422 @@ document.addEventListener('DOMContentLoaded', function () {
   /* Feedback Stars */
   initStars();
 
+  /* Course Bucket */
+  // initBucket();
 });
+ 
+/* ══════════════════════════════════════════════════════════════════
+   COURSE BUCKET
+   ══════════════════════════════════════════════════════════════════ */
+/* 
+const STANDING_MAX = { 1:54, 2:48, 3:48, 4:48, 5:36, 6:24 };
+const STANDING_DESC = {
+  1: 'No FR/DX/DR/W in core, CPI ≥ 8.0',
+  2: 'CPI < 8, registered ≥18 cr each of last 2 sems, no failures',
+  3: 'At least 1 FR/DX/W/DR in core, at most 1 FR/DX in others (last 2 sems)',
+  4: 'At least 1 FR/DX/W/DR in core, more than 1 FR/DX in others (last 2 sems)',
+  5: 'Did not earn ≥18 credits in either of last 2 sems',
+  6: 'Accumulated ≥36 credits of FR/DX in core courses'
+};
+const MIN_CREDITS = 18;
+const MAX_AUDITS  = 2;
+ 
+let bucket          = [];
+let academicStanding = 2;
+ 
+function loadBucket() {
+  try {
+    bucket           = JSON.parse(localStorage.getItem('cr-bucket')   || '[]');
+    academicStanding = parseInt(localStorage.getItem('cr-standing')   || '2');
+  } catch(e) { bucket = []; academicStanding = 2; }
+}
+ 
+function saveBucket() {
+  localStorage.setItem('cr-bucket',  JSON.stringify(bucket));
+  localStorage.setItem('cr-standing', String(academicStanding));
+}
+ 
+function getTotalCredits(excludeAudit) {
+  return bucket
+    .filter(c => !excludeAudit || c.tag !== 'audit')
+    .reduce((s,c) => s + (parseInt(c.credits)||0), 0);
+}
+ 
+function getMaxCredits() { return STANDING_MAX[academicStanding] || 48; } */
+ 
+/* Extracts the numeric slot label (e.g. "5", "14", "L1") from a slot string */
+/* function parseSlotNum(raw) {
+  if (!raw || raw === 'N/A' || raw === 'None') return null;
+  const m = String(raw).trim().match(/^(\d{1,2}[A-Z]?|L\d*|X[A-Z0-9]*|XE|XC|XD)/i);
+  return m ? m[1].toUpperCase() : null;
+} */
+ 
+/* Returns { code → [clashing codes] } for all bucket courses */
+/* function findBucketClashes() {
+
+  const slotMap = {};
+
+  for (const c of bucket) {
+
+    const sn = parseSlotNum(c.slot_num);
+
+    if (!sn) continue;
+
+    if (!slotMap[sn]) slotMap[sn] = [];
+
+    slotMap[sn].push(c);
+
+  }
+
+  const result = {};
+
+  for (const courses of Object.values(slotMap)) {
+
+    if (courses.length < 2) continue;
+
+    for (let i = 0; i < courses.length; i++) {
+
+      for (let j = i + 1; j < courses.length; j++) {
+
+        // Skip core↔core: institute scheduling ensures these never truly conflict
+
+        if (courses[i].type === 'core' && courses[j].type === 'core') continue;
+
+        if (!result[courses[i].code]) result[courses[i].code] = [];
+
+        if (!result[courses[j].code]) result[courses[j].code] = [];
+
+        result[courses[i].code].push(courses[j].code);
+
+        result[courses[j].code].push(courses[i].code);
+
+      }
+
+    }
+
+  }
+
+  return result;
+
+} */
+ 
+/* ── Add from recommendation card ── */
+/* function addToBucket(btn) {
+  const code    = btn.dataset.code;
+  const name    = btn.dataset.name;
+  const credits = parseInt(btn.dataset.credits) || 6;
+  const slotNum = btn.dataset.slotNum || 'N/A';
+  const isMinor = btn.dataset.isMinor === 'true';
+ 
+  if (bucket.find(c => c.code === code)) {
+    bucketToast(`${code} is already in your bucket.`, 'info'); return;
+  }
+ 
+  const newTotal = getTotalCredits() + credits;
+  if (newTotal > getMaxCredits()) {
+    bucketToast(
+      `Cannot add ${code}: would exceed the ${getMaxCredits()} credit limit for Academic Standing ${academicStanding}.`,
+      'warn'
+    ); return;
+  }
+ 
+  bucket.push({ code, name, credits, slot_num: slotNum, type: 'elective',
+                is_minor: isMinor, tag: isMinor ? 'minor' : 'regular' });
+  saveBucket();
+  renderBucket();
+ 
+  btn.textContent = '✓ In Bucket';
+  btn.disabled    = true;
+  btn.classList.add('btn-in-bucket');
+  openBucket();
+  bucketToast(`${code} added to bucket.`, 'ok');
+}  */
+ 
+/* ── Add core course manually ── */
+/* function addCoreToBucket() {
+  const codeEl  = document.getElementById('bc-code');
+  const nameEl  = document.getElementById('bc-name');
+  const credEl  = document.getElementById('bc-cred');
+  const slotEl  = document.getElementById('bc-slot');
+ 
+  const code    = codeEl.value.trim().toUpperCase().replace(/\s+/,' ');
+  const name    = nameEl.value.trim() || code;
+  const credits = parseInt(credEl.value) || 6;
+  const slotNum = slotEl.value.trim() || 'N/A';
+ 
+  if (!code) { bucketToast('Enter a course code.','warn'); return; }
+  if (bucket.find(c => c.code === code)) { bucketToast(`${code} already in bucket.`,'info'); return; }
+ 
+  const newTotal = getTotalCredits() + credits;
+  if (newTotal > getMaxCredits()) {
+    bucketToast(`Cannot add ${code}: would exceed ${getMaxCredits()}-credit limit.`,'warn'); return;
+  }
+ 
+  bucket.push({ code, name, credits, slot_num: slotNum, type: 'core', is_minor: false, tag: 'core' });
+  saveBucket(); renderBucket();
+  codeEl.value=''; nameEl.value=''; credEl.value=''; slotEl.value='';
+  bucketToast(`${code} added as core course.`, 'ok');
+} */
+ 
+/* ── Remove a course ── */
+/* function removeFromBucket(code) {
+  const course = bucket.find(c => c.code === code);
+  if (!course) return;
+ 
+  if (course.type === 'core') {
+    const go = confirm(
+      `"${course.name}" is a Core Course.\n\n` +
+      `Dropping core courses requires prior consultation with your Faculty Advisor.\n\n` +
+      `Remove from bucket?`
+    );
+    if (!go) return;
+  }
+ 
+  const newTotal = getTotalCredits() - (parseInt(course.credits)||0);
+  if (newTotal < MIN_CREDITS && bucket.length > 1) {
+    bucketToast(
+      `Cannot remove ${code}: total would drop to ${newTotal} credits, below the minimum of ${MIN_CREDITS}.`,
+      'warn'
+    ); return;
+  }
+ 
+  bucket = bucket.filter(c => c.code !== code);
+  saveBucket();
+ 
+  // Re-enable the recommendation card button if present
+  const btn = document.querySelector(`.btn-add-bucket[data-code="${code}"]`);
+  if (btn) { btn.textContent = '+ Add to Bucket'; btn.disabled = false; btn.classList.remove('btn-in-bucket'); }
+ 
+  renderBucket();
+} */
+ 
+/* ── Render the bucket panel ── */
+/* function renderBucket() {
+  const total    = getTotalCredits();
+  const maxCr    = getMaxCredits();
+  const count    = bucket.length;
+  const clashes  = findBucketClashes();
+ 
+  // FAB badge
+  const badge = document.getElementById('bucket-fab-badge');
+  badge.textContent  = count;
+  badge.style.display = count > 0 ? 'flex' : 'none';
+ 
+  // Credit bar
+  const pct  = Math.min(100, (total / maxCr) * 100);
+  const fill = document.getElementById('bc-bar-fill');
+  fill.style.width      = pct + '%';
+  fill.style.background =
+    total > maxCr   ? 'var(--red,#e53e3e)' :
+    total >= MIN_CREDITS ? 'var(--green,#38a169)' : 'var(--amber,#d97706)';
+ 
+  document.getElementById('bc-total').textContent = total;
+  document.getElementById('bc-max').textContent   = maxCr;
+  document.getElementById('bc-min').textContent   = MIN_CREDITS;
+ 
+  // Rebuild warnings
+  const warns = [];
+  if (count === 0) warns.push('Bucket is empty. Add eligible courses from the recommendations below, or enter core courses manually.');
+  if (total < MIN_CREDITS && count > 0)
+    warns.push(`Below minimum: ${total} / ${MIN_CREDITS} credits. You need at least ${MIN_CREDITS} registered credits per semester.`);
+  if (total > maxCr)
+    warns.push(`Exceeds maximum: ${total} / ${maxCr} credits for Standing ${academicStanding}. Remove courses or change your standing selection.`);
+ 
+  const auditCount = bucket.filter(c => c.tag === 'audit').length;
+  if (auditCount > MAX_AUDITS)
+    warns.push(`Audit limit: you have ${auditCount} audited courses. A maximum of ${MAX_AUDITS} courses may be audited per semester.`);
+ 
+  const clashCodes = Object.keys(clashes);
+  if (clashCodes.length > 0)
+    warns.push(`Slot clash within bucket: ${[...new Set(clashCodes.concat(...Object.values(clashes)))].join(', ')} share a slot. You cannot register for courses in the same slot.`);
+ 
+  const minorCourses = bucket.filter(c => c.is_minor);
+  if (minorCourses.length > 0)
+    warns.push(`Minor elective${minorCourses.length > 1?'s':''} (${minorCourses.map(c=>c.code).join(', ')}) require pre-registration via External ASC → Forms/Requests (10–14 Jul 2026). Allotment is by Major CPI.`);
+ 
+  const warnEl = document.getElementById('bc-warnings');
+  warnEl.innerHTML = warns.map(w => `
+  <div class="manual-alert" style="margin:6px 0 0;">
+    <div class="manual-alert-inner">
+      <span class="manual-warn-icon">⚠</span>
+      <span class="manual-alert-text">${w}</span>
+    </div>
+  </div>`).join('');
+ 
+  // Rebuild course list
+  const listEl = document.getElementById('bc-list');
+  if (count === 0) { listEl.innerHTML = ''; return; }
+ 
+  const cores     = bucket.filter(c => c.type === 'core');
+  const electives = bucket.filter(c => c.type !== 'core');
+  let html = '';
+ 
+  if (cores.length > 0) {
+    html += `<div class="grade-stats-label" style="margin-top:12px;">Core Courses</div>`;
+    cores.forEach(c => { html += renderBucketItem(c, clashes); });
+  }
+  if (electives.length > 0) {
+    html += `<div class="grade-stats-label" style="margin-top:12px;">Electives</div>`;
+    electives.forEach(c => { html += renderBucketItem(c, clashes); });
+  }
+  listEl.innerHTML = html;
+}
+ 
+function renderBucketItem(c, clashes) {
+  const isClash   = !!clashes[c.code];
+  const clashWith = clashes[c.code] || [];
+ 
+  const entryClass = isClash        ? 'entry entry-clash'   :
+                     c.type==='core' ? 'entry entry-consent' : 'entry entry-ok';
+ 
+  const minorInline = c.is_minor ? ' · <span class="entry-minor-label">Minor</span>' : '';
+ 
+  const clashHtml = isClash
+    ? `<div class="entry-clash-msg"> Slot clash with ${clashWith.join(', ')}</div>` : '';
+ 
+  const minorHtml = c.is_minor
+    ? `<div class="minor-msg" style="display:block;margin-top:6px;">
+        Pre-registration via External ASC → Forms/Requests
+       </div>` : '';
+  
+  return `
+  <div class="${entryClass}" style="cursor:default;margin-bottom:8px;">
+    <div class="entry-code-row" style="justify-content:space-between;align-items:center;">
+      <div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;">
+        <span style="font-family:var(--font-display);font-size:15px;font-weight:600;opacity:0.75;">${c.code}${minorInline}</span>
+<span class="score" font-size:11px;opacity:0.7;margin:0;>${c.credits} cr</span>
+      </div>
+      <button class="bc-item-remove" onclick="removeFromBucket('${c.code}')" title="Remove">×</button>
+    </div>
+    <div class="entry-name" style="margin-bottom:3px;">${c.name}</div>
+    <div class="entry-meta"><strong>Slot</strong> : ${c.slot_num || 'N/A'}</div>
+    ${clashHtml}${minorHtml}
+  </div>`;
+}
+ 
+function updateStanding(val) {
+  academicStanding = parseInt(val);
+  document.getElementById('bc-standing-desc').textContent = STANDING_DESC[academicStanding] || '';
+  saveBucket(); renderBucket();
+}
+ 
+function openBucket()  { document.getElementById('bucket-panel').classList.add('bc-open'); }
+function closeBucket() { document.getElementById('bucket-panel').classList.remove('bc-open'); }
+function toggleBucket(){ document.getElementById('bucket-panel').classList.toggle('bc-open'); renderBucket(); }
+function clearBucket() {
+  if (!confirm('Clear all courses from the bucket?')) return;
+  bucket.forEach(c => {
+    const btn = document.querySelector(`.btn-add-bucket[data-code="${c.code}"]`);
+    if (btn) { btn.textContent = '+ Add to Bucket'; btn.disabled = false; btn.classList.remove('btn-in-bucket'); }
+  });
+  bucket = []; saveBucket(); renderBucket();
+}
+ 
+function bucketToast(msg, type='info') {
+  const t = document.getElementById('bucket-toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.className   = `bucket-toast bt-${type} bt-show`;
+  setTimeout(() => t.classList.remove('bt-show'), 3500);
+}
+ 
+function initBucket() {
+  loadBucket();
+  // Auto-load server-provided core courses for this semester.
+  // Only adds courses not already present — preserves any user removals
+  // within the same session, but repopulates on a fresh recommendation.
+  if (typeof SERVER_CORE_COURSES !== 'undefined' && SERVER_CORE_COURSES.length > 0) {
+    const existingCodes = new Set(bucket.map(c => c.code));
+    const hadCoreBefore  = bucket.some(c => c.type === 'core');
+ 
+    // On a fresh recommendation (no existing core courses), clear stale
+    // electives from a previous run before adding new cores.
+    if (!hadCoreBefore) {
+      bucket = bucket.filter(c => c.type !== 'core');
+    }
+ 
+    SERVER_CORE_COURSES.forEach(c => {
+      if (!existingCodes.has(c.code)) {
+        bucket.unshift(c);   // prepend so cores appear first
+      }
+    });
+    saveBucket();
+  }
+ 
+  // Restore Add-to-Bucket button states for electives already in bucket
+  bucket.forEach(c => {
+    const btn = document.querySelector(`.btn-add-bucket[data-code="${c.code}"]`);
+    if (btn) { btn.textContent = '✓ In Bucket'; btn.disabled = true; btn.classList.add('btn-in-bucket'); }
+  });
+  const sel = document.getElementById('bc-standing-sel');
+  if (sel) sel.value = academicStanding;
+  const descEl = document.getElementById('bc-standing-desc');
+  if (descEl) descEl.textContent = STANDING_DESC[academicStanding] || '';
+  renderBucket();
+} */
 </script>
  
+<!-- ── Bucket FAB ────────────────────────────────────────────── -->
+<!--<button class="bucket-fab" onclick="toggleBucket()" title="Course Bucket" aria-label="Open Course Bucket">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
+  </svg>
+  <span class="bucket-fab-badge" id="bucket-fab-badge" style="display:none">0</span>
+</button> -->
+ 
+<!-- ── Bucket Panel ──────────────────────────────────────────── -->
+<!--<div id="bucket-panel" class="bucket-panel" role="dialog" aria-label="Course Bucket">
+ 
+  <div class="bc-header">
+    <span class="result-title result-ok">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:7px;flex-shrink:0">
+        <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
+      </svg>Course Bucket
+    </span>
+    <div style="display:flex;gap:6px;align-items:center;">
+      <button class="btn-reset" style="font-size:12px;padding:4px 10px;" onclick="clearBucket()">Clear all</button>
+      <button class="bc-close" onclick="closeBucket()">×</button>
+    </div>
+  </div> -->
+ 
+  <!-- Divider -->
+  <!-- <div class="result-divider divider-ok" style="margin:0 22px 10px;"></div> -->
+ 
+  <!-- Academic Standing -->
+  <!-- <div class="bc-standing-row">
+    <div class="grade-stats-label">Academic Standing</div>
+    <select id="bc-standing-sel" class="bc-standing-sel" onchange="updateStanding(this.value)">
+      <option value="1">1: ≤54 cr</option>
+      <option value="2" selected>2: ≤48 cr</option>
+      <option value="3">3: ≤48 cr</option>
+      <option value="4">4: ≤48 cr</option>
+      <option value="5">5: ≤36 cr</option>
+      <option value="6">6: ≤24 cr</option>
+    </select>
+    <div class="score" id="bc-standing-desc" style="margin-top:5px;opacity:1;font-size:11px;"></div>
+  </div> -->
+ 
+  <!-- Credit bar -->
+  <!-- <div class="bc-credit-bar-wrap">
+    <div class="bc-credit-labels">
+      <span class="score" style="opacity:1;">Min <strong id="bc-min">18</strong> cr</span>
+      <span class="score" style="opacity:1;"><strong id="bc-total">0</strong> / <strong id="bc-max">48</strong> cr</span>
+    </div>
+    <div class="bc-credit-bar-bg">
+      <div class="bc-credit-bar-fill" id="bc-bar-fill" style="width:0%"></div>
+    </div>
+  </div> -->
+ 
+  <!-- Warnings-->
+  <!-- <div id="bc-warnings" class="bc-warnings"></div> -->
+ 
+  <!-- Course list -->
+  <!-- <div id="bc-list" class="bc-list"></div>
+ 
+</div> -->
+ 
+<!-- ── Bucket toast ──────────────────────────────────────────── -->
+<!-- <div id="bucket-toast" class="bucket-toast"></div> -->
+
 </body>
 </html>

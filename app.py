@@ -3,7 +3,7 @@ import random, time, smtplib, os, ast
 from email.mime.text import MIMEText
 from flask import Flask, render_template, request, session, redirect, url_for, flash
 from model.recommender import get_candidate_courses
-from eligibility.rules import recommender as eligibility_recommender
+from eligibility.rules import recommender as eligibility_recommender, get_core_courses_for_bucket, detect_minor_intent, build_minor_candidates, parse_minor_remark
 from config import FLASK_SECRET, SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, OTP_EXPIRY_SEC, FEEDBACK_PATH
 
 app = Flask(__name__)
@@ -102,7 +102,7 @@ def send_otp(student_id):
         server.starttls()
         server.login(SMTP_USER, SMTP_PASS)
         server.send_message(msg)
-    return otp
+    return otp, to_email
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -120,6 +120,9 @@ def index():
     course_history = None
     need_manual_history = False
     query_fallback = False
+    is_minor_mode = False
+    minor_branch  = None
+   # core_courses_for_bucket = []
 
     if request.method == "POST":
         action = request.form.get("action")
@@ -128,8 +131,9 @@ def index():
         if action == "send_otp":
             student_id = request.form.get("student_id", "").strip().lower()
             try:
-                otp = send_otp(student_id)
+                otp, resolved_email = send_otp(student_id)
                 session['otp_code']       = otp
+                session['otp_email'] = resolved_email
                 session['otp_sent_at']    = time.time()
                 session['otp_student_id'] = student_id
                 session['otp_sent']       = True
@@ -186,6 +190,18 @@ def index():
 
             interests = request.form.get('interests_text', '').strip()
 
+            # Minor mode detection: If the student asks for a specific department's minor, bypass the
+                                  # semantic/PS model entirely and serve only that department's minor courses and electives.
+            minor_branch, _ = detect_minor_intent(interest)
+            is_minor_mode    = bool(minor_branch)
+            minor_candidates = []
+
+            if is_minor_mode:
+                minor_candidates = build_minor_candidates(minor_branch, degree)
+                desired_courses  = minor_candidates  # PS + semantic scores disabled
+                w_rrf = 0.0
+                w_ps  = 0.0
+
             # Check if the user left the text field blank
         
             if not interest:
@@ -195,18 +211,19 @@ def index():
                 query_fallback = True
 
             # --- 3. NLP CANDIDATE SEEDING (WITH TOKENLESS API PROTECTION) ---
-            desired_courses = []
-            try:
-                # Attempts standard semantic processing
-                desired_courses = get_candidate_courses(
-                    query=interest, 
-                    student_history=automated_history, 
-                    top_k=60,
-                    w_rrf=w_rrf,  
-                    w_ps=w_ps 
-                )
-            except Exception as api_err:
-                print(f"[OFFLINE FALLBACK] Token exhaustion detected. Using safe catalog fallback. Trace: {api_err}")
+            if not is_minor_mode:
+                desired_courses = []
+                try:
+                    # Attempts standard semantic processing
+                    desired_courses = get_candidate_courses(
+                        query=interest, 
+                        student_history=automated_history, 
+                        top_k=60,
+                        w_rrf=w_rrf,  
+                        w_ps=w_ps 
+                    )
+                except Exception as api_err:
+                    print(f"[OFFLINE FALLBACK] Token exhaustion detected. Using safe catalog fallback. Trace: {api_err}")
 
 
         
@@ -232,7 +249,8 @@ def index():
                 desired_courses=desired_courses,
                 manual_course_history=manual_course_history or automated_history,
                 w_rrf=w_rrf,
-                w_ps=w_ps
+                w_ps=w_ps,
+                is_minor_mode=is_minor_mode,
             )
 
             # --- 5. COMPILING DATA OUTPUT ARRAYS, ACCOUNT FOR MANUAL HISTORY---
@@ -245,12 +263,56 @@ def index():
                 t_s_c = output.get("t_s_c", [])
                 rejected = output.get("rejected", [])
 
+                # --- 5a. MINOR MODE: annotate every entry with Type + Remark ─
+                if is_minor_mode:
+                    _minor_meta = {c['code']: c for c in minor_candidates}
+                    _hist = course_history or []
+                    for _section in (eligible, i_a_r, t_s_c, rejected):
+                        for _entry in _section:
+                            _m = _minor_meta.get(_entry['code'], {})
+                            _raw = _m.get('minor_remark', '')
+                            _parsed = (parse_minor_remark(_raw, _hist, department)
+                                       if _raw else {})
+                            _entry['minor_type']           = _m.get('minor_type', '')
+                            _entry['minor_remark_note']    = _parsed.get('note', '')
+                            _entry['minor_remark_warning'] = _parsed.get('warning', '')
+                            # Prereq unmet from remark → move to rejected with reason
+                            # (already placed in correct section by eligibility engine; we display the remark reason)
+                            if _parsed.get('prereq_unmet') and _entry in eligible:
+                                _entry['minor_prereq_note'] = _parsed['prereq_unmet']
+
+                            # In minor mode, filter dual-listed courses to the
+                            # single division the student should actually register under.
+                            # Rule (from ASC_Minor_Courses.csv Type column):
+                            #   'elective' in minor_type → non-M (regular) division
+                            #   anything else            → M-tagged division
+                            _divs = _entry.get('divisions', [])
+                            if len(_divs) > 1:
+                                _mtype = (_entry.get('minor_type') or '').lower()
+                                if 'elective' in _mtype:
+                                    _preferred = [d for d in _divs if not d.get('is_minor')]
+                                else:
+                                    _preferred = [d for d in _divs if d.get('is_minor')]
+                                if _preferred:
+                                    _entry['divisions']    = _preferred
+                                    _entry['default_idx'] = 0
+                                    _entry['slot']        = _preferred[0]['slot']
+                                    _entry['instructor']  = _preferred[0]['instructor']
+
+            # --- 6. CORE COURSES FOR BUCKET ---
+            '''core_courses_for_bucket = get_core_courses_for_bucket(
+                degree=degree,
+                department=department,
+                batch_year=year
+            )'''
+
 
     return render_template(
         "index.html",
         otp_sent=otp_sent,
         otp_verified=otp_verified,
         otp_error=otp_error,
+        otp_email = session.get('otp_email', ''),
         student_id=session.get('otp_student_id', ''),
         eligible=eligible,
         i_a_r = i_a_r,
@@ -260,7 +322,10 @@ def index():
         need_manual_history=need_manual_history,
         w_rrf=w_rrf,
         w_ps=w_ps,
-        query_fallback=query_fallback
+        query_fallback=query_fallback,
+        is_minor_mode=is_minor_mode,
+        minor_branch=minor_branch,
+       # core_courses_for_bucket=core_courses_for_bucket
     )
 
 @app.route("/feedback", methods=["POST"])
@@ -292,6 +357,10 @@ def feedback():
         flash(f'Could not save feedback: {e}', 'feedback_error')
 
     return redirect(url_for('index'))
+
+@app.route('/documentation')
+def documentation():
+    return render_template('documentation.html')
 
 if __name__ == "__main__":
     app.run(debug=True)

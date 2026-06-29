@@ -2,12 +2,13 @@ import ast
 import numpy as np
 import re
 import pandas as pd
-from config import RUNNING_COURSES_PATH, PREREQ_PATH, COURSES_HISTORY_PATH, CORE_COURSES_PATH, SEMESTER, GRADES_2024_PATH, GRADES_2025_PATH
+from config import RUNNING_COURSES_PATH, RUNNING_COURSES_PATH_ALT, PREREQ_PATH, COURSES_HISTORY_PATH, CORE_COURSES_PATH, SEMESTER, GRADES_2024_PATH, GRADES_2025_PATH
 from collections import defaultdict
 from datetime import datetime
 
 data = pd.read_csv(COURSES_HISTORY_PATH)
 df = pd.read_csv(RUNNING_COURSES_PATH)
+df_alt = pd.read_csv(RUNNING_COURSES_PATH_ALT)
 rename_map = {
     "Restrictions": "Restriction",
     "Course Description": "Description",
@@ -59,6 +60,7 @@ for _, row in df.iterrows():
         "slot_num":    extract_slot_num(row.get('Slot', '')),
         "instructor":  str(row.get('Instructor',  'N/A')).strip(),
         "description": str(row.get('Description', '')),
+        "credits":     int(str(row.get('Credits', '') or '').strip() or 6),
         "division":    div,
         "is_minor":    (div == 'M'),
         "label":       ("Minor"   if div == 'M'
@@ -76,7 +78,28 @@ for code, rows in _raw.items():
         "slot":        default['slot'],
         "instructor":  default['instructor'],
         "description": default['description'],
+        "credits":     default.get('credits', 6),
     }
+
+# Courses that have both a regular and an M-tagged variant
+historical_divisions = {}
+
+for meta_df in (df, df_alt):
+
+    for _, row in meta_df.iterrows():
+
+        code = str(row["Course Code"]).strip()
+        code_norm = code.replace(" ", "")
+
+        division = str(row.get("Division", "")).strip()
+
+        historical_divisions.setdefault(code_norm, set()).add(division)
+
+courses_with_minor_variant = {
+    code
+    for code, divs in historical_divisions.items()
+    if "M" in divs and any(d != "M" for d in divs)
+}
 
 # M-Tag course codes (no spaces) — for equiv filtering
 m_tag_set = {
@@ -484,7 +507,376 @@ def norm_code(x):
     return str(x).replace(" ", "").upper().strip()
 
 
-def recommender(student_id, Degree, year, department, desired_courses, manual_course_history=None, w_rrf=0.5, w_ps=0.5):
+def get_core_courses_for_bucket(degree, department, batch_year):
+    """
+    Returns core courses for the upcoming semester based on
+    degree, department and batch year.
+    Slot numbers are looked up from running_slot_map where available.
+    """
+    from datetime import datetime
+    current_year = datetime.now().year
+ 
+    # Compute year of study from batch year and current semester
+    try:
+        batch = int(batch_year)
+    except (TypeError, ValueError):
+        return []
+ 
+    if SEMESTER == 'Autumn':
+        year_of_study = current_year - batch + 1
+    else:
+        year_of_study = current_year - batch
+ 
+    # CSV Degree → CSV Branch exact match required
+    degree_map = {
+        'B.Tech.':      'B.Tech.',
+        'B.S.':         'B.S.',
+        'Dual Degree':  'Dual Degree (B.Tech. + M.Tech.)',
+    }
+    csv_degree = degree_map.get(str(degree).strip(), str(degree).strip())
+ 
+    mask = (
+        (df_core_sem['Degree']  == csv_degree)  &
+        (df_core_sem['Branch']  == str(department).strip()) &
+        (df_core_sem['Year']    == year_of_study)
+    )
+    rows = df_core_sem[mask]
+ 
+    if rows.empty:
+        return []
+ 
+    result = []
+    for _, row in rows.iterrows():
+        code = str(row['Course Code']).strip()
+        # Look up slot from running courses; take first slot found
+        slot_nums = running_slot_map.get(code, set())
+        slot_num  = next(iter(slot_nums), 'N/A')
+        try:
+            credits = int(str(row.get('Credits', 6)).strip() or 6)
+        except (ValueError, TypeError):
+            credits = 6
+        result.append({
+            'code':        code,
+            'name':        str(row['Course Name']).strip(),
+            'credits':     credits,
+            'slot_num':    slot_num,
+            'course_type': str(row['Course Type']).strip(),
+            'type':        'core',
+            'is_minor':    False,
+            'tag':         'core',
+        })
+    return result
+
+# Minor courses support
+
+# Build course name lookup from running courses + metadata CSV.
+_course_name_map: dict = {}
+_cn_col = next((c for c in df.columns if 'course name' in c.lower()), None)
+if _cn_col:
+    for _, _r in df.iterrows():
+        _code = str(_r['Course Code']).strip()
+        _name = str(_r.get(_cn_col, '')).strip()
+        if _code and _name and _name.lower() not in ('nan', ''):
+            _course_name_map.setdefault(_code, _name)
+
+try:
+    from config import MINOR_COURSES_PATH as _MINOR_PATH, RUNNING_COURSES_PATH as _META_PATH
+    _df_meta_raw = pd.read_csv(_META_PATH)
+    for _, _r in _df_meta_raw.iterrows():
+        _code = str(_r.get('Course Code', '')).strip()
+        _name = str(_r.get('Course Name', '')).strip()
+        if _code and _name and _name.lower() not in ('nan', ''):
+            _course_name_map.setdefault(_code, _name)
+    _df_minor = pd.read_csv(_MINOR_PATH)
+    print(f"[SUCCESS] Minor courses loaded: {len(_df_minor)} rows, "
+          f"name map: {len(_course_name_map)} entries.")
+except Exception as _me:
+    print(f"[WARNING] Minor courses/metadata load failed: {_me}")
+    _df_minor = pd.DataFrame(
+        columns=['Degree', 'Branch', 'Specialization', 'Type', 'Course Code', 'Remarks']
+    )
+
+# Department keyword → exact Branch name in ASC_Minor_Courses.csv
+_MINOR_DEPT_ALIASES: dict = {
+    # CMInDS
+    'cminds':                                  'Centre for Machine Intelligence and Data Science',
+    'centre for machine intelligence':         'Centre for Machine Intelligence and Data Science',
+    'machine intelligence and data science':   'Centre for Machine Intelligence and Data Science',
+    'machine intelligence':                    'Centre for Machine Intelligence and Data Science',
+    'data science':                            'Centre for Machine Intelligence and Data Science',
+    # CSE
+    'cs':                                      'Computer Science and Engineering',
+    'cse':                                     'Computer Science and Engineering',
+    'computer science':                        'Computer Science and Engineering',
+    # EE
+    'electrical engineering':                  'Electrical Engineering',
+    'electrical':                              'Electrical Engineering',
+    # ME
+    'mechanical engineering':                  'Mechanical Engineering',
+    'mechanical':                              'Mechanical Engineering',
+    'mech':                                    'Mechanical Engineering',
+    # MEMS
+    'metallurgical engineering':               'Metallurgical Engineering and Materials Science',
+    'metallurgical':                           'Metallurgical Engineering and Materials Science',
+    'materials science':                       'Metallurgical Engineering and Materials Science',
+    'mems':                                    'Metallurgical Engineering and Materials Science',
+    # Chemistry
+    'chemistry':                               'Chemistry',
+    # Maths
+    'mathematics':                             'Mathematics',
+    'math':                                    'Mathematics',
+    'maths':                                   'Mathematics',
+    # Physics
+    'physics':                                 'Physics',
+    # Economics
+    'economics':                               'Economics',
+    # Management
+    'management':                              'Shailesh J. Mehta School of Management',
+    'som':                                     'Shailesh J. Mehta School of Management',
+    # Entrepreneurship
+    'entrepreneurship':                        'Desai Sethi School of Entrepreneurship',
+    'ent':                                     'Desai Sethi School of Entrepreneurship',
+    # Statistics
+    'statistics':                              'Statistics',
+    'stats':                                   'Statistics',
+    # Biosciences
+    'bio':                                     'Biosciences and Bioengineering',
+    'bsbe':                                    'Biosciences and Bioengineering',
+    'biosciences':                             'Biosciences and Bioengineering',
+    'bioengineering':                          'Biosciences and Bioengineering',
+    # Aerospace
+    'aero':                                    'Aerospace Engineering',
+    'aerospace':                               'Aerospace Engineering',
+    # Systems & Control
+    'syscon':                                  'Centre for Systems and Control',
+    'systems and control':                     'Centre for Systems and Control',
+    # GNR
+    'csre':                                    'Centre of Studies in Resources Engineering',
+    'geoinformatics':                          'Centre of Studies in Resources Engineering',
+    'gnr':                                     'Centre of Studies in Resources Engineering',
+    'resources engineering':                   'Centre of Studies in Resources Engineering',
+    # Robotics
+    'robotics':                                'Robotics',
+    # IEOR
+    'industrial engineering':                  'Industrial Engineering and Operations Research',
+    'operations research':                     'Industrial Engineering and Operations Research',
+    'ieor':                                    'Industrial Engineering and Operations Research',
+}
+
+
+def detect_minor_intent(query: str):
+    """
+    Returns (branch_name, branch_name) when the query is about pursuing a
+    specific minor, or (None, None) otherwise.
+
+    Matching uses longest-alias-wins so 'machine intelligence and data science'
+    beats the shorter 'data science' alias.
+    """
+    if not query:
+        return None, None
+    ql = query.lower()
+    if 'minor' not in ql:
+        return None, None
+    matched, best_len = None, 0
+    for alias, branch in _MINOR_DEPT_ALIASES.items():
+        if alias in ql and len(alias) > best_len:
+            matched, best_len = branch, len(alias)
+    return matched, matched
+
+
+def build_minor_candidates(branch: str, degree: str) -> list:
+    """
+    Return running-semester courses for the given
+    branch, filtered to those offered this term.
+    Each dict matches the desired_courses format expected by recommender().
+    PS / Semantic scoring does not apply in minor mode.
+    """
+    if _df_minor.empty or not branch:
+        return []
+
+    mask_deg = _df_minor['Degree'] == degree
+    if not mask_deg.any():
+        mask_deg = _df_minor['Degree'] == 'B.Tech.'
+    subset = _df_minor[mask_deg & (_df_minor['Branch'] == branch)]
+
+    candidates, seen = [], set()
+    for _, row in subset.iterrows():
+        code = str(row['Course Code']).strip()
+        if code.startswith('All ') or code in seen:
+            continue
+        seen.add(code)
+        if code not in course_meta:          # not offered this semester → skip
+            continue
+        
+        # Enforce Minor/Elective variant only for courses that have
+        # historically had an M-tagged variant.
+        code_norm = code.replace(" ", "")
+
+        # Running-semester divisions
+        divs = course_divisions.get(code, [])
+
+        has_minor_division = any(d["is_minor"] for d in divs)
+        has_regular_division = any(not d["is_minor"] for d in divs)
+
+        # Curriculum requirement
+        course_type = str(row["Type"]).strip().lower() if pd.notna(row["Type"]) else ""
+        expects_minor = None
+        if "minor" in course_type:
+            expects_minor = True
+        else:
+            expects_minor = False
+
+        # Only enforce variant matching if this course has ever existed as an M-tagged course.
+        if code_norm in courses_with_minor_variant:
+
+            if expects_minor and not has_minor_division:
+                continue
+
+            if not expects_minor and not has_regular_division:
+                continue
+
+        candidates.append({
+            'code':         code,
+            'name':         _course_name_map.get(code, ''),
+            'score':        0.0,
+            'raw_rrf':      None,            # None → scores hidden in template
+            'raw_ps':       None,
+            'raw_ts':       None,
+            'minor_type':   str(row['Type']).strip()    if pd.notna(row['Type'])    else 'Minor',
+            'minor_remark': str(row['Remarks']).strip() if pd.notna(row['Remarks']) else '',
+        })
+    return candidates
+
+# ── Comprehensive remark-abbreviation → full department name (dropdown value) ─
+_REMARK_DEPT_ABBREVS: dict = {
+    'AE':    'Aerospace Engineering',
+    'BB':    'Biosciences and Bioengineering',
+    'CE':    'Civil Engineering',
+    'CL':    'Chemical Engineering',
+    'CS':    'Computer Science and Engineering',
+    'CH':    'Chemistry',
+    'EE':    'Electrical Engineering',
+    'EN':    'Energy Science and Engineering',
+    'EP':    'Engineering Physics',
+    'ES':    'Earth Sciences',
+    'ESE':   'Environmental Science and Engineering',
+    'GNR':   'Centre of Studies in Resources Engineering',
+    'HSS':   'Humanities & Social Science',
+    'IE':    'Industrial Engineering and Operations Research',
+    'IEOR':  'Industrial Engineering and Operations Research',
+    'MA':    'Mathematics',
+    'ME':    'Mechanical Engineering',
+    'MEMS':  'Metallurgical Engineering and Materials Science',
+    'MM':    'Metallurgical Engineering and Materials Science',
+    'PH':    'Physics',
+    'SC':    'Systems and Control',
+    'SOM':   'Shailesh J. Mehta School of Management',
+}
+
+# Reverse map: full dept name → set of abbreviations used in remark text
+_DEPT_TO_ABBREVS: dict = {}
+for _abbr, _full in _REMARK_DEPT_ABBREVS.items():
+    _DEPT_TO_ABBREVS.setdefault(_full, set()).add(_abbr)
+
+
+def _sentence_applies(sentence: str, student_dept: str) -> bool:
+    """
+    Returns True if this remark sentence is relevant to student_dept.
+
+    1. Find all '[ABBREV] students' tokens  →  positive_depts
+    2. Find all 'non-[ABBREV]' tokens       →  negated_depts
+    3. Remove negated from positive (guards against 'non-IEOR students'
+       putting IEOR in the positive set via the word-boundary match).
+    4. No recognised abbreviations in either set → universal → True.
+    5. Only negated  → True when student is in NONE of negated_depts.
+    6. Only positive → True when student is in ONE of positive_depts.
+    7. Mixed / unknown dept → True (safe default).
+    """
+    s = sentence.strip()
+
+    positive = (
+        set(re.findall(r'\b([A-Z]{2,6})\s+students\b', s))
+        & set(_REMARK_DEPT_ABBREVS)
+    )
+    negated = (
+        set(re.findall(r'[Nn]on-([A-Z]{2,6})', s))
+        & set(_REMARK_DEPT_ABBREVS)
+    )
+    positive -= negated   # e.g. 'non-IEOR students' must not land in positive
+
+    if not positive and not negated:
+        return True       # no dept marker → universal
+
+    student_abbrevs = _DEPT_TO_ABBREVS.get(student_dept)
+    if not student_abbrevs:
+        return True       # unknown dept → show everything (safe default)
+
+    if negated and not positive:
+        return not bool(student_abbrevs & negated)
+
+    if positive and not negated:
+        return bool(student_abbrevs & positive)
+
+    return True           # mixed case → safe default
+
+
+def parse_minor_remark(remark: str, course_hist: list, department: str = '') -> dict:
+    """
+    Classify a minor-program remark into actionable display categories,
+    filtered to only the sentences relevant to the student's department.
+
+    Returns a dict with keys:
+      prereq_unmet  – explicit prerequisite language + course not yet done
+      warning       – exclusion / cannot-count language
+      note          – general informational text
+    """
+    out: dict = {'prereq_unmet': None, 'warning': None, 'note': None}
+    if not remark or str(remark).strip().lower() in ('nan', 'none', ''):
+        return out
+    remark = str(remark).strip()
+
+    # ── Department-aware sentence filtering ──────────────────────────────────
+    sentences = re.split(r'(?<=\.)\s+', remark)
+    kept = [s for s in sentences if _sentence_applies(s, department)]
+    if not kept:
+        return out          # nothing relevant for this student's department
+    remark = ' '.join(kept)
+    # ────────────────────────────────────────────────────────────────────────
+
+    rl = remark.lower()
+
+    # 1. Explicit prerequisite language
+    prereq_m = re.search(
+        r'([A-Z]{2,3}\s?\d{3,4})\s+(?:is\s+(?:a\s+)?)?(?:mandatory\s+)?prerequisite\s+for'
+        r'|must\s+(?:first\s+)?complete\s+([A-Z]{2,3}\s?\d{3,4})\s+before'
+        r'|([A-Z]{2,3}\s?\d{3,4})\s+is\s+(?:a\s+)?pre-?req(?:uisite)?',
+        remark, re.IGNORECASE
+    )
+    if prereq_m:
+        codes = re.findall(r'[A-Z]{2,3}\s?\d{3,4}', prereq_m.group(0))
+        norm_hist = {c.replace(' ', '').upper() for c in course_hist}
+        missing   = [c for c in codes if c.replace(' ', '').upper() not in norm_hist]
+        if missing:
+            out['prereq_unmet'] = (
+                f"Minor requirement not met. Complete {', '.join(missing)} first"
+            )
+        out['note'] = remark
+        return out
+
+    # 2. Exclusion / cannot-count language → ⚠ warning
+    if re.search(
+        r'cannot\s+be\s+counted|not\s+be\s+counted|excluded|not\s+allowed|'
+        r'cannot\s+count|will\s+not\s+count',
+        rl
+    ):
+        out['warning'] = remark
+        return out
+
+    # 3. Everything else → ℹ note
+    out['note'] = remark
+    return out
+
+def recommender(student_id, Degree, year, department, desired_courses, manual_course_history=None, is_minor_mode=False, w_rrf=0.5, w_ps=0.5):
     """
     student_id       : string (email prefix)
     Degree           : string (e.g. 'B.Tech.')
@@ -573,12 +965,15 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
         # 3. Check restriction
         if norm_code(course_code) in course_hist_norm:
             continue
-        r_status = check_restriction(
-            Degree=Degree,
-            year=year,
-            department=department,
-            course_code=course_code
-        )
+        if is_minor_mode:
+            r_status = 'Valid'
+        else:
+            r_status = check_restriction(
+                Degree=Degree,
+                year=year,
+                department=department,
+                course_code=course_code
+            )
         
         if r_status != 'Valid':
             if r_status == 'Restricted by year':
@@ -748,6 +1143,7 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
     "slot": meta.get("slot", "N/A"),
     "instructor": meta.get("instructor", "N/A"),
     "description": meta.get("description", ""),
+    "credits":     meta.get("credits", 6),
     "default_idx": default_idx,
     "equiv": equiv_map.get(course_code.replace(' ', ''), {'regular': [], 'minor': []}),
     "raw_rrf": course.get("raw_rrf"),
