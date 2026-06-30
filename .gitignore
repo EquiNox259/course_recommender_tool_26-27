@@ -8,3 +8,7 @@ __pycache__/
 # Excel temporary files (if opened locally)
 ~$*.xlsx
 ~$*.xls
+
+# Environment File
+.env
+/venv

@@ -655,8 +655,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   margin-bottom: 24px;
   /*margin-left: 100px;*/
   padding: 14px 18px;
-  background: var(--al);
-  border: 1px solid var(--wa);
+  background: #FDF4DC;
   border-radius: 10px;
 }
 
@@ -1091,12 +1090,52 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 .feedback-success {
   font-family: var(--font-body);
   font-size: 13px;
-  color: var(--ok);
-  background: var(--ob);
-  border: 1px solid var(--or);
+  color: var(--tp);
+  background: var(--gl);
   border-radius: 8px;
   padding: 10px 14px;
   margin-bottom: 16px;
+}
+
+.toast-stack {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.toast {
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.toast-success {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--tp);
+  background: var(--gl);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.toast-error {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--tp);
+  background: var(--nb2);
+  border-radius: 8px;
+  padding: 10px 14px;
 }
  
 /* ── 18. Animations ──────────────────────────────────────────────── */
@@ -1320,7 +1359,7 @@ html, body { overflow-x: hidden; max-width: 100%; }
 /* Remark note shown inside each minor-mode course card */
 .minor-remark-note {
   font-family: var(--font-body);
-  font-size: 12.5px;
+  font-size: 11.75px;
   color: var(--tp);
   background: var(--gl);
   border-radius: 4px;
@@ -1330,9 +1369,9 @@ html, body { overflow-x: hidden; max-width: 100%; }
 }
 .minor-remark-warning {
   font-family: var(--font-body);
-  font-size: 12.5px;
+  font-size: 11.75px;
   color: var(--tp);
-  background: var(--wb);
+  background: var(--gl);
   border-radius: 4px;
   padding: 7px 11px;
   margin: 8px 0 4px;

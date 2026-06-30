@@ -604,6 +604,7 @@ _MINOR_DEPT_ALIASES: dict = {
     'machine intelligence and data science':   'Centre for Machine Intelligence and Data Science',
     'machine intelligence':                    'Centre for Machine Intelligence and Data Science',
     'data science':                            'Centre for Machine Intelligence and Data Science',
+    'ds':                                      'Centre for Machine Intelligence and Data Science',
     # CSE
     'cs':                                      'Computer Science and Engineering',
     'cse':                                     'Computer Science and Engineering',
@@ -1045,6 +1046,7 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
                     })
                 else:
                     reason = (p_remark if p_remark
+                                else p_status if p_status == 'Instructor approval required'
                                 else p_status + '. Contact them for more info.' if p_status == 'Instructor approval is conditional'
                                 else '')
                     i_a_r_courses.append({

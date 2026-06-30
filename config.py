@@ -1,4 +1,6 @@
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
 # Absolute path to project root
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -23,9 +25,9 @@ MODEL_DATA_DIR = os.path.join(MODEL_DIR, "data")
 MODEL_ASSETS_DIR = os.path.join(MODEL_DIR, "models")
 
 # Authentication
-SMTP_HOST = "smtp-auth.iitb.ac.in"
-SMTP_PORT = 587
-SMTP_USER = "25b2494"   # sending account
-SMTP_PASS = "3f846f6c2e74e0cdd1aa7bb9fb554711"       # Gmail App Password
-FLASK_SECRET = "7b374713abb88814fff4191775bf1f11f0575c710d4aaabff79a550b975f2428"
-OTP_EXPIRY_SEC = 600                     # 10 minutes
+SMTP_HOST     = os.environ["SMTP_HOST"]
+SMTP_PORT     = int(os.environ["SMTP_PORT"])
+SMTP_USER     = os.environ["SMTP_USER"]
+SMTP_PASS     = os.environ["SMTP_PASS"]
+FLASK_SECRET  = os.environ["FLASK_SECRET"]
+OTP_EXPIRY_SEC = int(os.environ.get("OTP_EXPIRY_SEC", 600))                    # 10 minutes

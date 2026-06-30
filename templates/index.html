@@ -20,7 +20,7 @@
      <span class="nav-title">Data Analytics and Visualization Team</span>
   </div>
   <div class="nav-right">
-    <a href="/documentation" class="nav-docs-link">Documentation</a>
+    <!-- <a href="/documentation" class="nav-docs-link">Documentation</a> -->
     <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">☀️</button>
     <a href="https://ugac-iitb.github.io/UGAC-IITB/divisions/9" target="_blank" rel="noopener">
         <img id="ugac-icon" class="nav-ugac" src="/static/ugac_logo.svg" alt="UGAC">
@@ -31,6 +31,30 @@
 <!-- ═══════════════════════════════════════════════ CONTENT ══ -->
 <main class="content">
  
+  <!-- ── Feedback toast ── -->
+  {% with messages = get_flashed_messages(category_filter=["feedback_success", "feedback_error"], with_categories=true) %}
+    {% if messages %}
+    <div class="toast-stack" id="toast-stack">
+      {% for category, message in messages %}
+      <div class="toast {{ 'toast-success' if category == 'feedback_success' else 'toast-error' }}">
+        {{ message }}
+      </div>
+      {% endfor %}
+    </div>
+    <script>
+      (function() {
+        var toasts = document.querySelectorAll('#toast-stack .toast');
+        toasts.forEach(function(t) {
+          setTimeout(function() {
+            t.classList.add('toast-hide');
+            setTimeout(function() { t.remove(); }, 400);
+          }, 4000);
+        });
+      })();
+    </script>
+    {% endif %}
+  {% endwith %}
+
   <!-- HERO -->
   <div class="hero">
     <h1 class="hero-title">Course Recommender</h1>
@@ -107,7 +131,7 @@
           <select name="degree" id="degree">
             <option value="">—</option>
             {% for d in ['B.Tech.','M.Tech.','Ph.D.','M.Sc.','Dual Degree (B.Tech. + M.Tech.)','B.S.','B.Des.'] %}
-            <option value="{{ d }}" {{ 'selected' if request.form.get('degree') == d else '' }}>{{ d }}</option>
+            <option value="{{ d }}" {{ 'selected' if form_values.degree == d else '' }}>{{ d }}</option>
             {% endfor %}
           </select>
           <label for="degree">Degree</label>
@@ -117,7 +141,7 @@
           <select name="year" id="year">
             <option value="">—</option>
             {% for y in range(2026, 2015, -1) %}
-            <option value="{{ y }}" {{ 'selected' if request.form.get('year') == y|string else '' }}>{{ y }}</option>
+            <option value="{{ y }}" {{ 'selected' if form_values.year == y|string else '' }}>{{ y }}</option>
             {% endfor %}
           </select>
           <label for="year">Batch Year</label>
@@ -137,14 +161,14 @@
         <select name="department" id="department">
           <option value="">—</option>
           {% for dept in depts %}
-          <option value="{{ dept }}" {{ 'selected' if request.form.get('department') == dept else '' }}>{{ dept }}</option>
+          <option value="{{ dept }}" {{ 'selected' if form_values.department == dept else '' }}>{{ dept }}</option>
           {% endfor %}
         </select>
         <label for="department">Department</label>
       </div>
 
       <div class="field field-full">
-        <textarea name="interest" id="interest" placeholder=" " rows="3">{{ request.form.get('interest', '') }}</textarea>
+        <textarea name="interest" id="interest" placeholder=" " rows="3">{{ form_values.interest }}</textarea>
         <label for="interest">Research Interests and Skills</label>
       </div>
 
@@ -463,10 +487,11 @@ document.addEventListener('DOMContentLoaded', function() {
             {% if c.grade_stats %}
             <div class="grade-stats-wrap">
               <div class="grade-stats-label">Grading Statistics</div>
-              {% set ns = namespace(max_divs=0) %}
-              {% for _y, _d in c.grade_stats.items() %}{% if _d|length > ns.max_divs %}{% set ns.max_divs = _d|length %}{% endif %}{% endfor %}
+              {% set ns = namespace(max_divs=0, num_years=0) %}
+              {% for _y, _d in c.grade_stats.items() %}{% set ns.num_years = ns.num_years + 1 %}{% if _d|length > ns.max_divs %}{% set ns.max_divs = _d|length %}{% endif %}{% endfor %}
               {% set pie_size = 200 if ns.max_divs <= 1 else (155 if ns.max_divs == 2 else (115 if ns.max_divs == 3 else 90)) %}
-            <div class="grade-years-row{% if ns.max_divs > 2 %} grade-years-col{% endif %}">
+              {% set ns_stack = (ns.max_divs > 2) or (ns.num_years > 1 and ns.max_divs > 1) %}
+            <div class="grade-years-row{% if ns_stack %} grade-years-col{% endif %}">
               {% for year, divisions in c.grade_stats.items() %}
               <div class="grade-year-block">
                 <p class="grade-year-name">{{ year }}</p>
@@ -612,10 +637,11 @@ document.addEventListener('DOMContentLoaded', function() {
             {% if c.grade_stats %}
             <div class="grade-stats-wrap">
               <div class="grade-stats-label">Grading Statistics</div>
-              {% set ns = namespace(max_divs=0) %}
-              {% for _y, _d in c.grade_stats.items() %}{% if _d|length > ns.max_divs %}{% set ns.max_divs = _d|length %}{% endif %}{% endfor %}
+              {% set ns = namespace(max_divs=0, num_years=0) %}
+              {% for _y, _d in c.grade_stats.items() %}{% set ns.num_years = ns.num_years + 1 %}{% if _d|length > ns.max_divs %}{% set ns.max_divs = _d|length %}{% endif %}{% endfor %}
               {% set pie_size = 200 if ns.max_divs <= 1 else (155 if ns.max_divs == 2 else (115 if ns.max_divs == 3 else 90)) %}
-            <div class="grade-years-row{% if ns.max_divs > 2 %} grade-years-col{% endif %}">
+              {% set ns_stack = (ns.max_divs > 2) or (ns.num_years > 1 and ns.max_divs > 1) %}
+            <div class="grade-years-row{% if ns_stack %} grade-years-col{% endif %}">
               {% for year, divisions in c.grade_stats.items() %}
               <div class="grade-year-block">
                 <p class="grade-year-name">{{ year }}</p>
@@ -753,10 +779,11 @@ document.addEventListener('DOMContentLoaded', function() {
             {% if c.grade_stats %}
             <div class="grade-stats-wrap">
               <div class="grade-stats-label">Grading Statistics</div>
-              {% set ns = namespace(max_divs=0) %}
-              {% for _y, _d in c.grade_stats.items() %}{% if _d|length > ns.max_divs %}{% set ns.max_divs = _d|length %}{% endif %}{% endfor %}
+              {% set ns = namespace(max_divs=0, num_years=0) %}
+              {% for _y, _d in c.grade_stats.items() %}{% set ns.num_years = ns.num_years + 1 %}{% if _d|length > ns.max_divs %}{% set ns.max_divs = _d|length %}{% endif %}{% endfor %}
               {% set pie_size = 200 if ns.max_divs <= 1 else (155 if ns.max_divs == 2 else (115 if ns.max_divs == 3 else 90)) %}
-            <div class="grade-years-row{% if ns.max_divs > 2 %} grade-years-col{% endif %}">
+              {% set ns_stack = (ns.max_divs > 2) or (ns.num_years > 1 and ns.max_divs > 1) %}
+            <div class="grade-years-row{% if ns_stack %} grade-years-col{% endif %}">
               {% for year, divisions in c.grade_stats.items() %}
               <div class="grade-year-block">
                 <p class="grade-year-name">{{ year }}</p>
@@ -897,10 +924,11 @@ document.addEventListener('DOMContentLoaded', function() {
             {% if c.grade_stats %}
             <div class="grade-stats-wrap">
               <div class="grade-stats-label">Grading Statistics</div>
-              {% set ns = namespace(max_divs=0) %}
-              {% for _y, _d in c.grade_stats.items() %}{% if _d|length > ns.max_divs %}{% set ns.max_divs = _d|length %}{% endif %}{% endfor %}
+              {% set ns = namespace(max_divs=0, num_years=0) %}
+              {% for _y, _d in c.grade_stats.items() %}{% set ns.num_years = ns.num_years + 1 %}{% if _d|length > ns.max_divs %}{% set ns.max_divs = _d|length %}{% endif %}{% endfor %}
               {% set pie_size = 200 if ns.max_divs <= 1 else (155 if ns.max_divs == 2 else (115 if ns.max_divs == 3 else 90)) %}
-            <div class="grade-years-row{% if ns.max_divs > 2 %} grade-years-col{% endif %}">
+              {% set ns_stack = (ns.max_divs > 2) or (ns.num_years > 1 and ns.max_divs > 1) %}
+            <div class="grade-years-row{% if ns_stack %} grade-years-col{% endif %}">
               {% for year, divisions in c.grade_stats.items() %}
               <div class="grade-year-block">
                 <p class="grade-year-name">{{ year }}</p>
@@ -959,17 +987,6 @@ document.addEventListener('DOMContentLoaded', function() {
         <h2>Share Your Experience</h2>
       </header>
       <div class="divider-dash"></div>
-
-      {% with messages = get_flashed_messages(category_filter=["feedback_success"]) %}
-        {% if messages %}
-          <div class="feedback-success">{{ messages[0] }}</div>
-        {% endif %}
-      {% endwith %}
-      {% with messages = get_flashed_messages(category_filter=["feedback_error"]) %}
-        {% if messages %}
-          <div class="entry-reason reason-no" style="margin-bottom:12px">&#9888;&nbsp;{{ messages[0] }}</div>
-        {% endif %}
-      {% endwith %}
 
       <form method="POST" action="/feedback" id="feedback-form">
         <div class="star-rating-wrap">

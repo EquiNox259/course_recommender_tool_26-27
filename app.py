@@ -171,6 +171,19 @@ def index():
             department = request.form.get("department")
             interest = request.form.get("interest")
 
+            # Guard against blank Degree/Year/Department
+            if not degree or not year or not department:
+                flash("Please select Degree, Batch Year, and Department before generating recommendations.", "recommend_error")
+                return redirect(url_for('index'))
+
+            # Preserve the student's choices (except for interests) across any future redirect
+            # (e.g. after filling the feedback section) so the form doesn't reset.
+            session['last_query'] = {
+                'degree': degree, 'year': year,
+                'department': department,
+            }
+
+
             # Capture weight inputs from form fields or fallback to default
             w_ps_raw = request.form.get('w_ps') or request.args.get('w_ps')
             w_rrf_raw = request.form.get('w_rrf') or request.args.get('w_rrf')
@@ -286,18 +299,43 @@ def index():
                             # Rule (from ASC_Minor_Courses.csv Type column):
                             #   'elective' in minor_type → non-M (regular) division
                             #   anything else            → M-tagged division
+                            _mtype = (_entry.get('minor_type') or '').lower()
+                            _want_m_side = 'elective' not in _mtype
+
                             _divs = _entry.get('divisions', [])
-                            if len(_divs) > 1:
-                                _mtype = (_entry.get('minor_type') or '').lower()
-                                if 'elective' in _mtype:
-                                    _preferred = [d for d in _divs if not d.get('is_minor')]
-                                else:
-                                    _preferred = [d for d in _divs if d.get('is_minor')]
+                            _is_dual_listed = (
+                                any(d.get('is_minor') for d in _divs) and
+                                any(not d.get('is_minor') for d in _divs)
+                            )
+                            if _is_dual_listed:
+                                # 1) Registration-division dropdown
+                                _preferred = [d for d in _divs if d.get('is_minor') == _want_m_side]
                                 if _preferred:
                                     _entry['divisions']    = _preferred
                                     _entry['default_idx'] = 0
                                     _entry['slot']        = _preferred[0]['slot']
                                     _entry['instructor']  = _preferred[0]['instructor']
+
+                                # 2) Grading Statistics — only filter if an 'M'
+                                # division entry is actually present in the
+                                # historical data; otherwise leave grade_stats untouched
+                                _gstats = _entry.get('grade_stats')
+                                if _gstats:
+                                    _has_m_entry = any(
+                                        e.get('division') == 'M'
+                                        for _yr_entries in _gstats.values()
+                                        for e in _yr_entries
+                                    )
+                                    if _has_m_entry:
+                                        _filtered_gstats = {}
+                                        for _yr, _yr_entries in _gstats.items():
+                                            _kept = [
+                                                e for e in _yr_entries
+                                                if (e.get('division') == 'M') == _want_m_side
+                                            ]
+                                            if _kept:
+                                                _filtered_gstats[_yr] = _kept
+                                        _entry['grade_stats'] = _filtered_gstats or None
 
             # --- 6. CORE COURSES FOR BUCKET ---
             '''core_courses_for_bucket = get_core_courses_for_bucket(
@@ -324,6 +362,12 @@ def index():
         w_ps=w_ps,
         query_fallback=query_fallback,
         is_minor_mode=is_minor_mode,
+        form_values={
+            'degree':     request.form.get('degree')     or session.get('last_query', {}).get('degree', ''),
+            'year':       request.form.get('year')       or session.get('last_query', {}).get('year', ''),
+            'department': request.form.get('department') or session.get('last_query', {}).get('department', ''),
+            'interest':   request.form.get('interest', ''),
+        },
         minor_branch=minor_branch,
        # core_courses_for_bucket=core_courses_for_bucket
     )
