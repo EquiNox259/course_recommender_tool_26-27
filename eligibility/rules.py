@@ -201,6 +201,7 @@ def _build_grade_stats():
                 'division':   division,
                 'grades':     grades,
                 'total':      int(total),
+                'score_aa_ab': (row.get('AA', 0) + row.get('AB', 0)) / total,
                 'pct_ap':     round(row.get('AP', 0) / total * 100, 1),
                 'pct_aa':     round(row.get('AA', 0) / total * 100, 1),
                 'pct_aa_ab':  round((row.get('AA', 0) + row.get('AB', 0)) / total * 100, 1),
@@ -209,6 +210,38 @@ def _build_grade_stats():
     return year_data
 
 grade_stats_db = _build_grade_stats()
+
+GRADE_WEIGHT = 0.15
+
+def apply_grade_boost(courses):
+    """
+    Boost recommendation scores based on historical AA+AB percentage.
+
+    Only applies if easy_grading=True.
+    """
+
+    if not courses:
+        return courses
+    # If the query didn't request easy grading, do nothing
+    if not courses[0].get("easy_grading", False):
+        return courses
+    for course in courses:
+        grade_stats = grade_stats_db.get(course["code"])
+        if not grade_stats:
+            continue
+        scores = []
+        # Collect AA+AB scores from every year/division
+        for _, entries in grade_stats.items():
+            for entry in entries:
+                scores.append(entry["score_aa_ab"])
+        if not scores:
+            continue
+        avg_grade_score = sum(scores) / len(scores)
+        # Boost the existing recommendation score
+        course["raw_ts"] = GRADE_WEIGHT * avg_grade_score + (1- GRADE_WEIGHT)* course["raw_ts"]
+    # Resort after boosting
+    courses.sort(key=lambda x: x["raw_ts"], reverse=True)
+    return courses
 
 def check_restriction(Degree,year,department,course_code, data=data_modified):
     year=str(year)
@@ -941,6 +974,8 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
     i_a_r_courses = []
     t_s_c_courses = []
 
+    desired_courses = apply_grade_boost(desired_courses)
+
     # 2. Loop over model-recommended courses
     seen_codes = set()
     for course in desired_courses:
@@ -954,7 +989,7 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
         if not isinstance(course_name, str) or pd.isna(course_name):
             course_name = ""
         # ignores any courses with the below words (for future DAV members, remove this and see what semantic search gives to know why its there)
-        blacklist = ["SEMINAR", "MINI PROJECT", "SUPERVISED"]
+        blacklist = ["SEMINAR", "MINI PROJECT", "SUPERVISED", "BTP"]
         if any(term in course_name.upper() for term in blacklist):
             continue
 
