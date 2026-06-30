@@ -219,68 +219,64 @@ def check_restriction(Degree,year,department,course_code, data=data_modified):
     # Fetch restriction value
     restrictions = data.loc[data['Course Code'] == course_code, 'Restriction'].values[0]
 
-    # If no restriction (a string 'No restrictions')
-    if (len(restrictions) == 0) or (isinstance(restrictions, float) and pd.isna(restrictions)) or (isinstance(restrictions, str) and restrictions.lower() == 'no restrictions'):   # ← move it here
+    # If no restriction
+    if (len(restrictions) == 0) or (isinstance(restrictions, float) and pd.isna(restrictions)) or (isinstance(restrictions, str) and restrictions.lower() == 'no restrictions'):
         return 'Valid'
     elif isinstance(restrictions, str):
         return 'Restricted'
+
+    # Support all degrees! No hardcoded lists.
+    allowed_groups = []
+    for j in restrictions:
+        if j[3] == 'Allowed':
+            parts = []
+            if j[2] != 'ALL': parts.append(j[2])
+            if j[1] != 'ALL': parts.append(j[1])
+            if j[0] != 'ALL': parts.append(f"{j[0]}")
+            allowed_groups.append(', '.join(parts) if parts else 'specific students')
+    if allowed_groups:
+        restricted_msg = f"Open only to {' / '.join(allowed_groups)}"
     else:
-        # Handle degree-based restrictions
-        if Degree in ['B.Tech.', 'M.Tech.', 'Ph.D.', 'M.Sc.', 'Dual Degree (B.Tech. + M.Tech.)', 'B.S.', 'B.Des.']:
+        restricted_msg = 'Restricted'
 
-            allowed_groups = []
-            for j in restrictions:
-                if j[3] == 'Allowed':
-                    parts = []
-                    if j[2] != 'ALL': parts.append(j[2])
-                    if j[1] != 'ALL': parts.append(j[1])
-                    if j[0] != 'ALL': parts.append(f"{j[0]}")
-                    allowed_groups.append(', '.join(parts) if parts else 'specific students')
-            if allowed_groups:
-                restricted_msg = f"Open only to {' / '.join(allowed_groups)}"
-            else:
-               restricted_msg = 'Restricted'
+    def get_specificity(rule):
+        score = 0
+        if rule[0] != 'ALL': score += 1
+        if rule[1] != 'ALL': score += 1
+        if rule[2] != 'ALL': score += 1
+        return score
 
-            # Check if there are any 'Allowed' rules at all in the restrictions list
-            has_allowed_rule = any(rule[3] == 'Allowed' for rule in restrictions)
-            # Checks the restrictions fully to see if restricted
-            is_explicitly_denied = False
-            is_matched_allowed = False
+    def evaluate_rules(Degree, year, department, restrictions):
+        matching_rules = []
+        for r in restrictions:
+            if r[0] in (year, 'ALL') and r[1] in (department, 'ALL') and r[2] in (Degree, 'ALL'):
+                matching_rules.append(r)
+        
+        if not matching_rules:
+            has_allowed_rule = any(r[3] == 'Allowed' for r in restrictions)
+            return 'Deny' if has_allowed_rule else 'Allowed'
+        
+        max_spec = max(get_specificity(r) for r in matching_rules)
+        best_rules = [r for r in matching_rules if get_specificity(r) == max_spec]
+        
+        actions = [r[3] for r in best_rules]
+        if 'Deny' in actions:
+            return 'Deny'
+        return 'Allowed'
 
-            for i in restrictions:
-              if i[0]==year or i[0]=='ALL':
-                if i[1]==department or i[1]=='ALL':
-                  if i[2]==Degree or i[2]=='ALL':
-                    if i[3]=='Deny':
-                      is_explicitly_denied = True
-                    elif i[3]=='Allowed':
-                      is_matched_allowed = True
-            # Year-Ignored check: see if branch & degree match but year is restricted
-            branch_allowed = False
-            for i in restrictions:
-              if i[1] == department or i[1] == 'ALL':
-                if i[2] == Degree or i[2] == 'ALL':
-                  if i[3] == 'Allowed':
-                    branch_allowed = True
-                    break
-            if is_explicitly_denied:
-                if branch_allowed:
-                    return 'Restricted by year'
-                else:
-                    return restricted_msg
-            else:
-                if has_allowed_rule:
-                    if is_matched_allowed:
-                        return 'Valid'
-                    else:
-                       if branch_allowed:
-                            return 'Restricted by year'
-                       else:
-                            return restricted_msg
-                else:
-                    return 'Valid'
-        else:
-            return 'Invalid Degree'
+    status = evaluate_rules(Degree, year, department, restrictions)
+    
+    if status == 'Allowed':
+        return 'Valid'
+        
+    branch_allowed = False
+    for r in restrictions:
+        if r[1] in (department, 'ALL') and r[2] in (Degree, 'ALL') and r[3] == 'Allowed':
+            branch_allowed = True
+            break
+            
+    if branch_allowed:
+        return 'Restricted by year'
         
     return restricted_msg
 
@@ -904,7 +900,17 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
     # Build slot-number → core course name map for this student
     current_cal_year = datetime.now().year
     academic_year_start = current_cal_year if SEMESTER == 'Autumn' else current_cal_year - 1
-    year_in_program = academic_year_start - int(year) + 1
+    
+    try:
+        year_val = int(year)
+    except (ValueError, TypeError):
+        clean_sid = str(student_id).strip()
+        if clean_sid and len(clean_sid) >= 2 and clean_sid[:2].isdigit():
+            year_val = 2000 + int(clean_sid[:2])
+        else:
+            year_val = current_cal_year - 2 # Assume 3rd year default fallback
+            
+    year_in_program = academic_year_start - year_val + 1
     core_mask = (
         (df_core_sem['Branch']  == department) &
         (df_core_sem['Degree']  == Degree) &
@@ -994,6 +1000,8 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
     "reason": r_status,
     "raw_rrf": course.get("raw_rrf"),
     "raw_ps": course.get("raw_ps"),
+    "norm_rrf": course.get("norm_rrf"),
+    "norm_ps": course.get("norm_ps"),
     "final_score": course.get("raw_ts"),
     "grade_stats": grade_stats_db.get(course_code, None)
 })
@@ -1041,6 +1049,8 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
                         "clashing_with": default_div['clashes_with'],
                         "raw_rrf": course.get("raw_rrf"),
                         "raw_ps": course.get("raw_ps"),
+                        "norm_rrf": course.get("norm_rrf"),
+                        "norm_ps": course.get("norm_ps"),
                         "final_score": course.get("raw_ts"),
                         "grade_stats": grade_stats_db.get(course_code, None)
                     })
@@ -1065,6 +1075,8 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
                         "minor_prereq": p_minor_prereq,
                         "raw_rrf": course.get("raw_rrf"),
                         "raw_ps": course.get("raw_ps"),
+                        "norm_rrf": course.get("norm_rrf"),
+                        "norm_ps": course.get("norm_ps"),
                         "final_score": course.get("raw_ts"),
                         "grade_stats": grade_stats_db.get(course_code, None)
                     })
@@ -1086,6 +1098,8 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
                     "minor_prereq": p_minor_prereq,
                     "raw_rrf": course.get("raw_rrf"),
                     "raw_ps": course.get("raw_ps"),
+                    "norm_rrf": course.get("norm_rrf"),
+                    "norm_ps": course.get("norm_ps"),
                     "final_score": course.get("raw_ts"),
                     "grade_stats": grade_stats_db.get(course_code, None)
                 })
@@ -1122,6 +1136,8 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
                 "equiv": equiv_map.get(course_code.replace(' ', ''), {'regular': [], 'minor': []}),
                 "raw_rrf": course.get("raw_rrf"),
                 "raw_ps": course.get("raw_ps"),
+                "norm_rrf": course.get("norm_rrf"),
+                "norm_ps": course.get("norm_ps"),
                 "final_score": course.get("raw_ts"),
                 "grade_stats": grade_stats_db.get(course_code, None)
             }
@@ -1150,6 +1166,8 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
     "equiv": equiv_map.get(course_code.replace(' ', ''), {'regular': [], 'minor': []}),
     "raw_rrf": course.get("raw_rrf"),
     "raw_ps": course.get("raw_ps"),
+    "norm_rrf": course.get("norm_rrf"),
+    "norm_ps": course.get("norm_ps"),
     "final_score": course.get("raw_ts"),
     "grade_stats": grade_stats_db.get(course_code, None)
 })
