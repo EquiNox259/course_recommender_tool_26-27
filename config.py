@@ -31,3 +31,7 @@ SMTP_USER     = os.environ["SMTP_USER"]
 SMTP_PASS     = os.environ["SMTP_PASS"]
 FLASK_SECRET  = os.environ["FLASK_SECRET"]
 OTP_EXPIRY_SEC = int(os.environ.get("OTP_EXPIRY_SEC", 600))                    # 10 minutes
+
+# Feedback Google Sheet
+GSHEETS_CREDENTIALS_PATH = os.environ.get("GSHEETS_CREDENTIALS_PATH", os.path.join(BASE_DIR, "gsheets_service_account.json"))
+GSHEETS_SPREADSHEET_NAME = os.environ.get("GSHEETS_SPREADSHEET_NAME", "Course Recommender Feedback")

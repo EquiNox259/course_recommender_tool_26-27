@@ -4,7 +4,8 @@ from email.mime.text import MIMEText
 from flask import Flask, render_template, request, session, redirect, url_for, flash
 from model.recommender import get_candidate_courses
 from eligibility.rules import recommender as eligibility_recommender, get_core_courses_for_bucket, detect_minor_intent, build_minor_candidates, parse_minor_remark
-from config import FLASK_SECRET, SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, OTP_EXPIRY_SEC, FEEDBACK_PATH
+from config import FLASK_SECRET, SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, OTP_EXPIRY_SEC, FEEDBACK_PATH, GSHEETS_CREDENTIALS_PATH, GSHEETS_SPREADSHEET_NAME
+import gspread
 
 app = Flask(__name__)
 app.secret_key = FLASK_SECRET
@@ -20,6 +21,14 @@ try:
 except Exception as e:
     print(f"[WARNING] Failed to pre-load student database: {e}")
     student_db = None
+
+try:
+    _gc = gspread.service_account(filename=GSHEETS_CREDENTIALS_PATH)
+    _feedback_sheet = _gc.open(GSHEETS_SPREADSHEET_NAME).sheet1
+    print(f"[SUCCESS] Connected to feedback Google Sheet.")
+except Exception as e:
+    print(f"[WARNING] Failed to connect to feedback Google Sheet: {e}")
+    _feedback_sheet = None
 
 try:
     _email_df = pd.read_csv(STUDENT_DATA_PATH, dtype=str)
@@ -411,23 +420,15 @@ def feedback():
     email      = resolve_student_email(student_id) if student_id else ''
     rating     = request.form.get('rating', '').strip()
     text       = request.form.get('feedback_text', '').strip()
-
-    row = {
-        'Email':                email,
-        'Rating (out of 5)':    rating,
-        'Descriptive Feedback': text,
-        'Timestamp':            pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')
-    }
+    timestamp  = pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')
 
     try:
-        if os.path.exists(FEEDBACK_PATH):
-            df_fb = pd.read_csv(FEEDBACK_PATH)
-        else:
-            df_fb = pd.DataFrame(columns=['Email', 'Rating (out of 5)', 'Descriptive Feedback', 'Timestamp'])
-        df_fb = pd.concat([df_fb, pd.DataFrame([row])], ignore_index=True)
-        df_fb.to_csv(FEEDBACK_PATH, index=False)
+        if _feedback_sheet is None:
+            raise RuntimeError("Feedback sheet connection was not established at startup.")
+        _feedback_sheet.append_row([email, rating, text, timestamp])
         flash('Thank you for your feedback!', 'feedback_success')
     except Exception as e:
+        print(f"[FEEDBACK SAVE ERROR] {e}")
         flash(f'Could not save feedback: {e}', 'feedback_error')
 
     return redirect(url_for('index'))

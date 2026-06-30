@@ -29,3 +29,6 @@ output_pipeline_logger.py
 # Environment File
 .env
 /venv
+
+# Google Sheet JSON
+gsheets_service_account.json
