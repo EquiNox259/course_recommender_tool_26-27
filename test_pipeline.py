@@ -6,10 +6,24 @@ degree = "B.Tech."
 year = "2024"
 department = "Mechanical Engineering"
 
-query = "ML, robotics"
+query = "Machine Learning Foundational Math"
 
-# Use top_k=60 because thats also in app.py
-desired_courses = get_candidate_courses(query, top_k=60)
+# Use top_k=60 because thats also in app.py, and test interest-only mode (w_rrf=1.0, w_ps=0.0)
+desired_courses = get_candidate_courses(
+    query=query,
+    student_history=[],
+    top_k=60,
+    w_rrf=1.0,
+    w_ps=0.0,
+    degree=degree,
+    year=year,
+    department=department
+)
+
+print("\n=== TOP 20 RECOMMENDED ELECTIVES (Before Eligibility Gates) ===")
+for idx, c in enumerate(desired_courses, 1):
+    print(f"{idx}. {c['code']} - {c['name']} (Score: {c['raw_ts']:.4f}, RRF: {c['raw_rrf']:.4f})")
+print("===============================================================\n")
 
 final_courses = eligibility_recommender(
     student_id=student_id,

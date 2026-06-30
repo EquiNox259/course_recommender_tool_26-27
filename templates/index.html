@@ -92,9 +92,8 @@
     {% elif otp_verified and not need_manual_history %} 
   <div class="profile-section fade-up">
 
-    <!-- Flat header — no card box, no banner -->
     <div class="profile-hd">
-      <div class="profile-id">Student Profile </div>
+      <div class="profile-id">Student Profile: {{ student_id }}</div>
     </div>
 
     <div class="profile-rule"></div>
@@ -104,20 +103,20 @@
 
       <div class="form-pair">
         <div class="field">
-          <select name="degree" id="degree">
+          <select name="degree" id="degree" required>
             <option value="">—</option>
             {% for d in ['B.Tech.','M.Tech.','Ph.D.','M.Sc.','Dual Degree (B.Tech. + M.Tech.)','B.S.','B.Des.'] %}
-            <option value="{{ d }}" {{ 'selected' if request.form.get('degree') == d else '' }}>{{ d }}</option>
+            <option value="{{ d }}" {{ 'selected' if request.form.get('degree') == d or (not request.form.get('degree') and default_degree == d) else '' }}>{{ d }}</option>
             {% endfor %}
           </select>
           <label for="degree">Degree</label>
         </div>
 
         <div class="field">
-          <select name="year" id="year">
+          <select name="year" id="year" required>
             <option value="">—</option>
             {% for y in range(2026, 2015, -1) %}
-            <option value="{{ y }}" {{ 'selected' if request.form.get('year') == y|string else '' }}>{{ y }}</option>
+            <option value="{{ y }}" {{ 'selected' if request.form.get('year') == y|string or (not request.form.get('year') and default_year == y|string) else '' }}>{{ y }}</option>
             {% endfor %}
           </select>
           <label for="year">Batch Year</label>
@@ -134,15 +133,14 @@
           'Industrial Engineering and Operations Research','Mathematics',
           'Mechanical Engineering','Metallurgical Engineering and Materials Science'
         ] %}
-        <select name="department" id="department">
+        <select name="department" id="department" required>
           <option value="">—</option>
           {% for dept in depts %}
-          <option value="{{ dept }}" {{ 'selected' if request.form.get('department') == dept else '' }}>{{ dept }}</option>
+          <option value="{{ dept }}" {{ 'selected' if request.form.get('department') == dept or (not request.form.get('department') and default_dept == dept) else '' }}>{{ dept }}</option>
           {% endfor %}
         </select>
         <label for="department">Department</label>
       </div>
-
       <div class="field field-full">
         <textarea name="interest" id="interest" placeholder=" " rows="3">{{ request.form.get('interest', '') }}</textarea>
         <label for="interest">Research Interests and Skills</label>
@@ -443,8 +441,8 @@ document.addEventListener('DOMContentLoaded', function() {
             {% endif %}
             {% if not is_minor_mode %}
             <div class="score">
-              <span> <strong>Semantic Score</strong>: {{ ((c.raw_rrf or 0.0) * 100) | round(1) }}%</span>
-              <span> <strong>People Score</strong>: {{ ((c.raw_ps or 0.0) * 100) | round(1) }}%</span>
+              <span> <strong>Semantic Score</strong>: {{ ((c.norm_rrf or 0.0) * 100) | round(1) }}%</span>
+              <span> <strong>People Score</strong>: {{ ((c.norm_ps or 0.0) * 100) | round(1) }}%</span>
               <span> <strong>Final Score</strong>: {{ ((c.final_score or 0.0) * 100) | round(1) }}%</span>
           </div>
             {% endif %}
@@ -601,8 +599,8 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
             {% if not is_minor_mode %}
             <div class="score">
-                <span> <strong>Semantic Score</strong>: {{ ((c.raw_rrf or 0.0) * 100) | round(1) }}%</span>
-                <span> <strong>People Score</strong>: {{ ((c.raw_ps or 0.0) * 100) | round(1) }}%</span>
+                <span> <strong>Semantic Score</strong>: {{ ((c.norm_rrf or 0.0) * 100) | round(1) }}%</span>
+                <span> <strong>People Score</strong>: {{ ((c.norm_ps or 0.0) * 100) | round(1) }}%</span>
                 <span> <strong>Final Score</strong>: {{ ((c.final_score or 0.0) * 100) | round(1) }}%</span>
             </div>
             {% endif %}
@@ -742,8 +740,8 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
           {% if not is_minor_mode %}
         <div class="score">
-              <span class="score"> <strong>Semantic Score</strong>: {{ ((c.raw_rrf or 0.0) * 100) | round(1) }}%</span>
-              <span class="score"> <strong>People Score</strong>: {{ ((c.raw_ps or 0.0) * 100) | round(1) }}%</span>
+              <span class="score"> <strong>Semantic Score</strong>: {{ ((c.norm_rrf or 0.0) * 100) | round(1) }}%</span>
+              <span class="score"> <strong>People Score</strong>: {{ ((c.norm_ps or 0.0) * 100) | round(1) }}%</span>
               <span class ="score"> <strong>Final Score</strong>: {{ ((c.final_score or 0.0) * 100) | round(1) }}%</span>
           </div>
           {% endif %}
@@ -886,8 +884,8 @@ document.addEventListener('DOMContentLoaded', function() {
           <div class="entry-reason">&#9888; {{ c.reason }}</div>
           {% if not is_minor_mode %}
           <div class="score">
-              <span class="score"><strong> Semantic Score</strong>: {{ ((c.raw_rrf or 0.0) * 100) | round(1) }}%</span>
-              <span class="score"> <strong>People Score</strong>: {{ ((c.raw_ps or 0.0) * 100) | round(1) }}%</span>
+              <span class="score"><strong> Semantic Score</strong>: {{ ((c.norm_rrf or 0.0) * 100) | round(1) }}%</span>
+              <span class="score"> <strong>People Score</strong>: {{ ((c.norm_ps or 0.0) * 100) | round(1) }}%</span>
               <span class ="score"> <strong>Final Score</strong>: {{ ((c.final_score or 0.0) * 100) | round(1) }}%</span>
           </div>
           {% endif %}

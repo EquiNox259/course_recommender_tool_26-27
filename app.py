@@ -110,6 +110,12 @@ def index():
     otp_verified = session.get('otp_verified', False)
     otp_error    = None
 
+    # Clear stale sessions if student ID is missing
+    if otp_verified and not session.get('otp_student_id'):
+        session.clear()
+        otp_verified = False
+        otp_sent = False
+
     # Establish strict initial baseline defaults
     w_ps = 0.5
     w_rrf = 0.5
@@ -210,7 +216,6 @@ def index():
                 w_ps= 1.0
                 query_fallback = True
 
-            # --- 3. NLP CANDIDATE SEEDING (WITH TOKENLESS API PROTECTION) ---
             if not is_minor_mode:
                 desired_courses = []
                 try:
@@ -220,7 +225,10 @@ def index():
                         student_history=automated_history, 
                         top_k=60,
                         w_rrf=w_rrf,  
-                        w_ps=w_ps 
+                        w_ps=w_ps,
+                        degree=degree,
+                        year=year,
+                        department=department
                     )
                 except Exception as api_err:
                     print(f"[OFFLINE FALLBACK] Token exhaustion detected. Using safe catalog fallback. Trace: {api_err}")
@@ -307,6 +315,26 @@ def index():
             )'''
 
 
+    # Auto-detect degree and year from student_id prefix
+    default_degree = ""
+    default_year = ""
+    default_dept = ""
+    
+    otp_student_id = session.get('otp_student_id', '')
+    if otp_student_id:
+        clean_sid = str(otp_student_id).strip().lower()
+        if len(clean_sid) >= 3 and clean_sid[:2].isdigit():
+            default_year = "20" + clean_sid[:2]
+            deg_char = clean_sid[2]
+            if deg_char == 'b':
+                default_degree = "B.Tech."
+            elif deg_char == 'm':
+                default_degree = "M.Tech."
+            elif deg_char == 'p':
+                default_degree = "Ph.D."
+            elif deg_char == 'd':
+                default_degree = "Dual Degree (B.Tech. + M.Tech.)"
+
     return render_template(
         "index.html",
         otp_sent=otp_sent,
@@ -325,7 +353,9 @@ def index():
         query_fallback=query_fallback,
         is_minor_mode=is_minor_mode,
         minor_branch=minor_branch,
-       # core_courses_for_bucket=core_courses_for_bucket
+        default_degree=default_degree,
+        default_year=default_year,
+        default_dept=default_dept
     )
 
 @app.route("/feedback", methods=["POST"])

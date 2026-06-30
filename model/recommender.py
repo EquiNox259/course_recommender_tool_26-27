@@ -7,7 +7,6 @@ import pandas as pd
 import faiss
 import re
 from sentence_transformers import SentenceTransformer
-from sentence_transformers.cross_encoder import CrossEncoder
 from config import MODEL_ASSETS_DIR, MODEL_DATA_DIR
 from model.llm_service import LLMService
 
@@ -27,7 +26,6 @@ except Exception as e:
     ps_matrix_data = None
 
 model = SentenceTransformer(MODEL_PATH)
-model_cross_encoder = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
 
 index = faiss.read_index(FAISS_INDEX_PATH)
 
@@ -164,7 +162,7 @@ def compute_rrf(semantic_codes, keyword_codes, k=60):
     return sorted(rrf_scores.items(), key=lambda x: x[1], reverse=True)
 
 
-def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps=1.0):
+def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps=1.0, degree=None, year=None, department=None):
     """Unified entrypoint called by app.py."""
     llm = LLMService()       
     clean_query = query.lower().strip()
@@ -206,9 +204,7 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
         student_history = []
 
     try:
-        # =====================================================================
-        # STREAM 1: RRF -> PS
-        # =====================================================================
+
         description_lookup = (
             df_courses
             .set_index("Course Code")["Description"]
@@ -217,7 +213,8 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
 
         if clean_query:
             # Convert the array of structured phrases back into a unified contextual string for the semantic models
-            semantic_query_text = " ".join(processed_query["combined"])
+            combined_query_concepts = processed_query.get("combined", []) + processed_query.get("expanded", [])
+            semantic_query_text = " ".join(combined_query_concepts)
             
             # Update the rankings call to use text for semantic search, and pass arrays directly to keyword search
             semantic_list = get_semantic_rankings(semantic_query_text, student_history, top_k=50)
@@ -244,28 +241,63 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
             candidates_enriched.append({
                 "code": clean_code,
                 "name": str(row["Course Name"]),
+                "description": description_lookup.get(clean_code, ""),
                 "raw_rrf": rrf_score if clean_query else 0.0,
                 "raw_ps": ps_score
             })
 
-        for candidate in candidates_enriched:
-            course_text = (
-                candidate["name"] + " " + description_lookup.get(candidate["code"], "")
-            )
-            semantic_query_text = " ".join(semantic_query)
-            score = model_cross_encoder.predict(
-                [[semantic_query_text, course_text]]
-            )[0]
-            candidate["cross_encoder_score"] = score
+        # Filter (remove duplicates, completed, LLM constraints, and completely restricted courses)
+        from eligibility.rules import check_restriction
+        filtered_candidates = []
+        seen = set()
+        history_set = {str(ch).strip().upper() for ch in student_history if ch}
         
-        candidates_enriched = sorted(candidates_enriched, key=lambda x: x["cross_encoder_score"], reverse=True)
-        candidates_enriched = candidates_enriched[:top_k]
+        # Extract constraint rules
+        constraints = processed_query.get("constraints", {}) if isinstance(processed_query, dict) else {}
+        exclude_depts = set(d.strip().upper() for d in constraints.get("exclude_departments", []) if d)
+        exclude_codes = set(str(c).strip().upper() for c in constraints.get("exclude_courses", []) if c)
+        exclude_codes_clean = {c.replace(" ", "") for c in exclude_codes}
+        
+        for c in candidates_enriched:
+            clean_code = c["code"].strip().upper()
+            clean_code_nospace = clean_code.replace(" ", "")
+            
+            # 1. Remove duplicates
+            if clean_code in seen:
+                continue
+            seen.add(clean_code)
+            
+            # 2. Remove already completed courses
+            if clean_code in history_set:
+                continue
+                
+            # 3. Apply LLM constraints (Exclude departments and specific courses)
+            match_dept = re.match(r'^([A-Z]+)', clean_code)
+            if match_dept:
+                dept_prefix = match_dept.group(1)
+                if dept_prefix in exclude_depts:
+                    continue
+                    
+            if clean_code in exclude_codes or clean_code_nospace in exclude_codes_clean:
+                continue
+                
+            # 4. Remove restricted courses (excluding "Restricted by year")
+            if degree and year and department:
+                r_status = check_restriction(degree, year, department, clean_code)
+                if r_status != 'Valid' and r_status != 'Restricted by year':
+                    # Completely restricted (e.g. Restricted, Invalid Degree), filter out
+                    continue
+            
+            filtered_candidates.append(c)
+            
+        candidates_enriched = filtered_candidates
+
+        # Truncate to top 50 candidates
+        candidates_enriched = candidates_enriched[:50]
 
         text_fused_dict = {str(code).strip().upper(): score for code, score in all_fused_candidates}     
 
-        # =====================================================================
-        # STREAM 2: PS -> RRF (With Dynamic Fallback Calculation)
-        # =====================================================================
+         #incase we r running 50:50 or purely exploration based stream
         if w_ps > 0.0:    
             exclusions = core_course_codes.union(set(str(c).strip().upper() for c in student_history if c))
             df_electives = df_courses[~df_courses["Course Code"].astype(str).str.strip().str.upper().isin(exclusions)]
@@ -312,14 +344,13 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
                     master_pool[clean_code] = {
                         "code": clean_code,
                         "name": str(row["Course Name"]),
+                        "description": description_lookup.get(clean_code, ""),
                         "raw_rrf": calculated_rrf,
                         "raw_ps": calculated_ps
                     }
 
             candidates_enriched = list(master_pool.values())
-        # =====================================================================
-        # SCALE SCORE NORMALIZATION
-        # =====================================================================
+       
         valid_rrf_vals = [c["raw_rrf"] for c in candidates_enriched if c["raw_rrf"] > 0.0]
         valid_ps_vals = [c["raw_ps"] for c in candidates_enriched if c["raw_ps"] > 0.0]
 
@@ -327,7 +358,6 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
         max_ps, min_ps = (max(valid_ps_vals), min(valid_ps_vals)) if valid_ps_vals else (1.0, 0.0)
 
         for c in candidates_enriched:
-            # If a course has 0 raw_rrf, its normalized score must be 0, don't let it scale up
             if c["raw_rrf"] == 0.0:
                 norm_rrf = 0.0
             else:
@@ -338,25 +368,24 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
             else:
                 norm_ps = (c["raw_ps"] - min_ps) / (max_ps - min_ps) if max_ps != min_ps else 0.0
             
-            c["combined_score"] = (w_rrf * norm_rrf) + (w_ps * norm_ps)
-            c["norm_rrf"] = norm_rrf
-            c["norm_ps"] = norm_ps
-            print(f"[CHECKPOINT 2] Course: {c['code']} -> Formula: ({w_rrf} * {norm_rrf:.4f}) + ({w_ps} * {norm_ps:.4f}) = {c['combined_score']:.4f}")
+            c["norm_rrf"] = norm_rrf if w_rrf > 0.0 else 0.0
+            c["norm_ps"] = norm_ps if w_ps > 0.0 else 0.0
+            c["combined_score"] = (w_rrf * c["norm_rrf"]) + (w_ps * c["norm_ps"])
+            print(f"[CHECKPOINT 2] Course: {c['code']} -> Formula: ({w_rrf} * {c['norm_rrf']:.4f}) + ({w_ps} * {c['norm_ps']:.4f}) = {c['combined_score']:.4f}")
+          #We take the top 30 courses and give to the LLM, these coures were sorted by their scores  
         candidates_enriched = sorted(candidates_enriched, key=lambda x: x["combined_score"], reverse=True)
-        
-        llm_input_pool = candidates_enriched[:20]
+        llm_input_pool = candidates_enriched[:30]
 
     except Exception as e:
         print(f"\n[CRITICAL LOCAL PIPELINE EXCEPTION]: {e}")
         traceback.print_exc()
         return []
 
-    # =====================================================================
-    # STEP 3: LLM RELEVANCE FILTERING & RESPONSES
-    # =====================================================================
+  
     try:
         if clean_query:
-            cleaned_json_string = llm.filter_courses(processed_query, llm_input_pool)
+            
+            cleaned_json_string = llm.filter_courses(query, processed_query, llm_input_pool)
             parsed_data = json.loads(cleaned_json_string)
             valid_codes = set(str(c).strip().upper() for c in parsed_data.get("valid_course_codes", []))
         else:

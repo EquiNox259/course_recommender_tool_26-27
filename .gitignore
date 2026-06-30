@@ -8,3 +8,20 @@ __pycache__/
 # Excel temporary files (if opened locally)
 ~$*.xlsx
 ~$*.xls
+
+# Local benchmark output and test files
+final
+Grandfinal
+*results.txt
+ayushs_8020.txt
+ayushshs.txt
+comparison.md
+cross_encoder.txt
+git_diff.txt
+increased_gemini.txt
+no_cross.txt
+dataset/feedback.csv
+
+# Local pipeline scripts
+final_pipeline*.py
+output_pipeline_logger.py
