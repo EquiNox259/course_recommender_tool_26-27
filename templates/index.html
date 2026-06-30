@@ -130,7 +130,7 @@
           <select name="degree" id="degree" required>
             <option value="">—</option>
             {% for d in ['B.Tech.','M.Tech.','Ph.D.','M.Sc.','Dual Degree (B.Tech. + M.Tech.)','B.S.','B.Des.'] %}
-            <option value="{{ d }}" {{ 'selected' if form_values.degree == d else '' }}>{{ d }}</option>
+            <option value="{{ d }}" {{ 'selected' if form_values.degree == d or (not request.form.get('degree') and default_degree == d) else '' }}>{{ d }}</option>
             {% endfor %}
           </select>
           <label for="degree">Degree</label>
@@ -140,7 +140,7 @@
           <select name="year" id="year" required>
             <option value="">—</option>
             {% for y in range(2026, 2015, -1) %}
-            <option value="{{ y }}" {{ 'selected' if form_values.year == y|string else '' }}>{{ y }}</option>
+            <option value="{{ y }}" {{ 'selected' if form_values.year == y|string or (not request.form.get('year') and default_year == y|string) else '' }}>{{ y }}</option>
             {% endfor %}
           </select>
           <label for="year">Batch Year</label>
@@ -160,7 +160,7 @@
         <select name="department" id="department" required>
           <option value="">—</option>
           {% for dept in depts %}
-          <option value="{{ dept }}" {{ 'selected' if form_values.department == dept else '' }}>{{ dept }}</option>
+          <option value="{{ dept }}" {{ 'selected' if form_values.department == dept or (not request.form.get('department') and default_dept == dept) else '' }}>{{ dept }}</option>
           {% endfor %}
         </select>
         <label for="department">Department</label>
@@ -232,18 +232,6 @@
                 {{ 'checked' if (w_ps == 0.0 or w_ps == 0) }}
             >
             <span><strong>More Interest-Based</strong> (100% Semantic Content Matching)</span>
-        </label>
-        
-        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 14px;">
-            <input 
-                type="radio" 
-                name="weight_preset" 
-                value="hybrid" 
-                style="cursor: pointer; transform: scale(1.1);"
-                onchange="syncAndSubmit()" 
-                {{ 'checked' if (w_ps == 0.5 or w_ps is none) }}
-            >
-            <span><strong>50-50 Balanced Split</strong> (Mix of Interests & Peer Trends)</span>
         </label>
         
         <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 14px;">

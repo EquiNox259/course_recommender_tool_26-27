@@ -873,7 +873,7 @@ def parse_minor_remark(remark: str, course_hist: list, department: str = '') -> 
     out['note'] = remark
     return out
 
-def recommender(student_id, Degree, year, department, desired_courses, manual_course_history=None, is_minor_mode=False, w_rrf=0.5, w_ps=0.5):
+def recommender(student_id, Degree, year, department, desired_courses, manual_course_history=None, is_minor_mode=False, w_rrf=1, w_ps=0):
     """
     student_id       : string (email prefix)
     Degree           : string (e.g. 'B.Tech.')
