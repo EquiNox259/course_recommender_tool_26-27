@@ -117,8 +117,8 @@ def index():
         otp_sent = False
 
     # Establish strict initial baseline defaults
-    w_ps = 0.5
-    w_rrf = 0.5
+    w_ps = 0.0
+    w_rrf = 1.0
     eligible = None
     rejected = None
     i_a_r = None
@@ -182,8 +182,8 @@ def index():
             w_rrf_raw = request.form.get('w_rrf') or request.args.get('w_rrf')
             
 
-            w_ps = float(w_ps_raw) if w_ps_raw else 0.5
-            w_rrf = float(w_rrf_raw) if w_rrf_raw else 0.5
+            w_ps = float(w_ps_raw) if w_ps_raw else 0
+            w_rrf = float(w_rrf_raw) if w_rrf_raw else 1
 
             print(f"\n[CHECKPOINT 1 - APP.PY] Incoming weights extracted from UI:")
             print(f" -> w_ps (Peer History Weight): {w_ps} (Type: {type(w_ps)})")
