@@ -226,22 +226,34 @@ def index():
             automated_history = fetch_automatic_student_history(student_id) or []
             print(f"[AUTOMATION] Resolved history for {student_id}: {automated_history}")
 
-            interests = request.form.get('interests_text', '').strip()
-
-            # Minor mode detection: If the student asks for a specific department's minor, bypass the
-                                  # semantic/PS model entirely and serve only that department's minor courses and electives.
-            minor_branch, _ = detect_minor_intent(interest)
-            is_minor_mode    = bool(minor_branch)
+            # Minor mode detection
             minor_candidates = []
+            minor_query_type = "simple"
 
+            try:                    
+                llm = LLMService()
+                _processed = llm.rephrase_and_extract_intent(interest)
+
+                constraints = _processed.get("constraints", {})
+
+                minor_list = constraints.get("minor", [])
+                minor_branch = minor_list[0] if minor_list else None
+
+                is_minor_mode = bool(minor_branch)
+
+                minor_query_type = _processed.get("minor_query_type", "simple")
+
+            except Exception:
+                traceback.print_exc()
+                _processed = None
+                minor_branch = None
+                is_minor_mode = False
+                minor_query_type = "simple"
             if is_minor_mode:
                 # PREPROCESSING (first API call): classify as simple list vs stacked with constraints
                 try:
-                    _llm = LLMService()
-                    _processed = _llm.rephrase_and_extract_intent(interest)
                     minor_query_type = _processed.get("minor_query_type", "simple")
                 except Exception as _mq_err:
-                    print(f"[MINOR CLASSIFY FALLBACK] Defaulting to simple. Trace: {_mq_err}")
                     _processed = None
                     minor_query_type = "simple"
 
@@ -260,7 +272,8 @@ def index():
 
             if not is_minor_mode or minor_query_type == "stacked":
                 _minor_codes = {c['code'] for c in minor_candidates} if (is_minor_mode and minor_query_type == "stacked") else None
-                _pre_query   = _processed if (is_minor_mode and minor_query_type == "stacked" and _processed) else None
+
+                _pre_query   = _processed 
                 desired_courses = []
                 try:
                     desired_courses = get_candidate_courses(
@@ -275,14 +288,13 @@ def index():
                         processed_query=_pre_query,
                         minor_course_codes=_minor_codes
                     )
-                except Exception as api_err:
-                    print(f"[OFFLINE FALLBACK] Token exhaustion detected. Using safe catalog fallback. Trace: {api_err}")
-                    if is_minor_mode and minor_query_type == "stacked":
-                        desired_courses = minor_candidates
 
+                except Exception:
+                    print("===== REAL TRACEBACK =====")
+                    traceback.print_exc()
+                    print("==========================")
+                    raise
 
-
-        
 
             # --- Manual history (second phase) ---
             manual_history_raw = request.form.get("manual_history")
