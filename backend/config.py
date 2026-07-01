@@ -1,4 +1,5 @@
 import os
+import json, tempfile
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -33,8 +34,15 @@ FLASK_SECRET  = os.environ["FLASK_SECRET"]
 OTP_EXPIRY_SEC = int(os.environ.get("OTP_EXPIRY_SEC", 600))                    # 10 minutes
 
 # Feedback Google Sheet
-GSHEETS_CREDENTIALS_PATH = os.environ.get("GSHEETS_CREDENTIALS_PATH", os.path.join(BASE_DIR, "gsheets_service_account.json"))
-GSHEETS_SPREADSHEET_NAME = os.environ.get("GSHEETS_SPREADSHEET_NAME", "Course Recommender Feedback")
+_gsheets_json = os.environ.get("GSHEETS_SERVICE_ACCOUNT_JSON")
+if _gsheets_json:
+    _tmp = tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False)
+    _tmp.write(_gsheets_json)
+    _tmp.close()
+    GSHEETS_CREDENTIALS_PATH = _tmp.name
+else:
+    GSHEETS_CREDENTIALS_PATH = os.environ.get("GSHEETS_CREDENTIALS_PATH", 
+                                os.path.join(BASE_DIR, "gsheets_service_account.json"))
 
 # Frontend
 FRONTEND_ORIGIN = os.environ.get("FRONTEND_ORIGIN", "http://localhost:3000")
