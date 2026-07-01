@@ -3,6 +3,7 @@ import random, time, smtplib, os, ast
 from email.mime.text import MIMEText
 from flask import Flask, render_template, request, session, redirect, url_for, flash
 from model.recommender import get_candidate_courses
+from model.llm_service import LLMService
 from eligibility.rules import recommender as eligibility_recommender, get_core_courses_for_bucket, detect_minor_intent, build_minor_candidates, parse_minor_remark
 from config import FLASK_SECRET, SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, OTP_EXPIRY_SEC, FEEDBACK_PATH, GSHEETS_CREDENTIALS_PATH, GSHEETS_SPREADSHEET_NAME
 import gspread
@@ -225,35 +226,51 @@ def index():
             minor_candidates = []
 
             if is_minor_mode:
+                # PREPROCESSING (first API call): classify as simple list vs stacked with constraints
+                try:
+                    _llm = LLMService()
+                    _processed = _llm.rephrase_and_extract_intent(interest)
+                    minor_query_type = _processed.get("minor_query_type", "simple")
+                except Exception as _mq_err:
+                    print(f"[MINOR CLASSIFY FALLBACK] Defaulting to simple. Trace: {_mq_err}")
+                    _processed = None
+                    minor_query_type = "simple"
+
                 minor_candidates = build_minor_candidates(minor_branch, degree)
-                desired_courses  = minor_candidates  # PS + semantic scores disabled
-                w_rrf = 0.0
-                w_ps  = 0.0
+
+                if minor_query_type == "simple":
+                    desired_courses = minor_candidates
+                    w_rrf = 0.0
+                    w_ps  = 0.0
 
             # Check if the user left the text field blank
-        
             if not interest:
-                # Force the engine into 100% Peer History mode automatically
                 w_rrf = 0.0
-                w_ps= 1.0
+                w_ps  = 1.0
                 query_fallback = True
 
-            if not is_minor_mode:
+            if not is_minor_mode or minor_query_type == "stacked":
+                _minor_codes = {c['code'] for c in minor_candidates} if (is_minor_mode and minor_query_type == "stacked") else None
+                _pre_query   = _processed if (is_minor_mode and minor_query_type == "stacked" and _processed) else None
                 desired_courses = []
                 try:
-                    # Attempts standard semantic processing
                     desired_courses = get_candidate_courses(
-                        query=interest, 
-                        student_history=automated_history, 
+                        query=interest,
+                        student_history=automated_history,
                         top_k=60,
-                        w_rrf=w_rrf,  
+                        w_rrf=w_rrf,
                         w_ps=w_ps,
                         degree=degree,
                         year=year,
-                        department=department
+                        department=department,
+                        processed_query=_pre_query,
+                        minor_course_codes=_minor_codes
                     )
                 except Exception as api_err:
                     print(f"[OFFLINE FALLBACK] Token exhaustion detected. Using safe catalog fallback. Trace: {api_err}")
+                    if is_minor_mode and minor_query_type == "stacked":
+                        desired_courses = minor_candidates
+
 
 
         

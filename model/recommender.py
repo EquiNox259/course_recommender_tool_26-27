@@ -7,8 +7,10 @@ import pandas as pd
 import faiss
 import re
 from sentence_transformers import SentenceTransformer
-from config import MODEL_ASSETS_DIR, MODEL_DATA_DIR
+from config import MODEL_ASSETS_DIR, MODEL_DATA_DIR, RUNNING_COURSES_PATH, RUNNING_COURSES_PATH_ALT, MINOR_COURSES_PATH
 from model.llm_service import LLMService
+import time
+
 
 MODEL_PATH = os.path.join(MODEL_ASSETS_DIR, "course_encoder_new")
 FAISS_INDEX_PATH = os.path.join(MODEL_DATA_DIR, "course_index_new.faiss")
@@ -26,15 +28,196 @@ except Exception as e:
     ps_matrix_data = None
 
 model = SentenceTransformer(MODEL_PATH)
-
 index = faiss.read_index(FAISS_INDEX_PATH)
 
-# CRITICAL FIX: Keep df_courses completely unfiltered for pristine FAISS index mapping
+df_minor_courses = pd.read_csv(MINOR_COURSES_PATH)
+df_minor_courses["Branch"] = (
+    df_minor_courses["Branch"]
+    .astype(str)
+    .str.strip()
+)
+df_minor_courses["Course Code"] = (
+    df_minor_courses["Course Code"]
+    .astype(str)
+    .str.strip()
+    .str.upper()
+)
+BRANCH_TO_CODE = {
+    "Electrical Engineering": "EE",
+    "Mechanical Engineering": "ME",
+    "Computer Science and Engineering": "CS",
+    "Aerospace Engineering": "AE",
+    "Civil Engineering": "CE",
+    "Chemical Engineering": "CL",
+    "Metallurgical Engineering and Materials Science": "MM",
+    "Physics" : "PH", 
+    "Shailesh J. Mehta School of Management": "SOM", 
+    "Chemistry": "CH", 
+    "Statistics": "SI"
+}
+
+df_minor_courses["Branch"] = (
+    df_minor_courses["Branch"]
+    .map(BRANCH_TO_CODE)
+)
+minor_lookup = (
+    df_minor_courses
+    .groupby("Branch")["Course Code"]
+    .apply(lambda x: set(x.str.strip().str.upper()))
+    .to_dict()
+)
+all_minor_courses = set(
+    df_minor_courses["Course Code"]
+    .dropna()
+    .astype(str)
+    .str.strip()
+    .str.upper()
+)
 df_courses = pd.read_csv(COURSE_META_PATH)
 
-# Pre-parse core courses into an uppercase lookup set
+df_courses.columns = (
+    df_courses.columns
+    .str.replace(r'^\ufeff', '', regex=True)
+    .str.strip()
+)
+column_mapping = {
+    "code": "Course Code",
+    "course code": "Course Code",
+    "Course code": "Course Code",
+    "COURSE CODE": "Course Code",
+    "description": "Description",
+    "course description": "Description",
+    "Course description": "Description"
+}
+
+
+df_courses.rename(columns=column_mapping, inplace=True)
+
+df_courses["Course Code"] = (
+    df_courses["Course Code"]
+    .astype(str)
+    .str.strip()
+    .str.upper()
+)
+
 df_core = pd.read_csv("dataset/ASC_Core_Courses.csv")
-core_course_codes = set(df_core["Course Code"].dropna().astype(str).str.strip().str.upper())
+
+core_course_codes = set(
+    df_core["Course Code"]
+    .dropna()
+    .astype(str)
+    .str.strip()
+    .str.upper()
+)
+
+description_lookup = (
+    df_courses
+    .set_index("Course Code")["Description"]
+    .fillna("")
+    .to_dict()
+)
+
+def build_candidate_pool(student_history=None,
+                         include_departments=None,
+                         exclude_departments=None,
+                         exclude_courses=None,
+                         minor = None
+                         ):
+    if student_history is None:
+        student_history = []
+    core_exclusions = core_course_codes - all_minor_courses
+
+    exclusions = core_exclusions.union(
+        {
+            str(c).strip().upper()
+            for c in student_history
+            if c
+        }
+    )
+    minor = {
+        m.strip()
+        for m in (minor or [])
+        if m
+    }
+    include_departments = {
+        d.strip().upper()
+        for d in (include_departments or [])
+    }
+    exclude_departments = {
+        d.strip().upper()
+        for d in (exclude_departments or [])
+    }
+    exclude_courses = {
+        c.strip().upper().replace(" ", "")
+        for c in (exclude_courses or [])
+    }
+    pool = df_courses[
+        ~df_courses["Course Code"]
+        .astype(str)
+        .str.strip()
+        .str.upper()
+        .isin(exclusions)
+    ].copy()
+
+    # Include department filter
+    if include_departments:
+        pool = pool[
+            pool["Course Code"]
+            .str.split()
+            .str[0]
+            .isin(include_departments)
+        ]
+
+    # Exclude department filter
+    if exclude_departments:
+        pool = pool[
+            ~pool["Course Code"]
+            .str.split()
+            .str[0]
+            .isin(exclude_departments)
+        ]
+
+    # Exclude individual courses
+    if exclude_courses:
+        pool = pool[
+            ~pool["Course Code"]
+            .str.replace(" ", "", regex=False)
+            .str.upper()
+            .isin(exclude_courses)
+        ]
+    if minor:
+        allowed_courses = set()
+        for m in minor:
+            allowed_courses |= minor_lookup.get(m, set())
+
+        tmp = df_courses[
+        df_courses["Course Code"]
+        .astype(str)
+        .str.strip()
+        .str.upper()
+        .isin(allowed_courses)
+        ]
+
+        tmp = tmp[
+            ~tmp["Course Code"]
+            .astype(str)
+            .str.strip()
+            .str.upper()
+            .isin(exclusions)
+        ]
+        allowed_courses = {
+            c.strip().upper()
+            for c in allowed_courses
+        }
+
+        pool = pool[
+            pool["Course Code"]
+            .astype(str)
+            .str.strip()
+            .str.upper()
+            .isin(allowed_courses)
+        ]
+    return pool
 
 
 def calculate_people_score(student_history: list, target_course_code: str) -> float:
@@ -67,10 +250,12 @@ def calculate_people_score(student_history: list, target_course_code: str) -> fl
     return final_score
 
 
-def get_semantic_rankings(query, student_history=None, top_k=50):
+def get_semantic_rankings(query, student_history = None, candidate_pool = None, top_k=80):
     """Runs raw FAISS semantic search and matches against unfiltered rows before exclusions."""
     if student_history is None:
         student_history = []
+    if candidate_pool is None:
+        candidate_pool = build_candidate_pool(student_history)
         
     query_emb = model.encode(query, normalize_embeddings=True).astype(np.float32)
     
@@ -80,27 +265,36 @@ def get_semantic_rankings(query, student_history=None, top_k=50):
    
     # FIX: Map via df_courses which perfectly retains positional alignment with FAISS indexes
     semantic_results = df_courses.iloc[indices[0]].copy()
-    
-    # Build complete exclusions criteria (Core courses + Student academic history)
-    exclusions = core_course_codes.union(set(str(c).strip().upper() for c in student_history if c))
-    
-    filtered_results = semantic_results[
-        ~semantic_results["Course Code"].astype(str).str.strip().str.upper().isin(exclusions)
+
+    allowed_codes = set(
+        candidate_pool["Course Code"]
+        .astype(str)
+        .str.strip()
+        .str.upper()
+    )
+
+    semantic_results = semantic_results[
+        semantic_results["Course Code"]
+        .astype(str)
+        .str.strip()
+        .str.upper()
+        .isin(allowed_codes)
     ]
     
-    return filtered_results["Course Code"].tolist()[:top_k]
+    # Build complete exclusions criteria (Core courses + Student academic history)
+
+    
+    return semantic_results["Course Code"].tolist()[:top_k]
 
 
-def get_keyword_rankings(primary_keywords, secondary_keywords, student_history=None, top_k=50):
+def get_keyword_rankings(primary_keywords, secondary_keywords, student_history = None, candidate_pool = None, top_k=40):
     """Runs phrase-boundary keyword matching using LLM-extracted n-grams on core-excluded data."""
     if student_history is None:
         student_history = []
-        
-    # Apply exclusions to separate our elective pool dynamically from global catalog
-    exclusions = core_course_codes.union(set(str(c).strip().upper() for c in student_history if c))
-    df_electives = df_courses[
-        ~df_courses["Course Code"].astype(str).str.strip().str.upper().isin(exclusions)
-    ].copy()
+    if candidate_pool is None:
+        candidate_pool = build_candidate_pool(student_history)
+    
+    df_electives = candidate_pool.copy()
     
     if df_electives.empty:
         return []
@@ -162,14 +356,15 @@ def compute_rrf(semantic_codes, keyword_codes, k=60):
     return sorted(rrf_scores.items(), key=lambda x: x[1], reverse=True)
 
 
-def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps=1.0, degree=None, year=None, department=None):
+def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps=1.0, degree=None, year=None, department=None, processed_query=None, minor_course_codes=None):
     """Unified entrypoint called by app.py."""
-    llm = LLMService()       
+    llm = LLMService()
     clean_query = query.lower().strip()
 
     print(f"[PRE-PROCESSING] Original Query: '{query}'")
     try:
-        processed_query = llm.rephrase_and_extract_intent(query)
+        if processed_query is None:
+            processed_query = llm.rephrase_and_extract_intent(query)
 
         print(f"[PRE-PROCESSING] LLM Optimized Query: '{processed_query}'")
 
@@ -185,6 +380,14 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
         semantic_query = processed_query.get("combined", [])
         primary_keywords = processed_query.get("primary", [])
         secondary_keywords = processed_query.get("secondary", [])
+        expanded_keywords = processed_query.get("expanded", [])
+        constraints = processed_query.get("constraints") or {}
+        include_courses = constraints.get("include_courses", [])
+        minor = constraints.get("minor", [])
+        include_departments = constraints.get("include_departments", [])
+        exclude_courses = constraints.get("exclude_courses", [])
+        exclude_departments = constraints.get("exclude_departments", [])
+        easy_grading = constraints.get("easy_grading", False)
 
         print(f"[PRE-PROCESSING] LLM Optimized Query: '{processed_query}'")
     except Exception as e:
@@ -193,42 +396,141 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
             "is_valid": True,
             "combined": [clean_query],
             "primary": [clean_query],
-            "secondary": []
+            "secondary": [],
+            "expanded": [],
+            "constraints": {
+            "include_departments": [],
+            "exclude_departments": [],
+            "exclude_courses": [],
+            "minor": [],
+            "easy_grading": False
+            }
         }
 
         semantic_query = processed_query["combined"]
         primary_keywords = processed_query["primary"]
         secondary_keywords = processed_query["secondary"]
+        expanded_keywords = processed_query["expanded"]
+        constraints = processed_query["constraints"]
+    
+    candidate_pool = build_candidate_pool(
+        student_history=student_history,
+        include_departments=include_departments,
+        exclude_departments=exclude_departments,
+        exclude_courses=exclude_courses,
+        minor = minor
+    )
 
     if student_history is None:
         student_history = []
 
-    try:
+    if not primary_keywords:
+        # Build lookup once
+        course_lookup = (
+        candidate_pool
+        .assign(
+            _code=lambda x: x["Course Code"]
+            .astype(str)
+            .str.strip()
+            .str.upper()
+        )
+        .drop_duplicates("_code")
+        .set_index("_code")
+        .to_dict("index")
+    )
+        candidates_enriched = []
+        for code, row in course_lookup.items():
+            # Respect department exclusions
+            if include_departments:
+                if code.split()[0] not in {
+                    d.strip().upper()
+                    for d in include_departments
+                }:
+                    continue
+            if exclude_departments:
+                if code.split()[0] in {
+                    d.strip().upper() for d in exclude_departments
+                }:
+                    continue
+            # Respect course exclusions
+            if exclude_courses:
+                if code.replace(" ", "") in {
+                    c.strip().upper().replace(" ", "")
+                    for c in exclude_courses
+                }:
+                    continue
+            ps_score = calculate_people_score(student_history, code)
+            candidates_enriched.append({
+                "code": code,
+                "name": str(row["Course Name"]),
+                "raw_rrf": 0.0,
+                "raw_ps": ps_score,
+                "norm_rrf": 0.0,
+                "norm_ps": 0.0,
+                "easy_grading": easy_grading,
+                "raw_ts": ps_score,      # temporary, rules.py will rerank by grades
+            })
+        return candidates_enriched
 
+    try:
         description_lookup = (
             df_courses
             .set_index("Course Code")["Description"]
             .to_dict()
         )
 
-        if clean_query:
+        if primary_keywords:
             # Convert the array of structured phrases back into a unified contextual string for the semantic models
-            combined_query_concepts = processed_query.get("combined", []) + processed_query.get("expanded", [])
-            semantic_query_text = " ".join(combined_query_concepts)
+            semantic_query_text = " ".join(
+                processed_query["combined"] +
+                processed_query["expanded"]
+            )
             
             # Update the rankings call to use text for semantic search, and pass arrays directly to keyword search
             semantic_list = get_semantic_rankings(semantic_query_text, student_history, top_k=50)
-            keyword_list = get_keyword_rankings(processed_query["primary"], processed_query["secondary"], student_history, top_k=50)
+            keyword_list = get_keyword_rankings(
+                processed_query["primary"],
+                processed_query["secondary"],
+                student_history,
+                candidate_pool,
+                top_k=50
+            )   
             
             all_fused_candidates = compute_rrf(semantic_list, keyword_list, k=60)
             if not all_fused_candidates:
                 return []
+
+            # Stacked minor: restrict to the detected minor's course pool
+            if minor_course_codes:
+                all_fused_candidates = [
+                    (code, score) for code, score in all_fused_candidates
+                    if str(code).strip().upper() in minor_course_codes
+                ]
+                if not all_fused_candidates:
+                    return [
+                        {"code": code, "name": "", "raw_rrf": 0.0, "raw_ps": 0.0,
+                         "norm_rrf": 0.0, "norm_ps": 0.0, "raw_ts": 0.0, "easy_grading": False}
+                        for code in minor_course_codes
+                    ]
         else:
             all_fused_candidates = []
 
         candidates_enriched = []
         rrf_vals = []
         ps_vals = []
+        course_lookup = (
+            df_courses
+            .assign(
+                _code=lambda x:
+                x["Course Code"]
+                .astype(str)
+                .str.strip()
+                .str.upper()
+            )
+            .drop_duplicates("_code")                
+            .set_index("_code")
+            .to_dict("index")
+        )
 
         for code, rrf_score in all_fused_candidates:
             clean_code = str(code).strip().upper()
@@ -350,6 +652,27 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
                     }
 
             candidates_enriched = list(master_pool.values())
+
+        if exclude_departments:
+            exclude_departments = {
+                d.strip().upper()
+                for d in exclude_departments
+            }
+
+            candidates_enriched = [
+                c for c in candidates_enriched
+                if c["code"].split()[0] not in exclude_departments
+            ]
+        if exclude_courses:
+            exclude_courses = {
+                c.strip().upper()
+                for c in exclude_courses
+            }
+
+            candidates_enriched = [
+                c for c in candidates_enriched
+                if c["code"].replace(" ", "") not in exclude_courses
+            ]
        
         valid_rrf_vals = [c["raw_rrf"] for c in candidates_enriched if c["raw_rrf"] > 0.0]
         valid_ps_vals = [c["raw_ps"] for c in candidates_enriched if c["raw_ps"] > 0.0]
@@ -380,7 +703,6 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
         print(f"\n[CRITICAL LOCAL PIPELINE EXCEPTION]: {e}")
         traceback.print_exc()
         return []
-
   
     try:
         if clean_query:
@@ -402,7 +724,8 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
                     "raw_ps": c["raw_ps"],
                     "norm_rrf": c["norm_rrf"],  
                     "norm_ps": c["norm_ps"], 
-                    "raw_ts" : c["combined_score"]
+                    "raw_ts" : c["combined_score"],
+                    "easy_grading": easy_grading,
                 })
                 if len(final_output) == top_k:
                     break
@@ -419,6 +742,7 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
                 "raw_ps": c["raw_ps"],
                 "norm_rrf": c["norm_rrf"],  
                 "norm_ps": c["norm_ps"], 
-                "raw_ts" : c["combined_score"]
+                "raw_ts" : c["combined_score"],
+                "easy_grading": easy_grading,
             })
         return fallback_output
