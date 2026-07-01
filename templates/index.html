@@ -9,15 +9,15 @@
   <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=IBM+Plex+Mono:wght@500&family=Poppins:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="./style.css">
 </head>
 <body>
- 
+
 <!-- ═══════════════════════════════════════════════ NAVBAR ═══ -->
 <nav class="navbar">
   <div class="nav-left">
     <a href="/about" class="nav-brand-link">
-      <img id="dav-icon" class="nav-logo" src="/static/DAV_Logo.svg" alt="DAV">
+      <img id="dav-icon" class="nav-logo" src="./static/DAV_Logo.svg" alt="DAV">
       <span class="nav-title">Data Analytics and Visualization Team</span>
     </a>
   </div>
@@ -26,37 +26,16 @@
     <a href="/about" class="nav-docs-link">About</a>
     <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">☀️</button>
     <a href="https://ugac-iitb.github.io/UGAC-IITB/divisions/9" target="_blank" rel="noopener">
-        <img id="ugac-icon" class="nav-ugac" src="/static/ugac_logo.svg" alt="UGAC">
+        <img id="ugac-icon" class="nav-ugac" src="./static/ugac_logo.svg" alt="UGAC">
     </a>
   </div>
 </nav>
- 
+
 <!-- ═══════════════════════════════════════════════ CONTENT ══ -->
 <main class="content">
- 
-  <!-- ── Feedback toast ── -->
-  {% with messages = get_flashed_messages(category_filter=["feedback_success", "feedback_error"], with_categories=true) %}
-    {% if messages %}
-    <div class="toast-stack" id="toast-stack">
-      {% for category, message in messages %}
-      <div class="toast {{ 'toast-success' if category == 'feedback_success' else 'toast-error' }}">
-        {{ message }}
-      </div>
-      {% endfor %}
-    </div>
-    <script>
-      (function() {
-        var toasts = document.querySelectorAll('#toast-stack .toast');
-        toasts.forEach(function(t) {
-          setTimeout(function() {
-            t.classList.add('toast-hide');
-            setTimeout(function() { t.remove(); }, 400);
-          }, 4000);
-        });
-      })();
-    </script>
-    {% endif %}
-  {% endwith %}
+
+  <!-- ── Toast container (replaces Flask flash) ── -->
+  <div class="toast-stack" id="toast-stack"></div>
 
   <!-- HERO -->
   <div class="hero">
@@ -64,127 +43,130 @@
     <p class="hero-sub">Enter your profile to get personalised course recommendations</p>
   </div>
 
-  {% if not otp_sent and not otp_verified %}
-  <div class="card fade-up">
+  <!-- ─────────────── STEP 1: Send OTP ─────────────────── -->
+  <div id="section-send-otp" class="card fade-up">
     <div class="card-head">
       <span class="sec-label">Verify Identity</span>
     </div>
     <div class="divider-dash"></div>
-    {% with messages = get_flashed_messages(category_filter=["send_error"]) %}
-      {% if messages %}
-        <div class="entry-reason reason-no" style="margin:8px 0">&#9888;&nbsp;{{ messages[0] }}</div>
-      {% endif %}
-    {% endwith %}
-    <form method="POST">
-      <input type="hidden" name="action" value="send_otp">
-      <div class="field field-full">
-        <input type="text" name="student_id" id="student_id_otp"
-               placeholder=" " autocomplete="off"
-               pattern="[0-9]{2}[bBdD][0-9]{4}" title="Format: 24b1001">
-        <label for="student_id_otp">Student ID</label>
-      </div>
-      <button type="submit" class="btn-primary">
-        <span class="btn-label">Send OTP &rarr;</span>
-      </button>
-    </form>
+    <div id="send-otp-error" class="entry-reason reason-no" style="display:none;margin:8px 0"></div>
+    <div class="field field-full">
+      <input type="text" id="student_id_otp" placeholder=" " autocomplete="off"
+             pattern="[0-9]{2}[bBdD][0-9]{4}" title="Format: 24b1001">
+      <label for="student_id_otp">Student ID</label>
+    </div>
+    <button class="btn-primary" id="send-otp-btn" onclick="doSendOtp()">
+      <span class="btn-label">Send OTP &rarr;</span>
+      <span class="btn-loading" hidden>Sending&hellip;</span>
+    </button>
   </div>
 
-  {% elif otp_sent and not otp_verified %}
-  <div class="card fade-up">
+  <!-- ─────────────── STEP 2: Verify OTP ─────────────────── -->
+  <div id="section-verify-otp" class="card fade-up" style="display:none">
     <div class="card-head">
       <span class="sec-label">Enter OTP</span>
     </div>
     <div class="divider-dash"></div>
-    <p style="font-size:13px; color:var(--ts); margin-bottom:16px;">
-      An OTP has been sent to <strong>{{ otp_email }}</strong>. Valid for 10 minutes.
-    </p>
-    {% if otp_error %}
-      <div class="entry-reason reason-no" style="margin:8px 0">&#9888;&nbsp;{{ otp_error }}</div>
-    {% endif %}
-    <form method="POST">
-      <input type="hidden" name="action" value="verify_otp">
-      <div class="field field-full">
-        <input type="text" name="otp_input" id="otp_input"
-               placeholder=" " autocomplete="off"
-               maxlength="6" inputmode="numeric">
-        <label for="otp_input">6-digit OTP</label>
-      </div>
-      <button type="submit" class="btn-primary">
-        <span class="btn-label">Verify &rarr;</span>
-      </button>
-    </form>
-  </div>
- 
-  <!-- ─────────────────── MAIN FORM ─────────────────── -->
-    {% elif otp_verified and not need_manual_history %} 
-  <div class="profile-section fade-up">
-
-    <div class="profile-hd">
-      <div class="profile-id">Student Profile: {{ student_id }}</div>
+    <p id="otp-sent-msg" style="font-size:13px;color:var(--ts);margin-bottom:16px;"></p>
+    <div id="verify-otp-error" class="entry-reason reason-no" style="display:none;margin:8px 0"></div>
+    <div class="field field-full">
+      <input type="text" id="otp_input" placeholder=" " autocomplete="off"
+             maxlength="6" inputmode="numeric">
+      <label for="otp_input">6-digit OTP</label>
     </div>
+    <button class="btn-primary" id="verify-otp-btn" onclick="doVerifyOtp()">
+      <span class="btn-label">Verify &rarr;</span>
+      <span class="btn-loading" hidden>Verifying&hellip;</span>
+    </button>
+  </div>
 
-    <div class="profile-rule"></div>
-
-    <form method="POST" id="profile-form">
-      <input type="hidden" name="action" value="recommend">
+  <!-- ─────────────── STEP 3: Profile Form ─────────────────── -->
+  <div id="section-profile" style="display:none">
+    <div class="profile-section fade-up">
+      <div class="profile-hd">
+        <div class="profile-id" id="profile-id-label">Student Profile: —</div>
+      </div>
+      <div class="profile-rule"></div>
 
       <div class="form-pair">
         <div class="field">
-          <select name="degree" id="degree" required>
+          <select id="degree" required>
             <option value="">—</option>
-            {% for d in ['B.Tech.','M.Tech.','Ph.D.','M.Sc.','Dual Degree (B.Tech. + M.Tech.)','B.S.','B.Des.'] %}
-            <option value="{{ d }}" {{ 'selected' if form_values.degree == d or (not request.form.get('degree') and default_degree == d) else '' }}>{{ d }}</option>
-            {% endfor %}
+            <option>B.Tech.</option>
+            <option>M.Tech.</option>
+            <option>Ph.D.</option>
+            <option>M.Sc.</option>
+            <option>Dual Degree (B.Tech. + M.Tech.)</option>
+            <option>B.S.</option>
+            <option>B.Des.</option>
           </select>
           <label for="degree">Degree</label>
         </div>
-
         <div class="field">
-          <select name="year" id="year" required>
+          <select id="year" required>
             <option value="">—</option>
-            {% for y in range(2026, 2015, -1) %}
-            <option value="{{ y }}" {{ 'selected' if form_values.year == y|string or (not request.form.get('year') and default_year == y|string) else '' }}>{{ y }}</option>
-            {% endfor %}
+            <option>2026</option><option>2025</option><option>2024</option>
+            <option>2023</option><option>2022</option><option>2021</option>
+            <option>2020</option><option>2019</option><option>2018</option>
+            <option>2017</option><option>2016</option>
           </select>
           <label for="year">Batch Year</label>
         </div>
       </div>
 
       <div class="field" style="margin-bottom:20px;">
-        {% set depts = [
-          'Aerospace Engineering','Biosciences and Bioengineering',
-          'Chemical Engineering','Chemistry','Civil Engineering',
-          'Computer Science and Engineering','Earth Sciences','Economics',
-          'Electrical Engineering','Energy Science and Engineering','Engineering Physics',
-          'Environmental Science and Engineering','Humanities & Social Science',
-          'Industrial Engineering and Operations Research','Mathematics',
-          'Mechanical Engineering','Metallurgical Engineering and Materials Science'
-        ] %}
-        <select name="department" id="department" required>
+        <select id="department" required>
           <option value="">—</option>
-          {% for dept in depts %}
-          <option value="{{ dept }}" {{ 'selected' if form_values.department == dept or (not request.form.get('department') and default_dept == dept) else '' }}>{{ dept }}</option>
-          {% endfor %}
+          <option>Aerospace Engineering</option>
+          <option>Biosciences and Bioengineering</option>
+          <option>Chemical Engineering</option>
+          <option>Chemistry</option>
+          <option>Civil Engineering</option>
+          <option>Computer Science and Engineering</option>
+          <option>Earth Sciences</option>
+          <option>Economics</option>
+          <option>Electrical Engineering</option>
+          <option>Energy Science and Engineering</option>
+          <option>Engineering Physics</option>
+          <option>Environmental Science and Engineering</option>
+          <option>Humanities &amp; Social Science</option>
+          <option>Industrial Engineering and Operations Research</option>
+          <option>Mathematics</option>
+          <option>Mechanical Engineering</option>
+          <option>Metallurgical Engineering and Materials Science</option>
         </select>
         <label for="department">Department</label>
       </div>
+
       <div class="field field-full">
-        <textarea name="interest" id="interest" placeholder=" " rows="3">{{ form_values.interest }}</textarea>
+        <textarea id="interest" placeholder=" " rows="3"></textarea>
         <label for="interest">Research Interests and Skills</label>
       </div>
 
-      <button type="submit" class="btn-primary" id="submit-btn">
+      <button class="btn-primary" id="submit-btn" onclick="doRecommend()">
         <span class="btn-label">Generate Recommendations &rarr;</span>
         <span class="btn-loading" hidden>Checking eligibility&hellip;</span>
       </button>
-    </form>
-  </div>
-  {% endif %}
+    </div>
 
- 
+    <!-- Recommendation Strategy -->
+    <div class="filter-container" style="padding:16px;margin-bottom:20px;background:var(--bg-card);border-radius:8px;border:1px solid var(--border-color);margin-top:16px;">
+      <div style="font-weight:600;margin-bottom:12px;color:inherit;">Recommendation Strategy:</div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;">
+          <input type="radio" name="weight_preset" value="semantic" style="cursor:pointer;transform:scale(1.1);" checked>
+          <span><strong>More Interest-Based</strong> (100% Semantic Content Matching)</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;">
+          <input type="radio" name="weight_preset" value="people" style="cursor:pointer;transform:scale(1.1);">
+          <span><strong>More Safe Route</strong> (100% Peer History Alignment)</span>
+        </label>
+      </div>
+    </div>
+  </div><!-- /section-profile -->
+
   <!-- ─────────────── MANUAL HISTORY CARD ──────────────── -->
-  {% if need_manual_history %}
-  <div class="card fade-up">
+  <div id="section-manual-history" class="card fade-up" style="display:none">
     <div class="manual-alert">
       <div class="manual-alert-inner">
         <span class="manual-warn-icon">⚠</span>
@@ -194,848 +176,506 @@
         </div>
       </div>
     </div>
-    <form method="POST">
-      <input type="hidden" name="action" value="recommend">
-      <input type="hidden" name="student_id" value="{{ request.form.get('student_id','') }}">
-      <input type="hidden" name="degree"     value="{{ request.form.get('degree','') }}">
-      <input type="hidden" name="year"       value="{{ request.form.get('year','') }}">
-      <input type="hidden" name="department" value="{{ request.form.get('department','') }}">
-      <input type="hidden" name="interest"   value="{{ request.form.get('interest','') }}">
- 
-      <div class="field field-full" style="margin-top:20px">
-        <textarea name="manual_history" id="manual_history" placeholder=" " rows="3"></textarea>
-        <label for="manual_history">Completed Course Codes</label>
-      </div>
- 
-      <div class="chip-example">
-        <span class="chip-ex-label">Example format:</span>
-        <span class="chip chip-primary">MA105</span>
-        <span class="chip chip-primary">CS101</span>
-        <span class="chip chip-primary">PH107</span>
-      </div>
- 
-      <button type="submit" class="btn-primary" style="margin-top:18px">Continue &rarr;</button>
-    </form>
-  </div>
-  {% endif %}
- 
-
-    {% if otp_verified %}
-    <div class="filter-container" style="padding: 16px; margin-bottom: 20px; background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border-color);">
-    <div style="font-weight: 600; margin-bottom: 12px; color: inherit;">Recommendation Strategy:</div>
-    
-    <div style="display: flex; flex-direction: column; gap: 12px;">
-        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 14px;">
-            <input 
-                type="radio" 
-                name="weight_preset" 
-                value="semantic" 
-                style="cursor: pointer; transform: scale(1.1);"
-                onchange="syncAndSubmit()" 
-                {{ 'checked' if (w_ps == 0.0 or w_ps == 0) }}
-            >
-            <span><strong>More Interest-Based</strong> (100% Semantic Content Matching)</span>
-        </label>
-        
-        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 14px;">
-            <input 
-                type="radio" 
-                name="weight_preset" 
-                value="people" 
-                style="cursor: pointer; transform: scale(1.1);"
-                onchange="syncAndSubmit()" 
-                {{ 'checked' if (w_ps == 1.0 or w_ps == 1) }}
-            >
-            <span><strong>More Safe Route</strong> (100% Peer History Alignment)</span>
-        </label>
+    <div class="field field-full" style="margin-top:20px">
+      <textarea id="manual_history" placeholder=" " rows="3"></textarea>
+      <label for="manual_history">Completed Course Codes</label>
     </div>
+    <div class="chip-example">
+      <span class="chip-ex-label">Example format:</span>
+      <span class="chip chip-primary">MA105</span>
+      <span class="chip chip-primary">CS101</span>
+      <span class="chip chip-primary">PH107</span>
+    </div>
+    <button class="btn-primary" style="margin-top:18px" onclick="doRecommendWithManualHistory()">Continue &rarr;</button>
+  </div>
 
-    <input type="hidden" name="w_rrf" id="hidden-w-rrf" value="{{ w_rrf if w_rrf is not none else 0.5 }}">
-    <input type="hidden" name="w_ps" id="hidden-w-ps" value="{{ w_ps if w_ps is not none else 0.5 }}">
-</div>
-{% endif %}
+  <!-- ─────────────── FALLBACK ALERT ─────────────────── -->
+  <div id="fallback-alert" class="fallback-alert" style="display:none">
+    <p class="fallback-alert__body">
+      &#9432;&nbsp;Since no specific interest keywords were entered, we automatically shifted your
+      strategy to <strong>100% Safer Route</strong> to give you the most accurate trending courses
+    </p>
+  </div>
 
-<script>
-// Helper engine to convert option strings to the raw weights required by rules.py
-function getSelectedWeights() {
-    const selectedPreset = document.querySelector('input[name="weight_preset"]:checked').value;
-    let w_rrf = 0.5;
-    let w_ps = 0.5;
-
-    if (selectedPreset === "semantic") {
-        w_rrf = 1.0;
-        w_ps = 0.0;
-    } else if (selectedPreset === "hybrid") {
-        w_rrf = 0.5;
-        w_ps = 0.5;
-    } else if (selectedPreset === "people") {
-        w_rrf = 0.0;
-        w_ps = 1.0;
-    }
-    return { w_rrf, w_ps };
-}
-
-function syncAndSubmit() {
-    // Find whichever form is currently active on screen
-    let activeForm = document.getElementById('profile-form') || document.querySelector('form');
-    if (!activeForm) return;
-
-    const weights = getSelectedWeights();
-
-    // Dynamically update default component level fallbacks
-    document.getElementById('hidden-w-rrf').value = weights.w_rrf;
-    document.getElementById('hidden-w-ps').value = weights.w_ps;
-
-    // Clean out old parameter injections lingering within the active DOM boundary
-    ['w_rrf', 'w_ps'].forEach(name => {
-        let oldInput = activeForm.querySelector(`input[name="${name}"]`);
-        if (oldInput) oldInput.remove();
-    });
-
-    // Inject fresh inputs for execution
-    const inputRrf = document.createElement('input');
-    inputRrf.type = 'hidden';
-    inputRrf.name = 'w_rrf';
-    inputRrf.value = weights.w_rrf;
-    activeForm.appendChild(inputRrf);
-
-    const inputPs = document.createElement('input');
-    inputPs.type = 'hidden';
-    inputPs.name = 'w_ps';
-    inputPs.value = weights.w_ps;
-    activeForm.appendChild(inputPs);
-
-    // Auto-submit immediately if a search grid layout is active
-    if (document.querySelector('.results-grid')) {
-        activeForm.submit();
-    }
-}
-
-// Ensure normal submission events inherit data correctly from selection state
-document.addEventListener('DOMContentLoaded', function() {
-    const mainForm = document.getElementById('profile-form');
-    if (mainForm) {
-        mainForm.addEventListener('submit', function() {
-            const weights = getSelectedWeights();
-            
-            if (!mainForm.querySelector('input[name="w_rrf"]')) {
-                const inputRrf = document.createElement('input');
-                inputRrf.type = 'hidden';
-                inputRrf.name = 'w_rrf';
-                inputRrf.value = weights.w_rrf;
-                mainForm.appendChild(inputRrf);
-                
-                const inputPs = document.createElement('input');
-                inputPs.type = 'hidden';
-                inputPs.name = 'w_ps';
-                inputPs.value = weights.w_ps;
-                mainForm.appendChild(inputPs);
-            }
-        });
-    }
-});
-</script>
-
- 
   <!-- ─────────────── RESULTS GRID ──────────────── -->
-    {% if query_fallback %}
-    <div class="fallback-alert">
-        <p class="fallback-alert__body">
-           &#9432;&nbsp;Since no specific interest keywords were entered, we automatically shifted your 
-           strategy to <strong>100% Safer Route</strong> to give you the most accurate trending courses
-        </p>
-    </div>
-    {% endif %}
+  <div id="section-results" style="display:none">
 
-  {% if eligible is not none %}
+    <div class="tabs-container fade-up" id="tabs-container"></div>
 
-  
-  <div class="tabs-container fade-up">
-    {% if eligible %}
-    <button class="tab-btn active" onclick="switchTab('eligible')" id="tab-btn-eligible">
-      Eligible <span id="badge-eligible" class="badge-count">({{ eligible | length }})</span>
-    </button>
-    {% endif %}
-    {% if i_a_r %}
-    <button class="tab-btn" onclick="switchTab('consent')" id="tab-btn-consent">
-      Instructor Consent Required <span id="badge-consent" class="badge-count">({{ i_a_r | length }})</span>
-    </button>
-    {% endif %}
-    {% if t_s_c %}
-    <button class="tab-btn" onclick="switchTab('tsc')" id="tab-btn-tsc">
-      Time Slot Clash <span id="badge-tsc" class="badge-count">({{ t_s_c | length }})</span>
-    </button>
-    {% endif %}
-    {% if rejected %}
-    <button class="tab-btn" onclick="switchTab('rejected')" id="tab-btn-rejected">
-      Not Eligible <span id="badge-rejected" class="badge-count">({{ rejected | length }})</span>
-    </button>
-    {% endif %}
-  </div>
+    <div class="results-grid fade-up-d1" id="results-grid"></div>
 
-  <div class="results-grid fade-up-d1">
-    {% if eligible %}
-    <div id="tab-content-eligible" class="tab-content active">
-      <div id="entries-eligible">
-        {% for c in eligible %}
-        <div class="entry entry-ok{{ ' entry-last' if loop.last else '' }}" onclick="toggleEntry(this)"
-            data-has-minor="{{ 'true' if c.has_minor else 'false' }}"
-            data-minor-only="{{ 'true' if c.minor_only else 'false' }}"
-            data-divisions='{{ c.divisions | tojson }}'
-            data-default-idx="{{ c.default_idx | default(0) }}"
-            data-home-section="eligible"
-            data-section="eligible"
-            data-code="{{ c.code }}"
-            data-name="{{ c.name }}"
-            data-credits="{{ c.credits | default(6) }}"
-            data-slot-num="{{ c.divisions[c.default_idx | default(0)]['slot_num'] if c.divisions else 'N/A' }}"
-            data-is-minor="{{ 'true' if c.minor_only else 'false' }}">
-         {% if c.has_minor %}{% set _dm = c.divisions[c.default_idx | default(0)]['is_minor'] if c.divisions else false %}{% endif %}
-        <div class="entry-code-row">
-          <span style="font-family: 'Source Serif 4', serif; font-size: 17px; font-weight: 600; opacity: 0.75;">{{ c.code }}</span>
-          <span class="entry-name">: {{ c.name }}</span>
-          {% if is_minor_mode and c.minor_type %}<span class="entry-minor-label">{{ c.minor_type }}</span>{% elif c.has_minor %}<span class="entry-minor-label" {% if not _dm %}style="display:none"{% endif %}>  Minor</span>{% endif %}
-          <span class="entry-chevron" style="margin-left:auto;flex-shrink:0">&#9662;</span>
-        </div>
-          {% if c.divisions | length > 1 %}
-            <div class="entry-div-wrap">
-                <select class="div-select"
-                        onclick="event.stopPropagation()"
-                        onchange="switchDivision(this)">
-                {% for d in c.divisions %}
-                <option value="{{ loop.index0 }}"
-                        data-slot-num="{{ d.slot_num or 'N/A' }}"
-                        data-instructor="{{ d.instructor }}"
-                        data-is-minor="{{ 'true' if d.is_minor else 'false' }}">
-                    {{ d.label }}
-                </option>
-                {% endfor %}
-                </select>
-            </div>
-            {% endif %}
-          <div class="entry-meta">
-            <strong>Slot</strong>&nbsp;:&nbsp;<span class="div-slot">
-                {{- (c.slot or 'N/A') | replace('\r\n', '\n') | replace('\r', '\n') -}}
-            </span><br>
-            <strong>Instructor</strong>&nbsp;:&nbsp;<span class="div-instructor">
-                {{- (c.instructor or 'N/A') | replace('\r\n', ', ') | replace('\r', ', ') | replace('\n', ', ') -}}
-            </span>
-          </div>
-            {% if c.equiv is defined and (c.equiv.regular or c.equiv.minor) %}
-            {% set default_is_minor = c.divisions[c.default_idx | default(0)]['is_minor'] if c.divisions else false %}
-            {% set init_equiv = c.equiv.minor if default_is_minor else c.equiv.regular %}
-            <div class="entry-equiv-msg"
-                data-equiv-regular="{{ c.equiv.regular | join(', ') }}"
-                data-equiv-minor="{{ c.equiv.minor | join(', ') }}"
-                {% if not init_equiv %}style="display:none"{% endif %}>
-                &#9432;&nbsp;Equivalent Course(s):
-                <span class="equiv-text">{{ init_equiv | join(', ') }}</span>
-            </div>
-            {% endif %}
-            {% if c.has_minor %}
-              <div class="minor-msg" {% if not c.minor_only %}style="display:none"{% endif %}>
-                  &#9432;&nbsp;Minor electives are registered in a <strong>separate process before</strong>
-                  the regular registration window, and are allotted strictly on the basis of <strong>CPI</strong>
-              </div>
-            {% endif %}
-            {% if is_minor_mode %}
-            {% if c.minor_remark_warning %}
-            <div class="minor-remark-warning">
-              &#9432;&nbsp;{{ c.minor_remark_warning }}
-            </div>
-            {% elif c.minor_remark_note %}
-            <div class="minor-remark-note">
-              &#9432;&nbsp;{{ c.minor_remark_note }}
-            </div>
-            {% endif %}
-            {% if c.minor_prereq_note is defined and c.minor_prereq_note %}
-            <div class="minor-remark-warning">
-              &#9432;&nbsp;{{ c.minor_prereq_note }}
-            </div>
-            {% endif %}
-            {% endif %}
-            {% if not is_minor_mode %}
-            <div class="score">
-              <span> <strong>Semantic Score</strong>: {{ ((c.norm_rrf or 0.0) * 100) | round(1) }}%</span>
-              <span> <strong>People Score</strong>: {{ ((c.norm_ps or 0.0) * 100) | round(1) }}%</span>
-              <span> <strong>Final Score</strong>: {{ ((c.final_score or 0.0) * 100) | round(1) }}%</span>
-          </div>
-            {% endif %}
-          <!--<button class="btn-add-bucket"
-                  onclick="event.stopPropagation(); addToBucket(this)"
-                  data-code="{{ c.code }}"
-                  data-name="{{ c.name }}"
-                  data-credits="{{ c.credits | default(6) }}"
-                  data-slot-num="{{ c.divisions[c.default_idx | default(0)]['slot_num'] if c.divisions else 'N/A' }}"
-                  data-is-minor="{{ 'true' if c.minor_only else 'false' }}">
-            + Add to Bucket
-          </button> -->
-          {% if c.description %}
-          <div class="entry-desc-wrap">
-            <div class="entry-desc-divider"></div>
-            {% if c.grade_stats %}
-            <div class="grade-stats-wrap">
-              <div class="grade-stats-label">Grading Statistics</div>
-              {% set ns = namespace(max_divs=0, num_years=0) %}
-              {% for _y, _d in c.grade_stats.items() %}{% set ns.num_years = ns.num_years + 1 %}{% if _d|length > ns.max_divs %}{% set ns.max_divs = _d|length %}{% endif %}{% endfor %}
-              {% set pie_size = 200 if ns.max_divs <= 1 else (155 if ns.max_divs == 2 else (115 if ns.max_divs == 3 else 90)) %}
-              {% set ns_stack = (ns.max_divs > 2) or (ns.num_years > 1 and ns.max_divs > 1) %}
-            <div class="grade-years-row{% if ns_stack %} grade-years-col{% endif %}">
-              {% for year, divisions in c.grade_stats.items() %}
-              <div class="grade-year-block">
-                <p class="grade-year-name">{{ year }}</p>
-                <div class="grade-divs-row">
-                {% for div_data in divisions %}
-                <div class="grade-div-block" data-stat-div="{{ 'minor' if div_data.division == 'M' else ('main' if div_data.division == 'Main' else 'other') }}">
-                    <p class="grade-div-name">{% if div_data.division == 'Main' %}Elective{% elif div_data.division == 'M' %}Minor{% else %}{{ div_data.division }}{% endif %} - {{ div_data.total }} students</p>
-                    <div class="grade-chart-row">
-                        <div class="grade-chart-wrap">
-                            <canvas class="grade-pie-chart"
-                                    data-grades='{{ div_data.grades | tojson }}'
-                                    width="{{ pie_size }}" height="{{ pie_size }}"></canvas>
-                        </div>
-                        <div class="grade-pct-col">
-                            <p class="grade-pct-item">
-                            <span class="grade-pct-label">%AP</span>
-                            <span class="grade-pct-val">{{ div_data.pct_ap }}%</span>
-                            </p>
-                            <p class="grade-pct-item">
-                            <span class="grade-pct-label">%AA</span>
-                            <span class="grade-pct-val">{{ div_data.pct_aa }}%</span>
-                            </p>
-                            <p class="grade-pct-item">
-                            <span class="grade-pct-label">AA+AB</span>
-                            <span class="grade-pct-val">{{ div_data.pct_aa_ab }}%</span>
-                            </p>
-                        </div>
-                    </div>
-              </div>
-              {% endfor %}
-              </div>
-              </div>
-              {% endfor %}
-              </div>
-            </div>
-            <div class="grade-stats-divider"></div>
-            {% endif %}
-            <div class="entry-desc-label">Description</div>
-            <p class="entry-desc-text">{{ c.description }}</p>
-          </div>
-          {% endif %}
-        </div>
-        {% endfor %}
-      </div>
-      {% endif %}
-        <div id = "empty-eligible" class="empty-result" {% if eligible %}style="display:none"{% endif %}>
-          <div class="empty-title">No eligible courses found</div>
-          <div class="empty-sub">Try different interests or review your course history</div>
-        </div>
-      </div>
-      {% endif %}
-
-    <!-- ⚠️ Instructor Consent Required -->
-    {% if i_a_r %}
-    <div id="tab-content-consent" class="tab-content">
-      <div id="entries-consent">
-        {% for c in i_a_r %}
-        <div class="entry entry-consent{{ ' entry-last' if loop.last else '' }}" onclick="toggleEntry(this)"
-            data-has-minor="{{ 'true' if c.has_minor else 'false' }}"
-            data-minor-only="{{ 'true' if c.minor_only else 'false' }}"
-            data-divisions='{{ c.divisions | tojson }}'
-            data-default-idx="{{ c.default_idx | default(0) }}"
-            data-home-section="consent"
-            data-section="consent">
-        {% if c.has_minor %}{% set _dm = c.divisions[c.default_idx | default(0)]['is_minor'] if c.divisions else false %}{% endif %}
-        <div class="entry-code-row">
-          <span style="font-family: 'Source Serif 4', serif; font-size: 17px; font-weight: 600; opacity: 0.75;">{{ c.code }}</span>
-          <span class="entry-name">: {{ c.name }}</span>
-          {% if is_minor_mode and c.minor_type %}<span class="entry-minor-label">{{ c.minor_type }}</span>{% elif c.has_minor %}<span class="entry-minor-label" {% if not _dm %}style="display:none"{% endif %}>  Minor</span>{% endif %}
-          <span class="entry-chevron" style="margin-left:auto;flex-shrink:0">&#9662;</span>
-        </div>
-          {% if c.divisions | length > 1 %}
-            <div class="entry-div-wrap">
-                <select class="div-select"
-                        onclick="event.stopPropagation()"
-                        onchange="switchDivision(this)">
-                {% for d in c.divisions %}
-                <option value="{{ loop.index0 }}"
-                        data-slot-num="{{ d.slot_num or 'N/A' }}"
-                        data-instructor="{{ d.instructor }}"
-                        data-is-minor="{{ 'true' if d.is_minor else 'false' }}">
-                    {{ d.label }}{% if d.division and not d.is_minor %} &mdash; {{ d.instructor }}{% endif %}
-                </option>
-                {% endfor %}
-                </select>
-            </div>
-          {% endif %}
-          <div class="entry-meta">
-            <strong>Slot</strong>&nbsp;:&nbsp;<span class="div-slot">
-            {{- (c.slot or 'N/A') | replace('\r\n', '\n') | replace('\r', '\n') -}}
-            </span><br>
-            <strong>Instructor</strong>&nbsp;:&nbsp;<span class="div-instructor">
-            {{- (c.instructor or 'N/A') | replace('\r\n', ', ') | replace('\r', ', ') | replace('\n', ', ') -}}
-            </span>
-           {% if c.equiv is defined and (c.equiv.regular or c.equiv.minor) %}
-             {% set default_is_minor = c.divisions[c.default_idx | default(0)]['is_minor'] if c.divisions else false %}
-             {% set init_equiv = c.equiv.minor if default_is_minor else c.equiv.regular %}
-             <div class="entry-equiv-msg"
-                data-equiv-regular="{{ c.equiv.regular | join(', ') }}"
-                data-equiv-minor="{{ c.equiv.minor | join(', ') }}"
-                {% if not init_equiv %}style="display:none"{% endif %}>
-                &#9432;&nbsp;Equivalent Course(s):
-                <span class="equiv-text">{{ init_equiv | join(', ') }}</span>
-             </div>
-           {% endif %}
-            {% if c.has_minor %}
-            <div class="minor-msg" {% if not c.minor_only %}style="display:none"{% endif %}>
-                &#9432;&nbsp;Minor electives are registered in a <strong>separate process before</strong>
-                the regular registration window, and are allotted strictly on the basis of <strong>CPI</strong>
-            </div>
-            {% endif %}
-
-            {% if is_minor_mode %}
-            {% if c.minor_remark_warning %}
-            <div class="minor-remark-warning">
-              &#9432;&nbsp;{{ c.minor_remark_warning }}
-            </div>
-            {% elif c.minor_remark_note %}
-            <div class="minor-remark-note">
-              &#9432;&nbsp;{{ c.minor_remark_note }}
-            </div>
-            {% endif %}
-            {% if c.minor_prereq_note is defined and c.minor_prereq_note %}
-            <div class="minor-remark-warning">
-              &#9432;&nbsp;{{ c.minor_prereq_note }}
-            </div>
-            {% endif %}
-            {% endif %}
-              {% if c.reason %}
-                  <div class="entry-reason">&#9888; {{ c.reason }}</div>
-              {% endif %}
-            </div>
-            {% if not is_minor_mode %}
-            <div class="score">
-                <span> <strong>Semantic Score</strong>: {{ ((c.norm_rrf or 0.0) * 100) | round(1) }}%</span>
-                <span> <strong>People Score</strong>: {{ ((c.norm_ps or 0.0) * 100) | round(1) }}%</span>
-                <span> <strong>Final Score</strong>: {{ ((c.final_score or 0.0) * 100) | round(1) }}%</span>
-            </div>
-            {% endif %}
-          {% if c.description %}
-          <div class="entry-desc-wrap">
-            <div class="entry-desc-divider"></div>
-            {% if c.grade_stats %}
-            <div class="grade-stats-wrap">
-              <div class="grade-stats-label">Grading Statistics</div>
-              {% set ns = namespace(max_divs=0, num_years=0) %}
-              {% for _y, _d in c.grade_stats.items() %}{% set ns.num_years = ns.num_years + 1 %}{% if _d|length > ns.max_divs %}{% set ns.max_divs = _d|length %}{% endif %}{% endfor %}
-              {% set pie_size = 200 if ns.max_divs <= 1 else (155 if ns.max_divs == 2 else (115 if ns.max_divs == 3 else 90)) %}
-              {% set ns_stack = (ns.max_divs > 2) or (ns.num_years > 1 and ns.max_divs > 1) %}
-            <div class="grade-years-row{% if ns_stack %} grade-years-col{% endif %}">
-              {% for year, divisions in c.grade_stats.items() %}
-              <div class="grade-year-block">
-                <p class="grade-year-name">{{ year }}</p>
-                <div class="grade-divs-row">
-                {% for div_data in divisions %}
-                <div class="grade-div-block" data-stat-div="{{ 'minor' if div_data.division == 'M' else ('main' if div_data.division == 'Main' else 'other') }}">
-                    <p class="grade-div-name">{% if div_data.division == 'Main' %}Elective{% elif div_data.division == 'M' %}Minor{% else %}{{ div_data.division }}{% endif %} - {{ div_data.total }} students</p>
-                    <div class="grade-chart-row">
-                        <div class="grade-chart-wrap">
-                            <canvas class="grade-pie-chart"
-                                    data-grades='{{ div_data.grades | tojson }}'
-                                    width="{{ pie_size }}" height="{{ pie_size }}"></canvas>
-                        </div>
-                        <div class="grade-pct-col">
-                            <p class="grade-pct-item">
-                            <span class="grade-pct-label">%AP</span>
-                            <span class="grade-pct-val">{{ div_data.pct_ap }}%</span>
-                            </p>
-                            <p class="grade-pct-item">
-                            <span class="grade-pct-label">%AA</span>
-                            <span class="grade-pct-val">{{ div_data.pct_aa }}%</span>
-                            </p>
-                            <p class="grade-pct-item">
-                            <span class="grade-pct-label">AA+AB</span>
-                            <span class="grade-pct-val">{{ div_data.pct_aa_ab }}%</span>
-                            </p>
-                        </div>
-                    </div>
-              </div>
-              {% endfor %}
-              </div>
-              </div>
-              {% endfor %}
-              </div>
-            </div>
-            <div class="grade-stats-divider"></div>
-            {% endif %}
-            <div class="entry-desc-label">Description</div>
-            <p class="entry-desc-text">{{ c.description }}</p>
-          </div>
-          {% endif %}
-        </div>
-        {% endfor %}
-      </div>
-        <div id="empty-consent" class="empty-result" {% if i_a_r %}style="display:none"{% endif %}>
-          <div class="empty-title">No courses require consent</div>
-        </div>
-      </div>
-      {% endif %}
-
-    <!-- ⏱️ Time Slot Clash -->
-    {% if t_s_c %}
-    <div id="tab-content-tsc" class="tab-content">
-      <div id="entries-tsc">
-        {% for c in t_s_c %}
-        <div class="entry entry-clash{{ ' entry-last' if loop.last else '' }}" onclick="toggleEntry(this)"
-            data-has-minor="{{ 'true' if c.has_minor else 'false' }}"
-            data-minor-only="{{ 'true' if c.minor_only else 'false' }}"
-            data-divisions='{{ c.divisions | tojson }}'
-            data-default-idx="{{ c.default_idx | default(0) }}"
-            data-section="tsc">
-        {% if c.has_minor %}{% set _dm = c.divisions[c.default_idx | default(0)]['is_minor'] if c.divisions else false %}{% endif %}
-        <div class="entry-code-row">
-          <span style="font-family: 'Source Serif 4', serif; font-size: 17px; font-weight: 600; opacity: 0.75;">{{ c.code }}</span>
-          <span class="entry-name">: {{ c.name }}</span>
-          {% if is_minor_mode and c.minor_type %}<span class="entry-minor-label">{{ c.minor_type }}</span>{% elif c.has_minor %}<span class="entry-minor-label" {% if not _dm %}style="display:none"{% endif %}>  Minor</span>{% endif %}
-          <span class="entry-chevron" style="margin-left:auto;flex-shrink:0">&#9662;</span>
-        </div>
-        {% if c.divisions | length > 1 %}
-            <div class="entry-div-wrap">
-                <select class="div-select"
-                        onclick="event.stopPropagation()"
-                        onchange="switchDivision(this)">
-                {% for d in c.divisions %}
-                <option value="{{ loop.index0 }}"
-                        data-slot-num="{{ d.slot_num or 'N/A' }}"
-                        data-instructor="{{ d.instructor }}"
-                        data-is-minor="{{ 'true' if d.is_minor else 'false' }}">
-                    {{ d.label }}{% if d.division and not d.is_minor %} &mdash; {{ d.instructor }}{% endif %}
-                </option>
-                {% endfor %}
-                </select>
-            </div>
-        {% endif %}
-        <div class="entry-meta">
-            <strong>Slot</strong>&nbsp;:&nbsp;<span class="div-slot">
-            {{- (c.slot or 'N/A') | replace('\r\n', '\n') | replace('\r', '\n') -}}
-            </span><br>
-            <strong>Instructor</strong>&nbsp;:&nbsp;<span class="div-instructor">
-            {{- (c.instructor or 'N/A') | replace('\r\n', ', ') | replace('\r', ', ') | replace('\n', ', ') -}}
-            </span>
-        </div>
-        {% if c.equiv is defined and (c.equiv.regular or c.equiv.minor) %}
-            {% set default_is_minor = c.divisions[c.default_idx | default(0)]['is_minor'] if c.divisions else false %}
-            {% set init_equiv = c.equiv.minor if default_is_minor else c.equiv.regular %}
-            <div class="entry-equiv-msg"
-                data-equiv-regular="{{ c.equiv.regular | join(', ') }}"
-                data-equiv-minor="{{ c.equiv.minor | join(', ') }}"
-                {% if not init_equiv %}style="display:none"{% endif %}>
-                &#9432;&nbsp;Equivalent Course(s):
-                <span class="equiv-text">{{ init_equiv | join(', ') }}</span>
-            </div>
-        {% endif %}
-        {% if c.has_minor %}
-        <div class="minor-msg" {% if not c.minor_only %}style="display:none"{% endif %}>
-            &#9432;&nbsp;Minor electives are registered in a <strong>separate process before</strong>
-            the regular registration window, and are allotted strictly on the basis of <strong>CPI</strong>
-        </div>
-        {% endif %}
-        {% if is_minor_mode %}
-          {% if c.minor_remark_warning %}
-          <div class="minor-remark-warning">
-            &#9432;&nbsp;{{ c.minor_remark_warning }}
-          </div>
-          {% elif c.minor_remark_note %}
-          <div class="minor-remark-note">
-            &#9432;&nbsp;{{ c.minor_remark_note }}
-          </div>
-          {% endif %}
-          {% endif %}
-        <div class="entry-clash-msg">
-            &#9203;&nbsp;Time slot clashes with 
-            <span class="clash-courses">{{ c.clashing_with | join(', ') }}</span>
-        </div>
-          {% if not is_minor_mode %}
-        <div class="score">
-              <span class="score"> <strong>Semantic Score</strong>: {{ ((c.norm_rrf or 0.0) * 100) | round(1) }}%</span>
-              <span class="score"> <strong>People Score</strong>: {{ ((c.norm_ps or 0.0) * 100) | round(1) }}%</span>
-              <span class ="score"> <strong>Final Score</strong>: {{ ((c.final_score or 0.0) * 100) | round(1) }}%</span>
-          </div>
-          {% endif %}
-        {% if c.description %}
-        <div class="entry-desc-wrap">
-            <div class="entry-desc-divider"></div>
-            {% if c.grade_stats %}
-            <div class="grade-stats-wrap">
-              <div class="grade-stats-label">Grading Statistics</div>
-              {% set ns = namespace(max_divs=0, num_years=0) %}
-              {% for _y, _d in c.grade_stats.items() %}{% set ns.num_years = ns.num_years + 1 %}{% if _d|length > ns.max_divs %}{% set ns.max_divs = _d|length %}{% endif %}{% endfor %}
-              {% set pie_size = 200 if ns.max_divs <= 1 else (155 if ns.max_divs == 2 else (115 if ns.max_divs == 3 else 90)) %}
-              {% set ns_stack = (ns.max_divs > 2) or (ns.num_years > 1 and ns.max_divs > 1) %}
-            <div class="grade-years-row{% if ns_stack %} grade-years-col{% endif %}">
-              {% for year, divisions in c.grade_stats.items() %}
-              <div class="grade-year-block">
-                <p class="grade-year-name">{{ year }}</p>
-                <div class="grade-divs-row">
-                {% for div_data in divisions %}
-                <div class="grade-div-block" data-stat-div="{{ 'minor' if div_data.division == 'M' else ('main' if div_data.division == 'Main' else 'other') }}">
-                    <p class="grade-div-name">{% if div_data.division == 'Main' %}Elective{% elif div_data.division == 'M' %}Minor{% else %}{{ div_data.division }}{% endif %} - {{ div_data.total }} students</p>
-                    <div class="grade-chart-row">
-                        <div class="grade-chart-wrap">
-                            <canvas class="grade-pie-chart"
-                                    data-grades='{{ div_data.grades | tojson }}'
-                                    width="{{ pie_size }}" height="{{ pie_size }}"></canvas>
-                        </div>
-                        <div class="grade-pct-col">
-                            <p class="grade-pct-item">
-                            <span class="grade-pct-label">%AP</span>
-                            <span class="grade-pct-val">{{ div_data.pct_ap }}%</span>
-                            </p>
-                            <p class="grade-pct-item">
-                            <span class="grade-pct-label">%AA</span>
-                            <span class="grade-pct-val">{{ div_data.pct_aa }}%</span>
-                            </p>
-                            <p class="grade-pct-item">
-                            <span class="grade-pct-label">AA+AB</span>
-                            <span class="grade-pct-val">{{ div_data.pct_aa_ab }}%</span>
-                            </p>
-                        </div>
-                    </div>
-              </div>
-              {% endfor %}
-              </div>
-              </div>
-              {% endfor %}
-              </div>
-            </div>
-            <div class="grade-stats-divider"></div>
-            {% endif %}
-            <div class="entry-desc-label">Description</div>
-            <p class="entry-desc-text">{{ c.description }}</p>
-        </div>
-        {% endif %}
-        </div>
-        {% endfor %}
-    </div>
-        <div id="empty-tsc" class="empty-result" {% if t_s_c %}style="display:none"{% endif %}>
-        <div class="empty-title">No slot conflicts found</div>
-        </div>    
-      </div>
-      {% endif %}
- 
-    <!-- ❌ Not Eligible -->
-    {% if rejected %}
-    <div id="tab-content-rejected" class="tab-content">
-      <div id="entries-rejected">
-        {% for c in rejected %}
-        <div class="entry entry-no{{ ' entry-last' if loop.last else '' }}" onclick="toggleEntry(this)"
-            data-has-minor="{{ 'true' if c.has_minor else 'false' }}"
-            data-minor-only="{{ 'true' if c.minor_only else 'false' }}"
-            data-divisions='{{ c.divisions | tojson }}'
-            data-default-idx="{{ c.default_idx | default(0) }}"
-            data-section="rejected">
-           {% if c.has_minor %}{% set _dm = c.divisions[c.default_idx | default(0)]['is_minor'] if c.divisions else false %}{% endif %}
-        <div class="entry-code-row">
-          <span style="font-family: 'Source Serif 4', serif; font-size: 17px; font-weight: 600; opacity: 0.75;">{{ c.code }}</span>
-          <span class="entry-name">: {{ c.name }}</span>
-          {% if is_minor_mode and c.minor_type %}<span class="entry-minor-label">{{ c.minor_type }}</span>{% elif c.has_minor %}<span class="entry-minor-label" {% if not _dm %}style="display:none"{% endif %}>  Minor</span>{% endif %}
-          <span class="entry-chevron" style="margin-left:auto;flex-shrink:0">&#9662;</span>
-        </div>
-          {% if c.divisions | length > 1 %}
-            <div class="entry-div-wrap">
-                <select class="div-select"
-                        onclick="event.stopPropagation()"
-                        onchange="switchDivision(this)">
-                {% for d in c.divisions %}
-                <option value="{{ loop.index0 }}"
-                        data-slot-num="{{ d.slot_num or 'N/A' }}"
-                        data-instructor="{{ d.instructor }}"
-                        data-is-minor="{{ 'true' if d.is_minor else 'false' }}">
-                    {{ d.label }}{% if d.division and not d.is_minor %} &mdash; {{ d.instructor }}{% endif %}
-                </option>
-                {% endfor %}
-                </select>
-            </div>
-          {% endif %}
-          <div class="entry-meta">
-            <strong>Slot</strong>&nbsp;:&nbsp;<span class="div-slot">
-            {{- (c.slot or 'N/A') | replace('\r\n', '\n') | replace('\r', '\n') -}}
-            </span><br>
-            <strong>Instructor</strong>&nbsp;:&nbsp;<span class="div-instructor">
-            {{- (c.instructor or 'N/A') | replace('\r\n', ', ') | replace('\r', ', ') | replace('\n', ', ') -}}
-            </span>
-          </div>
-          {% if c.equiv is defined and (c.equiv.regular or c.equiv.minor) %}
-            {% set default_is_minor = c.divisions[c.default_idx | default(0)]['is_minor'] if c.divisions else false %}
-            {% set init_equiv = c.equiv.minor if default_is_minor else c.equiv.regular %}
-            <div class="entry-equiv-msg"
-                data-equiv-regular="{{ c.equiv.regular | join(', ') }}"
-                data-equiv-minor="{{ c.equiv.minor | join(', ') }}"
-                {% if not init_equiv %}style="display:none"{% endif %}>
-                &#9432;&nbsp;Equivalent Course(s):
-                <span class="equiv-text">{{ init_equiv | join(', ') }}</span>
-            </div>
-          {% endif %}
-          {% if c.has_minor %}
-            <div class="minor-msg" {% if not c.minor_only %}style="display:none"{% endif %}>
-                &#9432;&nbsp;Minor electives are registered in a <strong>separate process before</strong>
-                the regular registration window, and are allotted strictly on the basis of <strong>CPI</strong>
-            </div>
-          {% endif %}
-
-          {% if is_minor_mode %}
-          {% if c.minor_remark_warning %}
-          <div class="minor-remark-warning">
-            &#9432;&nbsp;{{ c.minor_remark_warning }}
-          </div>
-          {% elif c.minor_remark_note %}
-          <div class="minor-remark-note">
-            &#9432;&nbsp;{{ c.minor_remark_note }}
-          </div>
-          {% endif %}
-          {% if c.minor_prereq_note is defined and c.minor_prereq_note %}
-          <div class="minor-remark-warning">
-            &#9432;&nbsp;{{ c.minor_prereq_note }}
-          </div>
-          {% endif %}
-          {% endif %}
-          <div class="entry-reason">&#9888; {{ c.reason }}</div>
-          {% if not is_minor_mode %}
-          <div class="score">
-              <span class="score"><strong> Semantic Score</strong>: {{ ((c.norm_rrf or 0.0) * 100) | round(1) }}%</span>
-              <span class="score"> <strong>People Score</strong>: {{ ((c.norm_ps or 0.0) * 100) | round(1) }}%</span>
-              <span class ="score"> <strong>Final Score</strong>: {{ ((c.final_score or 0.0) * 100) | round(1) }}%</span>
-          </div>
-          {% endif %}
-          {% if c.description %}
-          <div class="entry-desc-wrap">
-            <div class="entry-desc-divider"></div>
-            {% if c.grade_stats %}
-            <div class="grade-stats-wrap">
-              <div class="grade-stats-label">Grading Statistics</div>
-              {% set ns = namespace(max_divs=0, num_years=0) %}
-              {% for _y, _d in c.grade_stats.items() %}{% set ns.num_years = ns.num_years + 1 %}{% if _d|length > ns.max_divs %}{% set ns.max_divs = _d|length %}{% endif %}{% endfor %}
-              {% set pie_size = 200 if ns.max_divs <= 1 else (155 if ns.max_divs == 2 else (115 if ns.max_divs == 3 else 90)) %}
-              {% set ns_stack = (ns.max_divs > 2) or (ns.num_years > 1 and ns.max_divs > 1) %}
-            <div class="grade-years-row{% if ns_stack %} grade-years-col{% endif %}">
-              {% for year, divisions in c.grade_stats.items() %}
-              <div class="grade-year-block">
-                <p class="grade-year-name">{{ year }}</p>
-                <div class="grade-divs-row">
-                {% for div_data in divisions %}
-                <div class="grade-div-block" data-stat-div="{{ 'minor' if div_data.division == 'M' else ('main' if div_data.division == 'Main' else 'other') }}">
-                    <p class="grade-div-name">{% if div_data.division == 'Main' %}Elective{% elif div_data.division == 'M' %}Minor{% else %}{{ div_data.division }}{% endif %} - {{ div_data.total }} students</p>
-                    <div class="grade-chart-row">
-                        <div class="grade-chart-wrap">
-                            <canvas class="grade-pie-chart"
-                                    data-grades='{{ div_data.grades | tojson }}'
-                                    width="{{ pie_size }}" height="{{ pie_size }}"></canvas>
-                        </div>
-                        <div class="grade-pct-col">
-                            <p class="grade-pct-item">
-                            <span class="grade-pct-label">%AP</span>
-                            <span class="grade-pct-val">{{ div_data.pct_ap }}%</span>
-                            </p>
-                            <p class="grade-pct-item">
-                            <span class="grade-pct-label">%AA</span>
-                            <span class="grade-pct-val">{{ div_data.pct_aa }}%</span>
-                            </p>
-                            <p class="grade-pct-item">
-                            <span class="grade-pct-label">AA+AB</span>
-                            <span class="grade-pct-val">{{ div_data.pct_aa_ab }}%</span>
-                            </p>
-                        </div>
-                    </div>
-              </div>
-              {% endfor %}
-              </div>
-              </div>
-              {% endfor %}
-              </div>
-            </div>
-            <div class="grade-stats-divider"></div>
-            {% endif %}
-            <div class="entry-desc-label">Description</div>
-            <p class="entry-desc-text">{{ c.description }}</p>
-          </div>
-          {% endif %}
-        </div>
-        {% endfor %}
-      </div>
-        <div id="empty-rejected" class="empty-result" {% if rejected %}style="display:none"{% endif %}>
-          <div class="empty-title">All courses are eligible</div>
-        </div>      
-    </div>
-    {% endif %}
-  </div><!-- /results-grid -->
- 
-  <!-- ── Feedback ──────────────────────────────────────────────── -->
-   {% if otp_verified and eligible is not none %}
-    <div class="feedback-section fade-up" id="feedback-section">
-      <header class="feedback-header">
-        <h2>Share Your Experience</h2>
-      </header>
+    <!-- Feedback -->
+    <div class="feedback-section fade-up" id="feedback-section" style="display:none">
+      <header class="feedback-header"><h2>Share Your Experience</h2></header>
       <div class="divider-dash"></div>
-
-      <form method="POST" action="/feedback" id="feedback-form">
-        <div class="star-rating-wrap">
-          <p class="star-label">Rate your experience</p>
-          <div class="star-row" id="star-row">
-            <span class="star" data-value="1">&#9733;</span>
-            <span class="star" data-value="2">&#9733;</span>
-            <span class="star" data-value="3">&#9733;</span>
-            <span class="star" data-value="4">&#9733;</span>
-            <span class="star" data-value="5">&#9733;</span>
-          </div>
-          <input type="hidden" name="rating" id="rating-input" value="">
+      <div class="star-rating-wrap">
+        <p class="star-label">Rate your experience</p>
+        <div class="star-row" id="star-row">
+          <span class="star" data-value="1">&#9733;</span>
+          <span class="star" data-value="2">&#9733;</span>
+          <span class="star" data-value="3">&#9733;</span>
+          <span class="star" data-value="4">&#9733;</span>
+          <span class="star" data-value="5">&#9733;</span>
         </div>
-        <div class="field field-full" style="margin-top:16px">
-          <textarea name="feedback_text" id="feedback_text" placeholder=" "></textarea>
-          <label for="feedback_text">Describe your experience</label>
-        </div>
-        <button type="submit" class="btn-primary" id="feedback-submit" disabled>
-          <span class="btn-label">Submit Feedback &rarr;</span>
-        </button>
-      </form>
+        <input type="hidden" id="rating-input" value="">
+      </div>
+      <div class="field field-full" style="margin-top:16px">
+        <textarea id="feedback_text" placeholder=" "></textarea>
+        <label for="feedback_text">Describe your experience</label>
+      </div>
+      <button class="btn-primary" id="feedback-submit" disabled onclick="doFeedback()">
+        <span class="btn-label">Submit Feedback &rarr;</span>
+        <span class="btn-loading" hidden>Submitting&hellip;</span>
+      </button>
     </div>
-  {% endif %}
- 
+
+  </div><!-- /section-results -->
+
 </main><!-- /content -->
 
 <!-- Footer -->
-<footer style="text-align:center; padding:24px;
-               font-family:var(--font-body); font-size:14px; color:var(--tp);
-               border-top:1px solid var(--bc)">
+<footer style="text-align:center;padding:24px;font-family:var(--font-body);font-size:14px;color:var(--tp);border-top:1px solid var(--bc)">
   &copy; 2026 DAV Team &nbsp;|&nbsp; UGAC, IIT Bombay
-  <br>  
-  <span style="font-size: 14px; color:var(--tp); opacity:0.65;">
+  <br>
+  <span style="font-size:14px;color:var(--tp);opacity:0.65;">
     All course-related information is sourced from the
-    <a href="https://asc.iitb.ac.in"
-       target="_blank"
-       style="color:inherit; text-decoration:underline; text-underline-offset:2px;">
+    <a href="https://asc.iitb.ac.in" target="_blank" style="color:inherit;text-decoration:underline;text-underline-offset:2px;">
       Internal ASC Portal
     </a>
   </span>
 </footer>
- 
+
 <!-- ═══════════════════════════════════════════════ SCRIPTS ══ -->
-<script>  
-/* ── Select floating-label helper ──────────────────────────────
- *  Native <select> can't use :placeholder-shown, so JS adds
- *  .has-value when a non-empty value is chosen.
- * ─────────────────────────────────────────────────────────────── */
+<script>
+
+/* ── CONFIG ─────────────────────────────────────────────────────
+   Set this to your Render backend URL.
+   During local dev you can override via:  localStorage.setItem('API_BASE','http://localhost:5000')
+──────────────────────────────────────────────────────────────── */
+const API_BASE = localStorage.getItem('API_BASE') || 'https://course-recommender-backend.onrender.com';
+
+/* ── Pending recommend args (for manual-history retry) ───────── */
+let _pendingRecommendArgs = null;
+
+/* ── api() helper ───────────────────────────────────────────────
+   Wraps fetch with credentials:include (needed for session cookies
+   to travel cross-origin to Render).
+──────────────────────────────────────────────────────────────── */
+async function api(path, body) {
+  const res = await fetch(API_BASE + path, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+
+/* ── Toast ──────────────────────────────────────────────────── */
+function showToast(msg, type='success') {
+  const stack = document.getElementById('toast-stack');
+  const t = document.createElement('div');
+  t.className = 'toast ' + (type === 'success' ? 'toast-success' : 'toast-error');
+  t.textContent = msg;
+  stack.appendChild(t);
+  setTimeout(() => { t.classList.add('toast-hide'); setTimeout(() => t.remove(), 400); }, 4000);
+}
+
+/* ── Section visibility ─────────────────────────────────────── */
+function showOnly(id) {
+  ['section-send-otp','section-verify-otp','section-profile','section-manual-history','section-results']
+    .forEach(s => {
+      const el = document.getElementById(s);
+      if (el) el.style.display = (s === id) ? '' : 'none';
+    });
+}
+
+function setLoading(btn, loading) {
+  const lbl  = btn.querySelector('.btn-label');
+  const spin = btn.querySelector('.btn-loading');
+  if (lbl)  lbl.hidden  = loading;
+  if (spin) spin.hidden = !loading;
+  btn.disabled = loading;
+}
+
+/* ── STEP 1: Send OTP ───────────────────────────────────────── */
+async function doSendOtp() {
+  const studentId = document.getElementById('student_id_otp').value.trim().toLowerCase();
+  const errEl = document.getElementById('send-otp-error');
+  errEl.style.display = 'none';
+  const btn = document.getElementById('send-otp-btn');
+  setLoading(btn, true);
+  try {
+    const data = await api('/api/send-otp', { student_id: studentId });
+    document.getElementById('otp-sent-msg').innerHTML =
+      `An OTP has been sent to <strong>${data.email}</strong>. Valid for 10 minutes.`;
+    showOnly('section-verify-otp');
+  } catch(e) {
+    errEl.textContent = '⚠ ' + e.message;
+    errEl.style.display = '';
+    setLoading(btn, false);
+  }
+}
+
+/* ── STEP 2: Verify OTP ─────────────────────────────────────── */
+async function doVerifyOtp() {
+  const otpInput = document.getElementById('otp_input').value.trim();
+  const errEl = document.getElementById('verify-otp-error');
+  errEl.style.display = 'none';
+  const btn = document.getElementById('verify-otp-btn');
+  setLoading(btn, true);
+  try {
+    const data = await api('/api/verify-otp', { otp_input: otpInput });
+    // Pre-fill degree/year from student_id
+    if (data.default_degree) {
+      const sel = document.getElementById('degree');
+      for (let opt of sel.options) { if (opt.value === data.default_degree) { sel.value = data.default_degree; break; } }
+      sel.classList.toggle('has-value', !!sel.value);
+    }
+    if (data.default_year) {
+      const sel = document.getElementById('year');
+      for (let opt of sel.options) { if (opt.value === data.default_year) { sel.value = data.default_year; break; } }
+      sel.classList.toggle('has-value', !!sel.value);
+    }
+    document.getElementById('profile-id-label').textContent = 'Student Profile: ' + data.student_id;
+    showOnly('section-profile');
+  } catch(e) {
+    errEl.textContent = '⚠ ' + e.message;
+    errEl.style.display = '';
+    setLoading(btn, false);
+  }
+}
+
+/* ── Weight preset helper ────────────────────────────────────── */
+function getWeights() {
+  const preset = (document.querySelector('input[name="weight_preset"]:checked') || {}).value || 'semantic';
+  if (preset === 'people')  return { w_rrf: 0.0, w_ps: 1.0 };
+  if (preset === 'hybrid')  return { w_rrf: 0.5, w_ps: 0.5 };
+  return { w_rrf: 1.0, w_ps: 0.0 };
+}
+
+/* ── STEP 3a: Generate recommendations ──────────────────────── */
+async function doRecommend() {
+  const degree     = document.getElementById('degree').value;
+  const year       = document.getElementById('year').value;
+  const department = document.getElementById('department').value;
+  const interest   = document.getElementById('interest').value.trim();
+
+  if (!degree || !year || !department) {
+    showToast('Please select Degree, Batch Year, and Department before generating recommendations.', 'error');
+    return;
+  }
+
+  const { w_rrf, w_ps } = getWeights();
+  _pendingRecommendArgs = { degree, year, department, interest, w_rrf, w_ps, manual_history: '' };
+
+  const btn = document.getElementById('submit-btn');
+  setLoading(btn, true);
+  try {
+    const data = await api('/api/recommend', _pendingRecommendArgs);
+    if (data.need_manual_history) {
+      showOnly('section-manual-history');
+      setLoading(btn, false);
+      return;
+    }
+    renderResults(data);
+    setLoading(btn, false);
+  } catch(e) {
+    showToast(e.message, 'error');
+    setLoading(btn, false);
+  }
+}
+
+/* ── STEP 3b: Re-run with manual course history ─────────────── */
+async function doRecommendWithManualHistory() {
+  if (!_pendingRecommendArgs) return;
+  const manual = document.getElementById('manual_history').value.trim();
+  const body = { ..._pendingRecommendArgs, manual_history: manual };
+  try {
+    const data = await api('/api/recommend', body);
+    renderResults(data);
+  } catch(e) {
+    showToast(e.message, 'error');
+  }
+}
+
+/* ── Feedback ────────────────────────────────────────────────── */
+async function doFeedback() {
+  const rating = document.getElementById('rating-input').value;
+  const text   = document.getElementById('feedback_text').value.trim();
+  if (!rating) { showToast('Please select a star rating.', 'error'); return; }
+  const btn = document.getElementById('feedback-submit');
+  setLoading(btn, true);
+  try {
+    await api('/api/feedback', { rating, feedback_text: text });
+    showToast('Thank you for your feedback!', 'success');
+    setLoading(btn, false);
+    btn.disabled = true;
+  } catch(e) {
+    showToast('Could not save feedback: ' + e.message, 'error');
+    setLoading(btn, false);
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   RENDER RESULTS  —  replaces all the Jinja result templates
+   ════════════════════════════════════════════════════════════ */
+
+function renderResults(data) {
+  const { eligible, i_a_r, t_s_c, rejected,
+          query_fallback, is_minor_mode } = data;
+
+  /* fallback alert */
+  document.getElementById('fallback-alert').style.display = query_fallback ? '' : 'none';
+
+  /* build tabs */
+  const tabsCon = document.getElementById('tabs-container');
+  tabsCon.innerHTML = '';
+  const sections = [
+    { key: 'eligible', label: 'Eligible',                       list: eligible },
+    { key: 'consent',  label: 'Instructor Consent Required',    list: i_a_r   },
+    { key: 'tsc',      label: 'Time Slot Clash',                list: t_s_c   },
+    { key: 'rejected', label: 'Not Eligible',                   list: rejected },
+  ].filter(s => s.list && s.list.length > 0);
+
+  sections.forEach((s, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'tab-btn' + (i === 0 ? ' active' : '');
+    btn.id = 'tab-btn-' + s.key;
+    btn.onclick = () => switchTab(s.key);
+    btn.innerHTML = `${s.label} <span id="badge-${s.key}" class="badge-count">(${s.list.length})</span>`;
+    tabsCon.appendChild(btn);
+  });
+
+  /* build grid */
+  const grid = document.getElementById('results-grid');
+  grid.innerHTML = '';
+
+  sections.forEach((s, i) => {
+    const div = document.createElement('div');
+    div.id = 'tab-content-' + s.key;
+    div.className = 'tab-content' + (i === 0 ? ' active' : '');
+
+    const inner = document.createElement('div');
+    inner.id = 'entries-' + s.key;
+    s.list.forEach((c, idx) => {
+      inner.appendChild(buildEntry(c, s.key, is_minor_mode, idx === s.list.length - 1));
+    });
+    div.appendChild(inner);
+
+    const empty = document.createElement('div');
+    empty.id = 'empty-' + s.key;
+    empty.className = 'empty-result';
+    empty.style.display = s.list.length ? 'none' : '';
+    empty.innerHTML = emptyMsg(s.key);
+    div.appendChild(empty);
+
+    grid.appendChild(div);
+  });
+
+  /* show the results section */
+  document.getElementById('section-profile').style.display = '';
+  document.getElementById('section-manual-history').style.display = 'none';
+  document.getElementById('section-results').style.display = '';
+  document.getElementById('feedback-section').style.display = '';
+
+  /* re-init selects */
+  initSelects();
+}
+
+function emptyMsg(key) {
+  if (key === 'eligible')  return '<div class="empty-title">No eligible courses found</div><div class="empty-sub">Try different interests or review your course history</div>';
+  if (key === 'consent')   return '<div class="empty-title">No courses require consent</div>';
+  if (key === 'tsc')       return '<div class="empty-title">No slot conflicts found</div>';
+  if (key === 'rejected')  return '<div class="empty-title">All courses are eligible</div>';
+  return '';
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function cleanSlot(s)       { return String(s||'N/A').replace(/\r\n|\r/g,'\n'); }
+function cleanInstructor(s) { return String(s||'N/A').replace(/\r\n|\r|\n/g,', '); }
+
+function buildEntry(c, section, isMinorMode, isLast) {
+  const el = document.createElement('div');
+
+  /* entry class */
+  let cls = 'entry ';
+  if (section === 'eligible') cls += 'entry-ok';
+  else if (section === 'consent')  cls += 'entry-consent';
+  else if (section === 'tsc')      cls += 'entry-clash';
+  else                             cls += 'entry-no';
+  if (isLast) cls += ' entry-last';
+  el.className = cls;
+  el.onclick = () => toggleEntry(el);
+
+  /* data attributes */
+  el.dataset.divisions   = JSON.stringify(c.divisions || []);
+  el.dataset.defaultIdx  = c.default_idx || 0;
+  el.dataset.hasMinor    = c.has_minor ? 'true' : 'false';
+  el.dataset.minorOnly   = c.minor_only ? 'true' : 'false';
+  el.dataset.section     = section;
+  el.dataset.homeSection = section;
+  if (section === 'eligible') {
+    el.dataset.code    = c.code;
+    el.dataset.name    = c.name;
+    el.dataset.credits = c.credits || 6;
+    const defDiv = (c.divisions || [])[c.default_idx || 0] || {};
+    el.dataset.slotNum  = defDiv.slot_num || 'N/A';
+    el.dataset.isMinor  = c.minor_only ? 'true' : 'false';
+  }
+
+  const defDivObj = (c.divisions || [])[c.default_idx || 0] || {};
+  const defIsMinor = !!defDivObj.is_minor;
+
+  /* ── minor label ── */
+  const minorLabelHtml = (isMinorMode && c.minor_type)
+    ? `<span class="entry-minor-label">${esc(c.minor_type)}</span>`
+    : (c.has_minor
+        ? `<span class="entry-minor-label" ${!defIsMinor ? 'style="display:none"' : ''}>  Minor</span>`
+        : '');
+
+  /* ── code row ── */
+  let html = `
+    <div class="entry-code-row">
+      <span style="font-family:'Source Serif 4',serif;font-size:17px;font-weight:600;opacity:0.75;">${esc(c.code)}</span>
+      <span class="entry-name">: ${esc(c.name)}</span>
+      ${minorLabelHtml}
+      <span class="entry-chevron" style="margin-left:auto;flex-shrink:0">&#9662;</span>
+    </div>`;
+
+  /* ── division dropdown ── */
+  if ((c.divisions || []).length > 1) {
+    html += `<div class="entry-div-wrap"><select class="div-select" onclick="event.stopPropagation()" onchange="switchDivision(this)">`;
+    (c.divisions || []).forEach((d, i) => {
+      const instrSuffix = (d.division && !d.is_minor) ? ` — ${esc(d.instructor)}` : '';
+      html += `<option value="${i}" data-slot-num="${esc(d.slot_num||'N/A')}" data-instructor="${esc(d.instructor)}" data-is-minor="${d.is_minor?'true':'false'}">${esc(d.label)}${instrSuffix}</option>`;
+    });
+    html += `</select></div>`;
+  }
+
+  /* ── meta ── */
+  html += `<div class="entry-meta">
+    <strong>Slot</strong>&nbsp;:&nbsp;<span class="div-slot">${esc(cleanSlot(c.slot))}</span><br>
+    <strong>Instructor</strong>&nbsp;:&nbsp;<span class="div-instructor">${esc(cleanInstructor(c.instructor))}</span>
+  </div>`;
+
+  /* ── equiv ── */
+  if (c.equiv && (c.equiv.regular || c.equiv.minor)) {
+    const initEquiv = defIsMinor ? (c.equiv.minor||[]) : (c.equiv.regular||[]);
+    const show = initEquiv.length > 0;
+    html += `<div class="entry-equiv-msg"
+      data-equiv-regular="${esc((c.equiv.regular||[]).join(', '))}"
+      data-equiv-minor="${esc((c.equiv.minor||[]).join(', '))}"
+      ${!show ? 'style="display:none"' : ''}>
+      &#9432;&nbsp;Equivalent Course(s): <span class="equiv-text">${esc(initEquiv.join(', '))}</span>
+    </div>`;
+  }
+
+  /* ── minor-only registration note ── */
+  if (c.has_minor) {
+    html += `<div class="minor-msg" ${!c.minor_only ? 'style="display:none"' : ''}>
+      &#9432;&nbsp;Minor electives are registered in a <strong>separate process before</strong>
+      the regular registration window, and are allotted strictly on the basis of <strong>CPI</strong>
+    </div>`;
+  }
+
+  /* ── minor mode remarks ── */
+  if (isMinorMode) {
+    if (c.minor_remark_warning) {
+      html += `<div class="minor-remark-warning">&#9432;&nbsp;${esc(c.minor_remark_warning)}</div>`;
+    } else if (c.minor_remark_note) {
+      html += `<div class="minor-remark-note">&#9432;&nbsp;${esc(c.minor_remark_note)}</div>`;
+    }
+    if (c.minor_prereq_note) {
+      html += `<div class="minor-remark-warning">&#9432;&nbsp;${esc(c.minor_prereq_note)}</div>`;
+    }
+  }
+
+  /* ── eligibility reason ── */
+  if (c.reason) {
+    html += `<div class="entry-reason">&#9888; ${esc(c.reason)}</div>`;
+  }
+
+  /* ── tsc clash msg ── */
+  if (section === 'tsc' && c.clashing_with) {
+    html += `<div class="entry-clash-msg">&#9203;&nbsp;Time slot clashes with <span class="clash-courses">${esc((c.clashing_with||[]).join(', '))}</span></div>`;
+  }
+
+  /* ── scores (non-minor-mode only) ── */
+  if (!isMinorMode) {
+    html += `<div class="score">
+      <span><strong>Semantic Score</strong>: ${((c.norm_rrf||0)*100).toFixed(1)}%</span>
+      <span><strong>People Score</strong>: ${((c.norm_ps||0)*100).toFixed(1)}%</span>
+      <span><strong>Final Score</strong>: ${((c.final_score||0)*100).toFixed(1)}%</span>
+    </div>`;
+  }
+
+  /* ── description + grade stats ── */
+  if (c.description) {
+    html += `<div class="entry-desc-wrap"><div class="entry-desc-divider"></div>`;
+    if (c.grade_stats) {
+      html += buildGradeStats(c.grade_stats);
+    }
+    html += `<div class="entry-desc-label">Description</div><p class="entry-desc-text">${esc(c.description)}</p></div>`;
+  }
+
+  el.innerHTML = html;
+  return el;
+}
+
+function buildGradeStats(gradeStats) {
+  const years    = Object.keys(gradeStats);
+  const maxDivs  = Math.max(...years.map(y => gradeStats[y].length));
+  const numYears = years.length;
+  const pieSize  = maxDivs <= 1 ? 200 : (maxDivs === 2 ? 155 : (maxDivs === 3 ? 115 : 90));
+  const stack    = (maxDivs > 2) || (numYears > 1 && maxDivs > 1);
+
+  let html = `<div class="grade-stats-wrap"><div class="grade-stats-label">Grading Statistics</div>
+    <div class="grade-years-row${stack ? ' grade-years-col' : ''}">`;
+
+  years.forEach(yr => {
+    html += `<div class="grade-year-block"><p class="grade-year-name">${esc(yr)}</p><div class="grade-divs-row">`;
+    gradeStats[yr].forEach(d => {
+      const statDiv = d.division === 'M' ? 'minor' : (d.division === 'Main' ? 'main' : 'other');
+      const divLabel = d.division === 'Main' ? 'Elective' : (d.division === 'M' ? 'Minor' : d.division);
+      html += `<div class="grade-div-block" data-stat-div="${statDiv}">
+        <p class="grade-div-name">${esc(divLabel)} - ${d.total} students</p>
+        <div class="grade-chart-row">
+          <div class="grade-chart-wrap">
+            <canvas class="grade-pie-chart" data-grades='${JSON.stringify(d.grades)}' width="${pieSize}" height="${pieSize}"></canvas>
+          </div>
+          <div class="grade-pct-col">
+            <p class="grade-pct-item"><span class="grade-pct-label">%AP</span><span class="grade-pct-val">${d.pct_ap}%</span></p>
+            <p class="grade-pct-item"><span class="grade-pct-label">%AA</span><span class="grade-pct-val">${d.pct_aa}%</span></p>
+            <p class="grade-pct-item"><span class="grade-pct-label">AA+AB</span><span class="grade-pct-val">${d.pct_aa_ab}%</span></p>
+          </div>
+        </div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  });
+
+  html += `</div></div><div class="grade-stats-divider"></div>`;
+  return html;
+}
+
+/* ════════════════════════════════════════════════════════════
+   EXISTING JS  —  unchanged from original (no Jinja references)
+   ════════════════════════════════════════════════════════════ */
+
 function initSelects() {
-  document.querySelectorAll('.field select').forEach(function (sel) {
+  document.querySelectorAll('.field select').forEach(function(sel) {
     function upd() { sel.classList.toggle('has-value', !!sel.value); }
     sel.addEventListener('change', upd);
     upd();
   });
 }
 
-/* ── Entry expand / collapse ───────────────────────────────────────
- * Toggling .expanded on the entry div is enough; CSS handles the
- * chevron rotation and max-height reveal of .entry-desc-wrap.
- * ─────────────────────────────────────────────────────────────────── */
 function toggleEntry(el) {
   el.classList.toggle('expanded');
   if (el.classList.contains('expanded')) {
@@ -1048,46 +688,28 @@ function toggleEntry(el) {
     } catch(e) {}
   }
 }
- 
-/* ── Theme toggle ──────────────────────────────────────────────── */
+
 function applyTheme(dark) {
   document.documentElement.classList.toggle('dark', dark);
   var btn = document.getElementById('theme-btn');
   if (btn) btn.textContent = dark ? '🌙' : '☀️';
 }
- 
+
 function toggleTheme() {
   var dark = !document.documentElement.classList.contains('dark');
   localStorage.setItem('cr-theme', dark ? 'dark' : 'light');
   applyTheme(dark);
 }
- 
-/* ── Submit loading state ──────────────────────────────────────── */
-function initSubmitBtn() {
-  var form = document.getElementById('profile-form');
-  if (!form) return;
-  form.addEventListener('submit', function () {
-    var btn  = document.getElementById('submit-btn');
-    var lbl  = btn.querySelector('.btn-label');
-    var load = btn.querySelector('.btn-loading');
-    lbl.hidden  = true;
-    load.hidden = false;
-    btn.disabled = true;
-  });
-}
 
-/* ── Tab Switching Logic ─────────────────────────────────────────── */
 function switchTab(tabId) {
-  // Remove active class from all buttons and contents
   document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-
-  // Add active class to selected
-  document.getElementById('tab-btn-' + tabId).classList.add('active');
-  document.getElementById('tab-content-' + tabId).classList.add('active');
+  const tb = document.getElementById('tab-btn-' + tabId);
+  const tc = document.getElementById('tab-content-' + tabId);
+  if (tb) tb.classList.add('active');
+  if (tc) tc.classList.add('active');
 }
 
-/* ── Grade stats: show Regular or Minor based on dropdown ───────── */
 function updateGradeStats(entry, isMinor) {
   var mainBlocks  = entry.querySelectorAll('.grade-div-block[data-stat-div="main"]');
   var minorBlocks = entry.querySelectorAll('.grade-div-block[data-stat-div="minor"]');
@@ -1096,56 +718,46 @@ function updateGradeStats(entry, isMinor) {
   minorBlocks.forEach(function(b) { b.style.display = isMinor ? ''     : 'none'; });
 }
 
-/* ── Switch displayed slot/instructor when division changes ─────── */
 function switchDivision(sel) {
   var entry    = sel.closest('.entry');
   var divs     = JSON.parse(entry.dataset.divisions);
   var d        = divs[parseInt(sel.value)];
 
-  entry.querySelector('.div-slot').textContent       = (d.slot || 'N/A').replace(/\r\n|\r/g, '\n');
-  entry.querySelector('.div-instructor').textContent = (d.instructor || 'N/A').replace(/\r\n|\r|\n/g, ', ');
+  entry.querySelector('.div-slot').textContent       = cleanSlot(d.slot || 'N/A');
+  entry.querySelector('.div-instructor').textContent = cleanInstructor(d.instructor || 'N/A');
 
   var minorLabel = entry.querySelector('.entry-minor-label');
-  if (minorLabel) {
-    minorLabel.style.display = d.is_minor ? 'inline' : 'none';
-  }
+  if (minorLabel) minorLabel.style.display = d.is_minor ? 'inline' : 'none';
 
   var clashMsg = entry.querySelector('.entry-clash-msg');
+  var cw = d.clashes_with || [];
   if (clashMsg) {
-    var cw = d.clashes_with || [];
     if (cw.length > 0) {
       clashMsg.style.display = 'flex';
       var cwEl = clashMsg.querySelector('.clash-courses');
       if (cwEl) cwEl.textContent = cw.join(', ');
-      else clashMsg.lastChild.textContent = ' Time slot clashes with: ' + cw.join(', ');
     } else {
       clashMsg.style.display = 'none';
     }
   }
 
-  /* Minor message — only in "All Courses" mode */
   var minorMsg = entry.querySelector('.minor-msg');
-  if (minorMsg) {
-    minorMsg.style.display = d.is_minor ? 'block' : 'none';
-  }
+  if (minorMsg) minorMsg.style.display = d.is_minor ? 'block' : 'none';
 
   var equivMsg = entry.querySelector('.entry-equiv-msg');
-    if (equivMsg) {
-    var equivList = d.is_minor
-        ? equivMsg.dataset.equivMinor
-        : equivMsg.dataset.equivRegular;
+  if (equivMsg) {
+    var equivList = d.is_minor ? equivMsg.dataset.equivMinor : equivMsg.dataset.equivRegular;
     if (equivList) {
-        equivMsg.querySelector('.equiv-text').textContent = equivList;
-        equivMsg.style.display = 'block';
+      equivMsg.querySelector('.equiv-text').textContent = equivList;
+      equivMsg.style.display = 'block';
     } else {
-        equivMsg.style.display = 'none';
+      equivMsg.style.display = 'none';
     }
   }
-    updateGradeStats(entry, d.is_minor);
-
+  updateGradeStats(entry, d.is_minor);
 
   var currentSection = entry.dataset.section;
-  var isClash        = cw && cw.length > 0;    /* reuse cw from above */
+  var isClash        = cw && cw.length > 0;
   var targetSection  = isClash ? 'tsc' : (entry.dataset.homeSection || 'eligible');
 
   if (currentSection !== targetSection &&
@@ -1162,57 +774,26 @@ function switchDivision(sel) {
 
 function updateSectionCounts() {
   [
-    {
-      listId: 'entries-eligible',
-      badgeId: 'badge-eligible',
-      emptyId: 'empty-eligible',
-      suffix: 'Found'
-    },
-    {
-      listId: 'entries-consent',
-      badgeId: 'badge-consent',
-      emptyId: 'empty-consent',
-      suffix: 'Courses'
-    },
-    {
-      listId: 'entries-tsc',
-      badgeId: 'badge-tsc',
-      emptyId: 'empty-tsc',
-      suffix: 'Clashes'
-    },
-    {
-      listId: 'entries-rejected',
-      badgeId: 'badge-rejected',
-      emptyId: 'empty-rejected',
-      suffix: 'Blocked'
-    }
+    { listId:'entries-eligible', badgeId:'badge-eligible', emptyId:'empty-eligible', suffix:'Found' },
+    { listId:'entries-consent',  badgeId:'badge-consent',  emptyId:'empty-consent',  suffix:'Courses' },
+    { listId:'entries-tsc',      badgeId:'badge-tsc',      emptyId:'empty-tsc',      suffix:'Clashes' },
+    { listId:'entries-rejected', badgeId:'badge-rejected', emptyId:'empty-rejected', suffix:'Blocked' },
   ].forEach(function(s) {
-    var list = document.getElementById(s.listId);
+    var list  = document.getElementById(s.listId);
     var badge = document.getElementById(s.badgeId);
     var empty = document.getElementById(s.emptyId);
-
     if (!list || !badge) return;
-
-    var visibleCount = Array.from(list.querySelectorAll('.entry'))
-      .filter(function(entry) {
-        return entry.style.display !== 'none';
-      }).length;
-
-    badge.textContent = visibleCount + ' ' + s.suffix;
-
-    if (empty) {
-      empty.style.display = visibleCount === 0 ? 'block' : 'none';
-    }
+    var count = Array.from(list.querySelectorAll('.entry')).filter(e => e.style.display !== 'none').length;
+    badge.textContent = '(' + count + ')';
+    if (empty) empty.style.display = count === 0 ? 'block' : 'none';
   });
 }
 
-/* ── Star rating ────────────────────────────────────────────────── */
 function initStars() {
   var stars  = document.querySelectorAll('.star');
   var input  = document.getElementById('rating-input');
   var submit = document.getElementById('feedback-submit');
   if (!stars.length) return;
-
   stars.forEach(function(star) {
     star.addEventListener('click', function() {
       var val = parseInt(this.dataset.value);
@@ -1223,29 +804,22 @@ function initStars() {
         s.classList.remove('hover');
       });
     });
-
     star.addEventListener('mouseover', function() {
       var val = parseInt(this.dataset.value);
-      stars.forEach(function(s) {
-        s.classList.toggle('hover', parseInt(s.dataset.value) <= val);
-      });
+      stars.forEach(function(s) { s.classList.toggle('hover', parseInt(s.dataset.value) <= val); });
     });
-
     star.addEventListener('mouseout', function() {
       stars.forEach(function(s) { s.classList.remove('hover'); });
     });
   });
 }
 
-/* ── Grade pie charts ─────────────────────────────────────────── */
 function gradeColor(grade) {
   var colors = {
-  'AA': '#D0F0C0', 'AB': '#ACE1AF', 'AP': '#98FB98',
-  'AU': '#D3D3D3', 'BB': '#AFEEEE', 'BC': '#87CEFA',
-  'CC': '#EEE8AA', 'CD': '#FFFDD0', 'DD': '#F7E7CE',
-  'FF': '#FFEFD5', 'FR': '#FBCEB1',
-  'DX': '#FFDDF4', 'II': '#FFB7C5', 'NP': '#DBD7D2', 'PP': '#F2F3F4'
-};
+    'AA':'#D0F0C0','AB':'#ACE1AF','AP':'#98FB98','AU':'#D3D3D3','BB':'#AFEEEE',
+    'BC':'#87CEFA','CC':'#EEE8AA','CD':'#FFFDD0','DD':'#F7E7CE','FF':'#FFEFD5',
+    'FR':'#FBCEB1','DX':'#FFDDF4','II':'#FFB7C5','NP':'#DBD7D2','PP':'#F2F3F4'
+  };
   return colors[grade] || '#9C9080';
 }
 
@@ -1262,21 +836,14 @@ function initGradeCharts(entryEl) {
           data: values,
           backgroundColor: labels.map(gradeColor),
           borderWidth: 0,
-          borderColor: getComputedStyle(document.documentElement)
-                         .getPropertyValue('--pc').trim() || '#fff'
+          borderColor: getComputedStyle(document.documentElement).getPropertyValue('--pc').trim() || '#fff'
         }]
       },
       options: {
         responsive: false,
         plugins: {
           legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: function(ctx) {
-                return ' ' + ctx.label + ': ' + ctx.parsed;
-              }
-            }
-          }
+          tooltip: { callbacks: { label: function(ctx) { return ' ' + ctx.label + ': ' + ctx.parsed; } } }
         }
       }
     });
@@ -1284,439 +851,23 @@ function initGradeCharts(entryEl) {
   });
 }
 
-/*<!-- ── Core courses from server ───────────────────────────── -->
-/const SERVER_CORE_COURSES = {{ core_courses_for_bucket | default([]) | tojson }};*/
- 
-/* ── Boot ──────────────────────────────────────────────────────── */
-document.addEventListener('DOMContentLoaded', function () {
-  /* Selects */
-  initSelects();
- 
-  /* Restore saved theme */
-  applyTheme(localStorage.getItem('cr-theme') === 'dark');
- 
-  /* Submit button */
-  initSubmitBtn();
-
-  /* Feedback Stars */
-  initStars();
-
-  /* Course Bucket */
-  // initBucket();
+/* ── Enter-key shortcuts ─────────────────────────────────────── */
+document.addEventListener('keydown', function(e) {
+  if (e.key !== 'Enter') return;
+  const sendOtpSection   = document.getElementById('section-send-otp');
+  const verifyOtpSection = document.getElementById('section-verify-otp');
+  if (sendOtpSection   && sendOtpSection.style.display   !== 'none') { e.preventDefault(); doSendOtp(); }
+  else if (verifyOtpSection && verifyOtpSection.style.display !== 'none') { e.preventDefault(); doVerifyOtp(); }
 });
- 
-/* ══════════════════════════════════════════════════════════════════
-   COURSE BUCKET
-   ══════════════════════════════════════════════════════════════════ */
-/* 
-const STANDING_MAX = { 1:54, 2:48, 3:48, 4:48, 5:36, 6:24 };
-const STANDING_DESC = {
-  1: 'No FR/DX/DR/W in core, CPI ≥ 8.0',
-  2: 'CPI < 8, registered ≥18 cr each of last 2 sems, no failures',
-  3: 'At least 1 FR/DX/W/DR in core, at most 1 FR/DX in others (last 2 sems)',
-  4: 'At least 1 FR/DX/W/DR in core, more than 1 FR/DX in others (last 2 sems)',
-  5: 'Did not earn ≥18 credits in either of last 2 sems',
-  6: 'Accumulated ≥36 credits of FR/DX in core courses'
-};
-const MIN_CREDITS = 18;
-const MAX_AUDITS  = 2;
- 
-let bucket          = [];
-let academicStanding = 2;
- 
-function loadBucket() {
-  try {
-    bucket           = JSON.parse(localStorage.getItem('cr-bucket')   || '[]');
-    academicStanding = parseInt(localStorage.getItem('cr-standing')   || '2');
-  } catch(e) { bucket = []; academicStanding = 2; }
-}
- 
-function saveBucket() {
-  localStorage.setItem('cr-bucket',  JSON.stringify(bucket));
-  localStorage.setItem('cr-standing', String(academicStanding));
-}
- 
-function getTotalCredits(excludeAudit) {
-  return bucket
-    .filter(c => !excludeAudit || c.tag !== 'audit')
-    .reduce((s,c) => s + (parseInt(c.credits)||0), 0);
-}
- 
-function getMaxCredits() { return STANDING_MAX[academicStanding] || 48; } */
- 
-/* Extracts the numeric slot label (e.g. "5", "14", "L1") from a slot string */
-/* function parseSlotNum(raw) {
-  if (!raw || raw === 'N/A' || raw === 'None') return null;
-  const m = String(raw).trim().match(/^(\d{1,2}[A-Z]?|L\d*|X[A-Z0-9]*|XE|XC|XD)/i);
-  return m ? m[1].toUpperCase() : null;
-} */
- 
-/* Returns { code → [clashing codes] } for all bucket courses */
-/* function findBucketClashes() {
 
-  const slotMap = {};
+/* ── Boot ──────────────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', function() {
+  initSelects();
+  applyTheme(localStorage.getItem('cr-theme') === 'dark');
+  initStars();
+});
 
-  for (const c of bucket) {
-
-    const sn = parseSlotNum(c.slot_num);
-
-    if (!sn) continue;
-
-    if (!slotMap[sn]) slotMap[sn] = [];
-
-    slotMap[sn].push(c);
-
-  }
-
-  const result = {};
-
-  for (const courses of Object.values(slotMap)) {
-
-    if (courses.length < 2) continue;
-
-    for (let i = 0; i < courses.length; i++) {
-
-      for (let j = i + 1; j < courses.length; j++) {
-
-        // Skip core↔core: institute scheduling ensures these never truly conflict
-
-        if (courses[i].type === 'core' && courses[j].type === 'core') continue;
-
-        if (!result[courses[i].code]) result[courses[i].code] = [];
-
-        if (!result[courses[j].code]) result[courses[j].code] = [];
-
-        result[courses[i].code].push(courses[j].code);
-
-        result[courses[j].code].push(courses[i].code);
-
-      }
-
-    }
-
-  }
-
-  return result;
-
-} */
- 
-/* ── Add from recommendation card ── */
-/* function addToBucket(btn) {
-  const code    = btn.dataset.code;
-  const name    = btn.dataset.name;
-  const credits = parseInt(btn.dataset.credits) || 6;
-  const slotNum = btn.dataset.slotNum || 'N/A';
-  const isMinor = btn.dataset.isMinor === 'true';
- 
-  if (bucket.find(c => c.code === code)) {
-    bucketToast(`${code} is already in your bucket.`, 'info'); return;
-  }
- 
-  const newTotal = getTotalCredits() + credits;
-  if (newTotal > getMaxCredits()) {
-    bucketToast(
-      `Cannot add ${code}: would exceed the ${getMaxCredits()} credit limit for Academic Standing ${academicStanding}.`,
-      'warn'
-    ); return;
-  }
- 
-  bucket.push({ code, name, credits, slot_num: slotNum, type: 'elective',
-                is_minor: isMinor, tag: isMinor ? 'minor' : 'regular' });
-  saveBucket();
-  renderBucket();
- 
-  btn.textContent = '✓ In Bucket';
-  btn.disabled    = true;
-  btn.classList.add('btn-in-bucket');
-  openBucket();
-  bucketToast(`${code} added to bucket.`, 'ok');
-}  */
- 
-/* ── Add core course manually ── */
-/* function addCoreToBucket() {
-  const codeEl  = document.getElementById('bc-code');
-  const nameEl  = document.getElementById('bc-name');
-  const credEl  = document.getElementById('bc-cred');
-  const slotEl  = document.getElementById('bc-slot');
- 
-  const code    = codeEl.value.trim().toUpperCase().replace(/\s+/,' ');
-  const name    = nameEl.value.trim() || code;
-  const credits = parseInt(credEl.value) || 6;
-  const slotNum = slotEl.value.trim() || 'N/A';
- 
-  if (!code) { bucketToast('Enter a course code.','warn'); return; }
-  if (bucket.find(c => c.code === code)) { bucketToast(`${code} already in bucket.`,'info'); return; }
- 
-  const newTotal = getTotalCredits() + credits;
-  if (newTotal > getMaxCredits()) {
-    bucketToast(`Cannot add ${code}: would exceed ${getMaxCredits()}-credit limit.`,'warn'); return;
-  }
- 
-  bucket.push({ code, name, credits, slot_num: slotNum, type: 'core', is_minor: false, tag: 'core' });
-  saveBucket(); renderBucket();
-  codeEl.value=''; nameEl.value=''; credEl.value=''; slotEl.value='';
-  bucketToast(`${code} added as core course.`, 'ok');
-} */
- 
-/* ── Remove a course ── */
-/* function removeFromBucket(code) {
-  const course = bucket.find(c => c.code === code);
-  if (!course) return;
- 
-  if (course.type === 'core') {
-    const go = confirm(
-      `"${course.name}" is a Core Course.\n\n` +
-      `Dropping core courses requires prior consultation with your Faculty Advisor.\n\n` +
-      `Remove from bucket?`
-    );
-    if (!go) return;
-  }
- 
-  const newTotal = getTotalCredits() - (parseInt(course.credits)||0);
-  if (newTotal < MIN_CREDITS && bucket.length > 1) {
-    bucketToast(
-      `Cannot remove ${code}: total would drop to ${newTotal} credits, below the minimum of ${MIN_CREDITS}.`,
-      'warn'
-    ); return;
-  }
- 
-  bucket = bucket.filter(c => c.code !== code);
-  saveBucket();
- 
-  // Re-enable the recommendation card button if present
-  const btn = document.querySelector(`.btn-add-bucket[data-code="${code}"]`);
-  if (btn) { btn.textContent = '+ Add to Bucket'; btn.disabled = false; btn.classList.remove('btn-in-bucket'); }
- 
-  renderBucket();
-} */
- 
-/* ── Render the bucket panel ── */
-/* function renderBucket() {
-  const total    = getTotalCredits();
-  const maxCr    = getMaxCredits();
-  const count    = bucket.length;
-  const clashes  = findBucketClashes();
- 
-  // FAB badge
-  const badge = document.getElementById('bucket-fab-badge');
-  badge.textContent  = count;
-  badge.style.display = count > 0 ? 'flex' : 'none';
- 
-  // Credit bar
-  const pct  = Math.min(100, (total / maxCr) * 100);
-  const fill = document.getElementById('bc-bar-fill');
-  fill.style.width      = pct + '%';
-  fill.style.background =
-    total > maxCr   ? 'var(--red,#e53e3e)' :
-    total >= MIN_CREDITS ? 'var(--green,#38a169)' : 'var(--amber,#d97706)';
- 
-  document.getElementById('bc-total').textContent = total;
-  document.getElementById('bc-max').textContent   = maxCr;
-  document.getElementById('bc-min').textContent   = MIN_CREDITS;
- 
-  // Rebuild warnings
-  const warns = [];
-  if (count === 0) warns.push('Bucket is empty. Add eligible courses from the recommendations below, or enter core courses manually.');
-  if (total < MIN_CREDITS && count > 0)
-    warns.push(`Below minimum: ${total} / ${MIN_CREDITS} credits. You need at least ${MIN_CREDITS} registered credits per semester.`);
-  if (total > maxCr)
-    warns.push(`Exceeds maximum: ${total} / ${maxCr} credits for Standing ${academicStanding}. Remove courses or change your standing selection.`);
- 
-  const auditCount = bucket.filter(c => c.tag === 'audit').length;
-  if (auditCount > MAX_AUDITS)
-    warns.push(`Audit limit: you have ${auditCount} audited courses. A maximum of ${MAX_AUDITS} courses may be audited per semester.`);
- 
-  const clashCodes = Object.keys(clashes);
-  if (clashCodes.length > 0)
-    warns.push(`Slot clash within bucket: ${[...new Set(clashCodes.concat(...Object.values(clashes)))].join(', ')} share a slot. You cannot register for courses in the same slot.`);
- 
-  const minorCourses = bucket.filter(c => c.is_minor);
-  if (minorCourses.length > 0)
-    warns.push(`Minor elective${minorCourses.length > 1?'s':''} (${minorCourses.map(c=>c.code).join(', ')}) require pre-registration via External ASC → Forms/Requests (10–14 Jul 2026). Allotment is by Major CPI.`);
- 
-  const warnEl = document.getElementById('bc-warnings');
-  warnEl.innerHTML = warns.map(w => `
-  <div class="manual-alert" style="margin:6px 0 0;">
-    <div class="manual-alert-inner">
-      <span class="manual-warn-icon">⚠</span>
-      <span class="manual-alert-text">${w}</span>
-    </div>
-  </div>`).join('');
- 
-  // Rebuild course list
-  const listEl = document.getElementById('bc-list');
-  if (count === 0) { listEl.innerHTML = ''; return; }
- 
-  const cores     = bucket.filter(c => c.type === 'core');
-  const electives = bucket.filter(c => c.type !== 'core');
-  let html = '';
- 
-  if (cores.length > 0) {
-    html += `<div class="grade-stats-label" style="margin-top:12px;">Core Courses</div>`;
-    cores.forEach(c => { html += renderBucketItem(c, clashes); });
-  }
-  if (electives.length > 0) {
-    html += `<div class="grade-stats-label" style="margin-top:12px;">Electives</div>`;
-    electives.forEach(c => { html += renderBucketItem(c, clashes); });
-  }
-  listEl.innerHTML = html;
-}
- 
-function renderBucketItem(c, clashes) {
-  const isClash   = !!clashes[c.code];
-  const clashWith = clashes[c.code] || [];
- 
-  const entryClass = isClash        ? 'entry entry-clash'   :
-                     c.type==='core' ? 'entry entry-consent' : 'entry entry-ok';
- 
-  const minorInline = c.is_minor ? ' · <span class="entry-minor-label">Minor</span>' : '';
- 
-  const clashHtml = isClash
-    ? `<div class="entry-clash-msg"> Slot clash with ${clashWith.join(', ')}</div>` : '';
- 
-  const minorHtml = c.is_minor
-    ? `<div class="minor-msg" style="display:block;margin-top:6px;">
-        Pre-registration via External ASC → Forms/Requests
-       </div>` : '';
-  
-  return `
-  <div class="${entryClass}" style="cursor:default;margin-bottom:8px;">
-    <div class="entry-code-row" style="justify-content:space-between;align-items:center;">
-      <div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;">
-        <span style="font-family:var(--font-display);font-size:15px;font-weight:600;opacity:0.75;">${c.code}${minorInline}</span>
-<span class="score" font-size:11px;opacity:0.7;margin:0;>${c.credits} cr</span>
-      </div>
-      <button class="bc-item-remove" onclick="removeFromBucket('${c.code}')" title="Remove">×</button>
-    </div>
-    <div class="entry-name" style="margin-bottom:3px;">${c.name}</div>
-    <div class="entry-meta"><strong>Slot</strong> : ${c.slot_num || 'N/A'}</div>
-    ${clashHtml}${minorHtml}
-  </div>`;
-}
- 
-function updateStanding(val) {
-  academicStanding = parseInt(val);
-  document.getElementById('bc-standing-desc').textContent = STANDING_DESC[academicStanding] || '';
-  saveBucket(); renderBucket();
-}
- 
-function openBucket()  { document.getElementById('bucket-panel').classList.add('bc-open'); }
-function closeBucket() { document.getElementById('bucket-panel').classList.remove('bc-open'); }
-function toggleBucket(){ document.getElementById('bucket-panel').classList.toggle('bc-open'); renderBucket(); }
-function clearBucket() {
-  if (!confirm('Clear all courses from the bucket?')) return;
-  bucket.forEach(c => {
-    const btn = document.querySelector(`.btn-add-bucket[data-code="${c.code}"]`);
-    if (btn) { btn.textContent = '+ Add to Bucket'; btn.disabled = false; btn.classList.remove('btn-in-bucket'); }
-  });
-  bucket = []; saveBucket(); renderBucket();
-}
- 
-function bucketToast(msg, type='info') {
-  const t = document.getElementById('bucket-toast');
-  if (!t) return;
-  t.textContent = msg;
-  t.className   = `bucket-toast bt-${type} bt-show`;
-  setTimeout(() => t.classList.remove('bt-show'), 3500);
-}
- 
-function initBucket() {
-  loadBucket();
-  // Auto-load server-provided core courses for this semester.
-  // Only adds courses not already present — preserves any user removals
-  // within the same session, but repopulates on a fresh recommendation.
-  if (typeof SERVER_CORE_COURSES !== 'undefined' && SERVER_CORE_COURSES.length > 0) {
-    const existingCodes = new Set(bucket.map(c => c.code));
-    const hadCoreBefore  = bucket.some(c => c.type === 'core');
- 
-    // On a fresh recommendation (no existing core courses), clear stale
-    // electives from a previous run before adding new cores.
-    if (!hadCoreBefore) {
-      bucket = bucket.filter(c => c.type !== 'core');
-    }
- 
-    SERVER_CORE_COURSES.forEach(c => {
-      if (!existingCodes.has(c.code)) {
-        bucket.unshift(c);   // prepend so cores appear first
-      }
-    });
-    saveBucket();
-  }
- 
-  // Restore Add-to-Bucket button states for electives already in bucket
-  bucket.forEach(c => {
-    const btn = document.querySelector(`.btn-add-bucket[data-code="${c.code}"]`);
-    if (btn) { btn.textContent = '✓ In Bucket'; btn.disabled = true; btn.classList.add('btn-in-bucket'); }
-  });
-  const sel = document.getElementById('bc-standing-sel');
-  if (sel) sel.value = academicStanding;
-  const descEl = document.getElementById('bc-standing-desc');
-  if (descEl) descEl.textContent = STANDING_DESC[academicStanding] || '';
-  renderBucket();
-} */
 </script>
- 
-<!-- ── Bucket FAB ────────────────────────────────────────────── -->
-<!--<button class="bucket-fab" onclick="toggleBucket()" title="Course Bucket" aria-label="Open Course Bucket">
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
-  </svg>
-  <span class="bucket-fab-badge" id="bucket-fab-badge" style="display:none">0</span>
-</button> -->
- 
-<!-- ── Bucket Panel ──────────────────────────────────────────── -->
-<!--<div id="bucket-panel" class="bucket-panel" role="dialog" aria-label="Course Bucket">
- 
-  <div class="bc-header">
-    <span class="result-title result-ok">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:7px;flex-shrink:0">
-        <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
-      </svg>Course Bucket
-    </span>
-    <div style="display:flex;gap:6px;align-items:center;">
-      <button class="btn-reset" style="font-size:12px;padding:4px 10px;" onclick="clearBucket()">Clear all</button>
-      <button class="bc-close" onclick="closeBucket()">×</button>
-    </div>
-  </div> -->
- 
-  <!-- Divider -->
-  <!-- <div class="result-divider divider-ok" style="margin:0 22px 10px;"></div> -->
- 
-  <!-- Academic Standing -->
-  <!-- <div class="bc-standing-row">
-    <div class="grade-stats-label">Academic Standing</div>
-    <select id="bc-standing-sel" class="bc-standing-sel" onchange="updateStanding(this.value)">
-      <option value="1">1: ≤54 cr</option>
-      <option value="2" selected>2: ≤48 cr</option>
-      <option value="3">3: ≤48 cr</option>
-      <option value="4">4: ≤48 cr</option>
-      <option value="5">5: ≤36 cr</option>
-      <option value="6">6: ≤24 cr</option>
-    </select>
-    <div class="score" id="bc-standing-desc" style="margin-top:5px;opacity:1;font-size:11px;"></div>
-  </div> -->
- 
-  <!-- Credit bar -->
-  <!-- <div class="bc-credit-bar-wrap">
-    <div class="bc-credit-labels">
-      <span class="score" style="opacity:1;">Min <strong id="bc-min">18</strong> cr</span>
-      <span class="score" style="opacity:1;"><strong id="bc-total">0</strong> / <strong id="bc-max">48</strong> cr</span>
-    </div>
-    <div class="bc-credit-bar-bg">
-      <div class="bc-credit-bar-fill" id="bc-bar-fill" style="width:0%"></div>
-    </div>
-  </div> -->
- 
-  <!-- Warnings-->
-  <!-- <div id="bc-warnings" class="bc-warnings"></div> -->
- 
-  <!-- Course list -->
-  <!-- <div id="bc-list" class="bc-list"></div>
- 
-</div> -->
- 
-<!-- ── Bucket toast ──────────────────────────────────────────── -->
-<!-- <div id="bucket-toast" class="bucket-toast"></div> -->
 
 </body>
 </html>
