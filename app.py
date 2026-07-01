@@ -114,6 +114,10 @@ def send_otp(student_id):
         server.send_message(msg)
     return otp, to_email
 
+@app.route("/health")
+def health():
+    return "ok", 200
+
 @app.route("/", methods=["GET", "POST"])
 def index():
     otp_sent     = session.get('otp_sent', False)
@@ -453,6 +457,10 @@ def feedback():
 @app.route('/documentation')
 def documentation():
     return render_template('documentation.html')
+
+@app.route('/about')
+def about():
+    return render_template('about.html')
 
 if __name__ == "__main__":
     app.run(debug=True)

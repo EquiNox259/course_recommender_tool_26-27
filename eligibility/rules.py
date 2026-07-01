@@ -201,6 +201,7 @@ def _build_grade_stats():
                 'division':   division,
                 'grades':     grades,
                 'total':      int(total),
+                'score_aa_ab': (row.get('AA', 0) + row.get('AB', 0)) / total,
                 'pct_ap':     round(row.get('AP', 0) / total * 100, 1),
                 'pct_aa':     round(row.get('AA', 0) / total * 100, 1),
                 'pct_aa_ab':  round((row.get('AA', 0) + row.get('AB', 0)) / total * 100, 1),
@@ -989,7 +990,7 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
         if not isinstance(course_name, str) or pd.isna(course_name):
             course_name = ""
         # ignores any courses with the below words (for future DAV members, remove this and see what semantic search gives to know why its there)
-        blacklist = ["SEMINAR", "MINI PROJECT", "SUPERVISED"]
+        blacklist = ["SEMINAR", "MINI PROJECT", "SUPERVISED", "BTP"]
         if any(term in course_name.upper() for term in blacklist):
             continue
 

@@ -8,7 +8,8 @@
   <!-- Same font stack as main app -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Karla:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@500&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Karla:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@500&family=Oswald:wght@400;600;700&family=Poppins:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 
   <!-- Main stylesheet (CSS variables, navbar, cards, etc.) -->
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
@@ -18,406 +19,7 @@
     src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
   </script>
 
-  <style>
-    /* ── Documentation-specific layout ─────────────────────────── */
-    .doc-layout {
-      display: flex;
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 80px 24px 80px;
-      gap: 40px;
-      align-items: flex-start;
-    }
-
-    /* Sticky sidebar TOC */
-    .doc-toc {
-      flex: 0 0 210px;
-      position: sticky;
-      top: 80px;
-      background: var(--pc);
-      border: 1px solid var(--bc);
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: var(--sh);
-    }
-
-    .doc-toc-title {
-      font-family: var(--font-body);
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--ac);
-      margin-bottom: 12px;
-    }
-
-    .doc-toc ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-
-    .doc-toc li { margin: 2px 0; }
-
-    .doc-toc a {
-      display: block;
-      font-family: var(--font-body);
-      font-size: 12px;
-      color: var(--ts);
-      text-decoration: none;
-      padding: 5px 8px;
-      border-radius: 6px;
-      transition: background 0.15s ease, color 0.15s ease;
-    }
-
-    .doc-toc a:hover,
-    .doc-toc a.active {
-      background: var(--gl);
-      color: var(--gr);
-    }
-
-    .doc-toc .toc-sub {
-      padding-left: 16px;
-      font-size: 11px;
-    }
-
-    /* Main content */
-    .doc-content {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .doc-page-title {
-      font-family: var(--font-display);
-      font-size: 40px;
-      font-weight: 700;
-      color: var(--tp);
-      margin-bottom: 6px;
-      line-height: 1.2;
-    }
-
-    .doc-page-sub {
-      font-family: var(--font-body);
-      font-size: 16px;
-      color: var(--ts);
-      margin-bottom: 36px;
-    }
-
-    /* Sections */
-    .doc-section {
-      margin-bottom: 48px;
-      scroll-margin-top: 90px;
-    }
-
-    .doc-section-title {
-      font-family: var(--font-display);
-      font-size: 25px;
-      font-weight: 600;
-      color: var(--tp);
-      margin-bottom: 16px;
-      padding-bottom: 8px;
-      border-bottom: 2px solid var(--bc);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .sec-num {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 26px;
-      height: 26px;
-      border-radius: 50%;
-      background: var(--gr);
-      color: #fff;
-      font-family: var(--font-body);
-      font-size: 12px;
-      font-weight: 700;
-      flex-shrink: 0;
-    }
-
-    .doc-subsection-title {
-      font-family: var(--font-display);
-      font-size: 20px;
-      font-weight: 600;
-      color: var(--tp);
-      margin: 20px 0 10px;
-    }
-
-    .doc-body {
-      font-family: var(--font-body);
-      font-size: 16px;
-      color: var(--ts);
-      line-height: 1.75;
-    }
-
-    .doc-body p { margin-bottom: 12px; }
-
-    .doc-body strong { color: var(--tp); }
-
-    .doc-body ul {
-      padding-left: 20px;
-      margin-bottom: 12px;
-    }
-
-    .doc-body li { margin-bottom: 6px; }
-
-    /* Info / warning boxes */
-    .doc-infobox {
-      background: #FDF4DC;
-      border-radius: 8px;
-      padding: 12px 16px;
-      font-family: var(--font-body);
-      font-size: 13px;
-      color: var(--wt);
-      line-height: 1.6;
-      margin: 14px 0;
-    }
-
-    .doc-greenbox {
-      background: var(--ob);
-      border-radius: 8px;
-      padding: 12px 16px;
-      font-family: var(--font-body);
-      font-size: 13px;
-      color: var(--ok);
-      line-height: 1.6;
-      margin: 14px 0;
-    }
-
-    /* Score cards */
-    .score-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin: 16px 0;
-    }
-
-    .score-card {
-      background: var(--pc);
-      border: 1px solid var(--bc);
-      border-radius: 12px;
-      padding: 18px;
-      box-shadow: var(--sh);
-    }
-
-    .score-card-title {
-      font-family: var(--font-display);
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--tp);
-      margin-bottom: 8px;
-    }
-
-    .score-tag {
-      display: inline-block;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      font-weight: 500;
-      padding: 2px 8px;
-      border-radius: 4px;
-      margin-bottom: 8px;
-    }
-
-    .tag-ps  { background: var(--ob); color: var(--ok); }
-    .tag-iss { background: var(--clb); color: var(--cl); }
-
-    /* Formula display */
-    .formula-block {
-      background: var(--pi);
-      border: 1px solid var(--bi);
-      border-radius: 8px;
-      padding: 14px 18px;
-      margin: 12px 0;
-      font-size: 15px;
-      text-align: center;
-      overflow-x: auto;
-    }
-
-    .formula-note {
-      font-family: var(--font-body);
-      font-size: 12px;
-      color: var(--tm);
-      margin-top: 8px;
-    }
-
-    /* PS vs ISS two-column layout */
-    .score-columns {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      border: 1px solid var(--bc);
-      border-radius: 12px;
-      overflow: hidden;
-      margin: 20px 0 28px;
-    }
-
-    .score-col {
-      padding: 22px 24px;
-    }
-
-    .score-col:first-child {
-      border-right: 1px solid var(--bc);
-    }
-
-    .score-col-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding-bottom: 12px;
-      margin-bottom: 14px;
-      border-bottom: 2px solid;
-    }
-
-    .score-col-ps  { border-bottom-color: var(--gr); }
-    .score-col-iss { border-bottom-color: var(--cl); }
-
-    .score-col-label {
-      font-family: var(--font-display);
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--tp);
-    }
-
-    .score-col-abbr {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      font-weight: 700;
-      padding: 2px 8px;
-      border-radius: 4px;
-    }
-
-    .score-col-ps  .score-col-abbr { background: var(--ob);  color: var(--ok); border: 1px solid var(--or);  }
-    .score-col-iss .score-col-abbr { background: var(--clb); color: var(--cl); border: 1px solid var(--clr); }
-
-    @media (max-width: 700px) {
-      .score-columns { grid-template-columns: 1fr; }
-      .score-col:first-child { border-right: none; border-bottom: 1px solid var(--bc); }
-    }
-
-    /* Flow diagram */
-    .flow-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin: 16px 0;
-      flex-wrap: wrap;
-    }
-
-    .flow-step {
-      background: var(--pc);
-      border: 1px solid var(--bc);
-      border-radius: 10px;
-      padding: 14px 16px;
-      text-align: center;
-      flex: 1;
-      min-width: 100px;
-      box-shadow: var(--sh);
-    }
-
-    .flow-icon { font-size: 22px; margin-bottom: 6px; }
-
-    .flow-step h4 {
-      font-family: var(--font-body);
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--tp);
-      margin-bottom: 4px;
-    }
-
-    .flow-step p {
-      font-family: var(--font-body);
-      font-size: 11px;
-      color: var(--ts);
-    }
-
-    .flow-arrow {
-      font-size: 20px;
-      color: var(--tm);
-      flex-shrink: 0;
-    }
-
-    /* Eligibility status pills */
-    .elig-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-      margin: 14px 0;
-    }
-
-    .elig-card {
-      border-radius: 10px;
-      padding: 14px;
-      border: 1px solid;
-    }
-
-    .elig-card.green  { background: var(--ob);  border-color: var(--or); }
-    .elig-card.amber  { background: #FDF4DC;  border-color: var(--wr); }
-    .elig-card.blue   { background: var(--clb); border-color: var(--clr); }
-    .elig-card.red    { background: var(--nb2); border-color: var(--nr); }
-
-    .elig-label {
-      font-family: var(--font-body);
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      margin-bottom: 4px;
-    }
-
-    .elig-card.green .elig-label { color: var(--ok); }
-    .elig-card.amber .elig-label { color: var(--wt); }
-    .elig-card.blue  .elig-label { color: var(--cl); }
-    .elig-card.red   .elig-label { color: var(--no); }
-
-    .elig-desc {
-      font-family: var(--font-body);
-      font-size: 12px;
-      color: var(--ts);
-      line-height: 1.5;
-    }
-
-    /* Summary checklist */
-    .check-list {
-      list-style: none;
-      padding: 0;
-    }
-
-    .check-list li {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      font-family: var(--font-body);
-      font-size: 14px;
-      color: var(--ts);
-      padding: 8px 0;
-      border-bottom: 1px solid var(--bd);
-    }
-
-    .check-list li:last-child { border-bottom: none; }
-
-    .check-icon {
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: var(--ob);
-      color: var(--ok);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 10px;
-      flex-shrink: 0;
-      margin-top: 2px;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-      .doc-layout { flex-direction: column; padding: 16px; }
-      .doc-toc { position: static; width: 100%; flex: none; }
-      .score-grid, .elig-grid { grid-template-columns: 1fr; }
-      .flow-arrow { display: none; }
-    }
-  </style>
+  
 </head>
 
 <body>
@@ -425,11 +27,14 @@
 <!-- ══════════════════════════════════════════════ NAVBAR ══════ -->
 <nav class="navbar">
   <div class="nav-left">
-    <img id="dav-icon" class="nav-logo" src="/static/DAV_Logo.svg" alt="DAV">
-    <span class="nav-title">Data Analytics and Visualization Team</span>
+    <a href="/about" class="nav-brand-link">
+      <img id="dav-icon" class="nav-logo" src="/static/DAV_Logo.svg" alt="DAV">
+      <span class="nav-title">Data Analytics and Visualization Team</span>
+    </a>
   </div>
   <div class="nav-right">
     <a href="/" class="nav-docs-link">Recommender</a>
+    <a href="/about" class="nav-docs-link">About</a>
     <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">☀️</button>
     <a href="https://ugac-iitb.github.io/UGAC-IITB/divisions/9" target="_blank" rel="noopener">
       <img id="ugac-icon" class="nav-ugac"
@@ -451,6 +56,8 @@
       <li><a class="toc-sub" href="#ps">People's Score</a></li>
       <li><a class="toc-sub" href="#iss">Interest Similarity Score</a></li>
       <li><a class="toc-sub" href="#final">Final Score</a></li>
+      <li><a class="toc-sub" href="#minor">Minor Recommendations</a></li>
+      <li><a class="toc-sub" href="#grading">Easy Grading Preference</a></li>
       <li><a href="#eligibility">3. Eligibility Engine</a></li>
       <li><a href="#interface">4. Interface</a></li>
       <li><a href="#summary">5. Summary</a></li>
@@ -537,7 +144,7 @@
       </div>
       <div class="doc-body">
         <div class="doc-greenbox">
-          &#10003;&nbsp; A high PS indicates that students who followed a
+          A high PS indicates that students who followed a
           similar academic path frequently enrolled in this course, a strong
           signal of suitability within a given department and degree programme.
           Also, more recently completed courses carry greater weight than older ones.
@@ -563,7 +170,7 @@
       </div>
       <div class="doc-body">
         <div class="doc-greenbox">
-          &#10003;&nbsp; A high ISS indicates that the course's content is very closely related to the students' interests,
+         A high ISS indicates that the course's content is very closely related to the students' interests,
           regardless of whether their seniors have historically taken the course.
         </div>
       </div>
@@ -593,16 +200,12 @@
         <ul>
           <li>
             <strong>More Interest-Based (w<sub>rrf</sub> = 1, w<sub>ps</sub> = 0):</strong> Prioritise courses that match
-            stated interests. Best for students exploring a new area.
+            stated interests. Best for students exploring a new area. The default setting.
           </li>
           <li>
             <strong>More Safe Route (w<sub>rrf</sub> = 0, w<sub>ps</sub> = 1):</strong> Recommendations driven
             entirely by what similar students have taken. Best for students
             following a well-established path (usually within their department).
-          </li>
-          <li>
-            <strong>50-50 Balanced Split (w<sub>rrf</sub> = 0.5, w<sub>ps</sub> = 0.5):</strong> Best of both the worlds. The
-            default setting.
           </li>
         </ul>
         <p>
@@ -613,6 +216,41 @@
         </p>
       </div>
     </section>
+
+    <!-- 2.4 Minors -->
+     <h3 class="doc-subsection-title" id="minor"> 2.4 Minors </h3>
+    <div class="doc-body">
+      <p>
+      The recommender also supports queries based on the minor programmes. Students may request recommendations from 
+      one or more specific minor programmes, and can ask to specifically include/exclude courses from any topic,
+      and even department(s).
+      </p>
+      <div class = "doc-infobox">
+        The aforementioned scoring system <strong>does not apply</strong> for minor courses, since the course lists are decided
+        specifically by the departments.
+      </div>
+    </div>
+
+    <!-- 2.5 Easy Grading -->
+     <h3 class="doc-subsection-title" id="grading"> 2.5 Easy Grading </h3>
+    <div class="doc-body">
+      <p>
+      For courses having easier grading, their FS is boosted by means of an additional grading score, whenever the student
+      asks for courses with easier grading. The grading score is calculated by means of (AA + AB)%, then 
+      <strong>normalized</strong>.
+      </p>
+      <div class = "formula-block">
+        \[ S_{\mathrm{final}} = 0.85\,S_{\mathrm{strategy}} + 0.15\,S_{\mathrm{grade}} \]
+        <div class = "formula-note">
+          \[ S_{\mathrm{grade}} = \frac{\text{Number of AA + AB grades}} {\text{Total students}} \]
+        </div>
+      </div>
+      <div class = "doc-infobox">
+        This feature can be applied <strong>independently</strong>, as well as in conjuction with 
+          <strong>normal course-related</strong> and <strong>minor-related</strong> queries.
+      </div>
+    </div>
+    
 
     <!-- ── 3. Eligibility Engine ─────────────────────────────── -->
     <section class="doc-section" id="eligibility">
@@ -709,20 +347,21 @@
           (ISS) with prior enrollment patterns (PS) into a tunable Final Score.
         </li>
         <li>
-          <strong>ii.</strong> The recommendation options let students shift emphasis from pure interest
-          exploration to safer, well-trodden academic paths.
-        </li>
-        <li>
-          <strong>iii.</strong> Every recommended course is validated against department restrictions,
+          <strong>ii.</strong> Every recommended course is validated against department restrictions,
           prerequisite expressions, and time-slot constraints before display.
         </li>
         <li>
-          <strong>iv.</strong> Division-level navigation allows students to check time-slot clash,
-          for their specific division.
+          <strong>iii.</strong> Division-level navigation allows students to check time-slot clash,
+          for their specific division. It also allows students to check year-wise grading statistics per division,
+          upon expanding each course entry.
         </li>
         <li>
-          <strong>v.</strong> Year-wise grading statistics are shown
-          per division upon expanding each course entry.
+          <strong>iv.</strong> Grade-based filters allow students to compare between equivalent courses, and also choose
+          courses that can boost CPI.
+        </li>
+        <li>
+          <strong>v.</strong> Minor-based filters allow students to navigate through minor courses offered by various
+          departments, according to their requirements.
         </li>
       </ul>
       <div class="doc-body" style="margin-top:20px">
@@ -745,35 +384,6 @@
 
 <script>
 /* ── Reuse same theme logic as index.html ─────────────────── */
-var DAV_SRC = "data:image/png;base64,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";
-
-function processIcon(src, invertDark, cb) {
-  var img = new Image();
-  img.onload = function () {
-    var c = document.createElement('canvas');
-    c.width = img.width; c.height = img.height;
-    var ctx = c.getContext('2d');
-    ctx.drawImage(img, 0, 0);
-    var id  = ctx.getImageData(0, 0, c.width, c.height);
-    var d   = id.data;
-    for (var i = 0; i < d.length; i += 4) {
-      var r = d[i], g = d[i+1], b = d[i+2];
-      var bright = (r + g + b) / 3;
-      if (bright > 235) {
-        d[i+3] = 0;                          /* fully transparent */
-      } else if (bright > 205) {
-        var a = Math.round(d[i+3] * (235 - bright) / 30);
-        d[i+3] = a;                          /* feathered edge     */
-        if (invertDark && a > 0) { d[i]=255-r; d[i+1]=255-g; d[i+2]=255-b; }
-      } else if (invertDark) {
-        d[i]=255-r; d[i+1]=255-g; d[i+2]=255-b; /* invert → white  */
-      }
-    }
-    ctx.putImageData(id, 0, 0);
-    cb(c.toDataURL());
-  };
-  img.src = src;
-}
 
 function applyTheme(dark) {
   document.documentElement.classList.toggle('dark', dark);
@@ -788,9 +398,6 @@ function toggleTheme() {
 
 document.addEventListener('DOMContentLoaded', function () {
   applyTheme(localStorage.getItem('cr-theme') === 'dark');
-
-  /* Icons */
-  processIcon(DAV_SRC,  true,  function(url) { document.getElementById('dav-icon').src  = url; });
 
   /* TOC active-link highlighting on scroll */
   var sections = document.querySelectorAll('.doc-section');
