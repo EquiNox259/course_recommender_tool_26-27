@@ -1,15 +1,20 @@
 import pandas as pd
 import random, time, smtplib, os, ast
 from email.mime.text import MIMEText
-from flask import Flask, render_template, request, session, redirect, url_for, flash
+from flask import Flask, render_template, request, session, redirect, url_for, flash, jsonify
+from flask_cors import CORS
 from model.recommender import get_candidate_courses
 from model.llm_service import LLMService
 from eligibility.rules import recommender as eligibility_recommender, get_core_courses_for_bucket, detect_minor_intent, build_minor_candidates, parse_minor_remark
-from config import FLASK_SECRET, SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, OTP_EXPIRY_SEC, FEEDBACK_PATH, GSHEETS_CREDENTIALS_PATH, GSHEETS_SPREADSHEET_NAME
+from config import FLASK_SECRET, SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, OTP_EXPIRY_SEC, FEEDBACK_PATH, GSHEETS_CREDENTIALS_PATH, GSHEETS_SPREADSHEET_NAME, FRONTEND_ORIGIN
 import gspread
 
 app = Flask(__name__)
 app.secret_key = FLASK_SECRET
+
+CORS(app, origins=[FRONTEND_ORIGIN], supports_credentials=True)
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'
+app.config['SESSION_COOKIE_SECURE']   = True
 
 # Load student records once when the server boots to keep lookups fast
 STUDENT_DATA_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dataset", "Student_data_combined.csv")
@@ -108,7 +113,7 @@ def send_otp(student_id):
     msg['Subject'] = 'Course Recommender — OTP Verification'
     msg['From']    = SMTP_USER
     msg['To']      = to_email
-    with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout = 15) as server:
+    with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
         server.starttls()
         server.login(SMTP_USER, SMTP_PASS)
         server.send_message(msg)
@@ -461,6 +466,235 @@ def documentation():
 @app.route('/about')
 def about():
     return render_template('about.html')
+
+# ── API Routes (used by Vercel frontend) ──────────────────────────────────
+
+@app.route("/api/send-otp", methods=["POST"])
+def api_send_otp():
+    data       = request.get_json() or {}
+    student_id = str(data.get("student_id") or "").strip().lower()
+    try:
+        otp, resolved_email = send_otp(student_id)
+        session['otp_code']       = otp
+        session['otp_email']      = resolved_email
+        session['otp_sent_at']    = time.time()
+        session['otp_student_id'] = student_id
+        session['otp_sent']       = True
+        session['otp_verified']   = False
+        return jsonify({"status": "ok", "email": resolved_email})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+
+@app.route("/api/verify-otp", methods=["POST"])
+def api_verify_otp():
+    data    = request.get_json() or {}
+    entered = str(data.get("otp_input") or "").strip()
+    stored  = session.get('otp_code')
+    sent_at = session.get('otp_sent_at', 0)
+
+    if time.time() - sent_at > OTP_EXPIRY_SEC:
+        session['otp_sent'] = False
+        return jsonify({"error": "OTP has expired. Please request a new one."}), 400
+    if entered != stored:
+        return jsonify({"error": "Incorrect OTP. Please try again."}), 400
+
+    session['otp_verified'] = True
+    student_id = session.get('otp_student_id', '')
+
+    # Auto-detect degree and year from student_id prefix so the frontend
+    # can pre-fill the form fields without the student having to select them.
+    default_degree = ""
+    default_year   = ""
+    clean_sid = str(student_id).strip().lower()
+    if len(clean_sid) >= 3 and clean_sid[:2].isdigit():
+        default_year = "20" + clean_sid[:2]
+        deg_char = clean_sid[2]
+        if   deg_char == 'b': default_degree = "B.Tech."
+        elif deg_char == 'm': default_degree = "M.Tech."
+        elif deg_char == 'p': default_degree = "Ph.D."
+        elif deg_char == 'd': default_degree = "Dual Degree (B.Tech. + M.Tech.)"
+
+    return jsonify({
+        "status":         "ok",
+        "student_id":     student_id,
+        "default_degree": default_degree,
+        "default_year":   default_year,
+    })
+
+
+@app.route("/api/recommend", methods=["POST"])
+def api_recommend():
+    if not session.get('otp_verified'):
+        return jsonify({"error": "Not authenticated"}), 401
+
+    data       = request.get_json() or {}
+    student_id = session.get('otp_student_id')
+    degree     = data.get("degree", "")
+    year       = data.get("year", "")
+    department = data.get("department", "")
+    interest   = data.get("interest", "")
+    w_ps_raw   = data.get("w_ps")
+    w_rrf_raw  = data.get("w_rrf")
+    manual_history_raw = data.get("manual_history", "")
+
+    if not degree or not year or not department:
+        return jsonify({"error": "Please select Degree, Batch Year, and Department."}), 400
+
+    w_ps  = float(w_ps_raw)  if w_ps_raw  is not None else 0.0
+    w_rrf = float(w_rrf_raw) if w_rrf_raw is not None else 1.0
+
+    session['last_query'] = {'degree': degree, 'year': year, 'department': department}
+
+    automated_history = fetch_automatic_student_history(student_id) or []
+    print(f"[AUTOMATION] Resolved history for {student_id}: {automated_history}")
+
+    minor_branch, _ = detect_minor_intent(interest)
+    is_minor_mode   = bool(minor_branch)
+    minor_candidates = []
+    query_fallback   = False
+    desired_courses  = []
+    minor_query_type = "simple"
+    _processed       = None
+
+    if is_minor_mode:
+        try:
+            _llm = LLMService()
+            _processed = _llm.rephrase_and_extract_intent(interest)
+            minor_query_type = _processed.get("minor_query_type", "simple")
+        except Exception as _mq_err:
+            print(f"[MINOR CLASSIFY FALLBACK] Defaulting to simple. Trace: {_mq_err}")
+            _processed       = None
+            minor_query_type = "simple"
+
+        minor_candidates = build_minor_candidates(minor_branch, degree)
+
+        if minor_query_type == "simple":
+            desired_courses = minor_candidates
+            w_ps = w_rrf = 0.0
+
+    if not interest:
+        w_rrf = 0.0
+        w_ps  = 1.0
+        query_fallback = True
+
+    if not is_minor_mode or minor_query_type == "stacked":
+        _minor_codes = {c['code'] for c in minor_candidates} if (is_minor_mode and minor_query_type == "stacked") else None
+        _pre_query   = _processed if (is_minor_mode and minor_query_type == "stacked" and _processed) else None
+        desired_courses = []
+        try:
+            desired_courses = get_candidate_courses(
+                query=interest,
+                student_history=automated_history,
+                top_k=60,
+                w_rrf=w_rrf,
+                w_ps=w_ps,
+                degree=degree,
+                year=year,
+                department=department,
+                processed_query=_pre_query,
+                minor_course_codes=_minor_codes
+            )
+        except Exception as api_err:
+            print(f"[OFFLINE FALLBACK] Token exhaustion detected. Trace: {api_err}")
+            if is_minor_mode and minor_query_type == "stacked":
+                desired_courses = minor_candidates
+
+    manual_course_history = None
+    if manual_history_raw:
+        manual_course_history = [c.strip().upper() for c in manual_history_raw.split(",") if c.strip()]
+
+    output = eligibility_recommender(
+        student_id=student_id,
+        Degree=degree,
+        year=year,
+        department=department,
+        desired_courses=desired_courses,
+        manual_course_history=manual_course_history or automated_history,
+        w_rrf=w_rrf,
+        w_ps=w_ps,
+        is_minor_mode=is_minor_mode,
+    )
+
+    if "need_manual_history" in output:
+        return jsonify({"need_manual_history": True})
+
+    course_history = output.get("course_history", automated_history)
+    eligible = output.get("eligible", [])
+    i_a_r    = output.get("i_a_r", [])
+    t_s_c    = output.get("t_s_c", [])
+    rejected = output.get("rejected", [])
+
+    if is_minor_mode:
+        _minor_meta = {c['code']: c for c in minor_candidates}
+        _hist = course_history or []
+        for _section in (eligible, i_a_r, t_s_c, rejected):
+            for _entry in _section:
+                _m      = _minor_meta.get(_entry['code'], {})
+                _raw    = _m.get('minor_remark', '')
+                _parsed = (parse_minor_remark(_raw, _hist, department) if _raw else {})
+                _entry['minor_type']           = _m.get('minor_type', '')
+                _entry['minor_remark_note']    = _parsed.get('note', '')
+                _entry['minor_remark_warning'] = _parsed.get('warning', '')
+                if _parsed.get('prereq_unmet') and _entry in eligible:
+                    _entry['minor_prereq_note'] = _parsed['prereq_unmet']
+
+                _mtype       = (_entry.get('minor_type') or '').lower()
+                _want_m_side = 'elective' not in _mtype
+                _divs        = _entry.get('divisions', [])
+                _is_dual     = (any(d.get('is_minor') for d in _divs) and
+                                any(not d.get('is_minor') for d in _divs))
+                if _is_dual:
+                    _preferred = [d for d in _divs if d.get('is_minor') == _want_m_side]
+                    if _preferred:
+                        _entry['divisions']    = _preferred
+                        _entry['default_idx'] = 0
+                        _entry['slot']        = _preferred[0]['slot']
+                        _entry['instructor']  = _preferred[0]['instructor']
+                    _gstats = _entry.get('grade_stats')
+                    if _gstats:
+                        _has_m = any(e.get('division') == 'M'
+                                     for _yr_entries in _gstats.values() for e in _yr_entries)
+                        if _has_m:
+                            _fg = {}
+                            for _yr, _ents in _gstats.items():
+                                _kept = [e for e in _ents if (e.get('division') == 'M') == _want_m_side]
+                                if _kept: _fg[_yr] = _kept
+                            _entry['grade_stats'] = _fg or None
+
+    return jsonify({
+        "eligible":           eligible,
+        "i_a_r":              i_a_r,
+        "t_s_c":              t_s_c,
+        "rejected":           rejected,
+        "course_history":     course_history,
+        "w_ps":               w_ps,
+        "w_rrf":              w_rrf,
+        "query_fallback":     query_fallback,
+        "is_minor_mode":      is_minor_mode,
+        "minor_branch":       minor_branch,
+        "need_manual_history": False,
+    })
+
+
+@app.route("/api/feedback", methods=["POST"])
+def api_feedback():
+    if not session.get('otp_verified'):
+        return jsonify({"error": "Not authenticated"}), 401
+
+    data       = request.get_json() or {}
+    student_id = session.get('otp_student_id', '')
+    email      = resolve_student_email(student_id) if student_id else ''
+    timestamp  = pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')
+
+    try:
+        if _feedback_sheet is None:
+            raise RuntimeError("Feedback sheet not connected at startup.")
+        _feedback_sheet.append_row([email, data.get('rating', ''), data.get('feedback_text', ''), timestamp])
+        return jsonify({"status": "ok"})
+    except Exception as e:
+        print(f"[FEEDBACK ERROR] {e}")
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(debug=True)

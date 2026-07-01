@@ -35,3 +35,6 @@ OTP_EXPIRY_SEC = int(os.environ.get("OTP_EXPIRY_SEC", 600))                    #
 # Feedback Google Sheet
 GSHEETS_CREDENTIALS_PATH = os.environ.get("GSHEETS_CREDENTIALS_PATH", os.path.join(BASE_DIR, "gsheets_service_account.json"))
 GSHEETS_SPREADSHEET_NAME = os.environ.get("GSHEETS_SPREADSHEET_NAME", "Course Recommender Feedback")
+
+# Frontend
+FRONTEND_ORIGIN = os.environ.get("FRONTEND_ORIGIN", "http://localhost:3000")
