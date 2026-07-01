@@ -42,24 +42,7 @@ df_minor_courses["Course Code"] = (
     .str.strip()
     .str.upper()
 )
-BRANCH_TO_CODE = {
-    "Electrical Engineering": "EE",
-    "Mechanical Engineering": "ME",
-    "Computer Science and Engineering": "CS",
-    "Aerospace Engineering": "AE",
-    "Civil Engineering": "CE",
-    "Chemical Engineering": "CL",
-    "Metallurgical Engineering and Materials Science": "MM",
-    "Physics" : "PH", 
-    "Shailesh J. Mehta School of Management": "SOM", 
-    "Chemistry": "CH", 
-    "Statistics": "SI"
-}
 
-df_minor_courses["Branch"] = (
-    df_minor_courses["Branch"]
-    .map(BRANCH_TO_CODE)
-)
 minor_lookup = (
     df_minor_courses
     .groupby("Branch")["Course Code"]
@@ -89,7 +72,6 @@ column_mapping = {
     "course description": "Description",
     "Course description": "Description"
 }
-
 
 df_courses.rename(columns=column_mapping, inplace=True)
 
@@ -254,8 +236,6 @@ def get_semantic_rankings(query, student_history = None, candidate_pool = None, 
     """Runs raw FAISS semantic search and matches against unfiltered rows before exclusions."""
     if student_history is None:
         student_history = []
-    if candidate_pool is None:
-        candidate_pool = build_candidate_pool(student_history)
         
     query_emb = model.encode(query, normalize_embeddings=True).astype(np.float32)
     
@@ -291,8 +271,6 @@ def get_keyword_rankings(primary_keywords, secondary_keywords, student_history =
     """Runs phrase-boundary keyword matching using LLM-extracted n-grams on core-excluded data."""
     if student_history is None:
         student_history = []
-    if candidate_pool is None:
-        candidate_pool = build_candidate_pool(student_history)
     
     df_electives = candidate_pool.copy()
     
@@ -460,6 +438,7 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
                 }:
                     continue
             ps_score = calculate_people_score(student_history, code)
+            ps_score = ps_score*w_ps
             candidates_enriched.append({
                 "code": code,
                 "name": str(row["Course Name"]),
@@ -487,16 +466,19 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
             )
             
             # Update the rankings call to use text for semantic search, and pass arrays directly to keyword search
-            semantic_list = get_semantic_rankings(semantic_query_text, student_history, top_k=50)
+            semantic_list = get_semantic_rankings(semantic_query_text, student_history, candidate_pool, top_k=50)
             keyword_list = get_keyword_rankings(
                 processed_query["primary"],
                 processed_query["secondary"],
                 student_history,
                 candidate_pool,
                 top_k=50
-            )   
+            )
+
+
             
             all_fused_candidates = compute_rrf(semantic_list, keyword_list, k=60)
+
             if not all_fused_candidates:
                 return []
 
@@ -531,7 +513,6 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
             .set_index("_code")
             .to_dict("index")
         )
-
         for code, rrf_score in all_fused_candidates:
             clean_code = str(code).strip().upper()
             ps_score = calculate_people_score(student_history, clean_code)
@@ -559,7 +540,6 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
         exclude_depts = set(d.strip().upper() for d in constraints.get("exclude_departments", []) if d)
         exclude_codes = set(str(c).strip().upper() for c in constraints.get("exclude_courses", []) if c)
         exclude_codes_clean = {c.replace(" ", "") for c in exclude_codes}
-        
         for c in candidates_enriched:
             clean_code = c["code"].strip().upper()
             clean_code_nospace = clean_code.replace(" ", "")
@@ -591,7 +571,6 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
                     continue
             
             filtered_candidates.append(c)
-            
         candidates_enriched = filtered_candidates
 
         # Truncate to top 50 candidates
@@ -629,11 +608,12 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
                             item for item in get_semantic_rankings(
                                 semantic_query_text,
                                 student_history,
-                                top_k=150
+                                candidate_pool,
+                                top_k=50
                             )
                             if str(item).strip().upper() == clean_code
                         ]
-                        single_keyword = [item for item in get_keyword_rankings(primary_keywords, secondary_keywords, student_history, top_k=150) if str(item).strip().upper() == clean_code]
+                        single_keyword = [item for item in get_keyword_rankings(primary_keywords, secondary_keywords, student_history, candidate_pool, top_k=150) if str(item).strip().upper() == clean_code]
                         fused_single = compute_rrf(single_semantic, single_keyword, k=60)
                         calculated_rrf = fused_single[0][1] if fused_single else 0.0
                         text_fused_dict[clean_code] = calculated_rrf
@@ -694,7 +674,6 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
             c["norm_rrf"] = norm_rrf if w_rrf > 0.0 else 0.0
             c["norm_ps"] = norm_ps if w_ps > 0.0 else 0.0
             c["combined_score"] = (w_rrf * c["norm_rrf"]) + (w_ps * c["norm_ps"])
-            print(f"[CHECKPOINT 2] Course: {c['code']} -> Formula: ({w_rrf} * {c['norm_rrf']:.4f}) + ({w_ps} * {c['norm_ps']:.4f}) = {c['combined_score']:.4f}")
           #We take the top 30 courses and give to the LLM, these coures were sorted by their scores  
         candidates_enriched = sorted(candidates_enriched, key=lambda x: x["combined_score"], reverse=True)
         llm_input_pool = candidates_enriched[:30]
