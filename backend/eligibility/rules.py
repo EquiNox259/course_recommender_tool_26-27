@@ -238,11 +238,10 @@ def apply_grade_boost(courses):
             continue
         avg_grade_score = sum(scores) / len(scores)
         # Boost the existing recommendation score
-        course["raw_ts"] = GRADE_WEIGHT * avg_grade_score + (1- GRADE_WEIGHT)* course["raw_ts"]
+        course["raw_ts"] = GRADE_WEIGHT * avg_grade_score + course["raw_ts"]
     # Resort after boosting
     courses.sort(key=lambda x: x["raw_ts"], reverse=True)
     return courses
-
 
 def check_restriction(Degree,year,department,course_code, data=data_modified):
     year=str(year)
@@ -695,23 +694,23 @@ _MINOR_DEPT_ALIASES: dict = {
 }
 
 
-def detect_minor_intent(query: str):
-    """
-    Returns (branch_name, branch_name) when the query is about pursuing a
-    specific minor, or (None, None) otherwise.
-
-    Matching uses longest-alias-wins so 'machine intelligence and data science'
-    beats the shorter 'data science' alias.
-    """
+def detect_minor_intent(query):
     if not query:
+        print("empty query")
         return None, None
+
     ql = query.lower()
-    if 'minor' not in ql:
-        return None, None
-    matched, best_len = None, 0
+    matched = None
+    best_len = 0
+
     for alias, branch in _MINOR_DEPT_ALIASES.items():
+        if alias in ql:
+            print("matched alias:", alias)
+
         if alias in ql and len(alias) > best_len:
-            matched, best_len = branch, len(alias)
+            matched = branch
+            best_len = len(alias)
+
     return matched, matched
 
 
@@ -840,7 +839,7 @@ def _sentence_applies(sentence: str, student_dept: str) -> bool:
 
     student_abbrevs = _DEPT_TO_ABBREVS.get(student_dept)
     if not student_abbrevs:
-        return True       # unknown dept → show everything
+        return True       # unknown dept → show everything (safe default)
 
     if negated and not positive:
         return not bool(student_abbrevs & negated)
@@ -848,7 +847,7 @@ def _sentence_applies(sentence: str, student_dept: str) -> bool:
     if positive and not negated:
         return bool(student_abbrevs & positive)
 
-    return True           # mixed case
+    return True           # mixed case → safe default
 
 
 def parse_minor_remark(remark: str, course_hist: list, department: str = '') -> dict:
@@ -1021,7 +1020,6 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
         if r_status != 'Valid':
             if r_status == 'Restricted by year':
                 meta = course_meta.get(course_code, {})
-
                 rejected_courses.append({
     "code": course_code,
     "name": course_name,
@@ -1187,7 +1185,6 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
         
         # 6. Passed all checks
         meta = course_meta.get(course_code, {})
-
         eligible_courses.append({
     "code": course_code,
     "name": course_name,
@@ -1207,8 +1204,6 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
     "final_score": course.get("raw_ts"),
     "grade_stats": grade_stats_db.get(course_code, None)
 })
-
-        
 
     return {
         "course_history": course_hist,
