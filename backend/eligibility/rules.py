@@ -238,7 +238,10 @@ def apply_grade_boost(courses):
             continue
         avg_grade_score = sum(scores) / len(scores)
         # Boost the existing recommendation score
-        course["raw_ts"] = GRADE_WEIGHT * avg_grade_score + course["raw_ts"]
+        if course["raw_ts"] == 0:
+            course["raw_ts"] = avg_grade_score
+        else:
+            course["raw_ts"] = GRADE_WEIGHT * avg_grade_score + (1-GRADE_WEIGHT)*course["raw_ts"]
     # Resort after boosting
     courses.sort(key=lambda x: x["raw_ts"], reverse=True)
     return courses
