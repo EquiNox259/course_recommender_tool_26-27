@@ -347,12 +347,8 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
 
         # NEW: Garbage-query short circuit
         if not processed_query.get("is_valid", True):
-            print(
-                f"[QUERY REJECTED] {processed_query.get('reject_reason', 'Invalid query')}"
-            )
-            w_rrf = 0.0
-            w_ps = 1.0
-            clean_query = ""  # Override to empty to prevent any semantic/keyword matches
+            print("invalid query")
+            return []
 
         semantic_query = processed_query.get("combined", [])
         primary_keywords = processed_query.get("primary", [])
