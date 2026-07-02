@@ -12,7 +12,8 @@ import gspread
 app = Flask(__name__)
 app.secret_key = FLASK_SECRET
 
-CORS(app, origins=[FRONTEND_ORIGIN], supports_credentials=True)
+CORS(app, origins=[FRONTEND_ORIGIN], allow_headers=["Content-Type"], methods=["GET", "POST", "OPTIONS"],
+     supports_credentials=True)
 app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 app.config['SESSION_COOKIE_SECURE']   = True
 
