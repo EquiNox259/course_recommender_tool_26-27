@@ -735,11 +735,12 @@ def api_recommend():
 
 @app.route("/api/feedback", methods=["POST", "OPTIONS"])
 def api_feedback():
-    if not session.get('otp_verified'):
-        return jsonify({"error": "Not authenticated"}), 401
-    
+
     if request.method == "OPTIONS":
         return jsonify({}), 200
+    
+    if not session.get('otp_verified'):
+        return jsonify({"error": "Not authenticated"}), 401
 
     data       = request.get_json() or {}
     student_id = session.get('otp_student_id', '')

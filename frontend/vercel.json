@@ -1,6 +1,8 @@
 {
   "rewrites": [
     { "source": "/api/(.*)", "destination": "https://courserecommendertool26-27-production.up.railway.app/api/$1" },
+    { "source": "/documentation", "destination": "/documentation.html" },
+    { "source": "/about", "destination": "/about.html" }
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
