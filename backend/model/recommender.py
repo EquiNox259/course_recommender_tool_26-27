@@ -349,7 +349,9 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
         if not processed_query.get("is_valid", True):
             print("invalid query")
             return []
-
+        is_valid = processed_queru.get("is_valid", [])
+        if not is_valid:
+            return []
         semantic_query = processed_query.get("combined", [])
         primary_keywords = processed_query.get("primary", [])
         secondary_keywords = processed_query.get("secondary", [])
