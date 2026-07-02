@@ -327,6 +327,7 @@ try {
             }
             sel.classList.toggle('has-value', !!sel.value);
         }
+        document.getElementById('profile-id-label').textContent = 'Student Profile: ' + data.student_id;
         showOnly('section-profile');
     } else {
         document.getElementById('otp-sent-msg').innerHTML =
