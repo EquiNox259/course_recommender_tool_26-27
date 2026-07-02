@@ -26,11 +26,7 @@ class ValidCourses(BaseModel):
 
 class LLMService:
     def __init__(self):
-        api_key = os.getenv("GEMINI_API_KEY")        
-        if not api_key:
-   
-            api_key = "AIzaSyCVVo74-qZs-1wjsl5ckHMUQpkAbE1izP0"
-            
+        api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
             self.client = None
         else:
