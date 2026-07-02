@@ -8,6 +8,7 @@ from model.llm_service import LLMService
 from eligibility.rules import recommender as eligibility_recommender, get_core_courses_for_bucket, detect_minor_intent, build_minor_candidates, parse_minor_remark
 from config import FLASK_SECRET, SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, OTP_EXPIRY_SEC, DEV_BYPASS_OTP, FEEDBACK_PATH, GSHEETS_CREDENTIALS_PATH, GSHEETS_SPREADSHEET_NAME, FRONTEND_ORIGIN
 import gspread
+import traceback
 
 _FRONTEND = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'frontend')
 app = Flask(__name__,
@@ -580,55 +581,67 @@ def api_recommend():
 
     if request.method == "OPTIONS":
         return jsonify({}), 200
-    
+
     if not session.get('otp_verified'):
         return jsonify({"error": "Not authenticated"}), 401
 
+    # --- 1. EXTRACT FROM INPUTS AND SLIDER PARAMETERS FIRST ---
     data       = request.get_json() or {}
     student_id = session.get('otp_student_id')
     degree     = data.get("degree", "")
     year       = data.get("year", "")
     department = data.get("department", "")
     interest   = data.get("interest", "")
-    w_ps_raw   = data.get("w_ps")
-    w_rrf_raw  = data.get("w_rrf")
-    manual_history_raw = data.get("manual_history", "")
 
     if not degree or not year or not department:
         return jsonify({"error": "Please select Degree, Batch Year, and Department."}), 400
 
+    session['last_query'] = {'degree': degree, 'year': year, 'department': department}
+
+    w_ps_raw  = data.get("w_ps")
+    w_rrf_raw = data.get("w_rrf")
     w_ps  = float(w_ps_raw)  if w_ps_raw  is not None else 0.0
     w_rrf = float(w_rrf_raw) if w_rrf_raw is not None else 1.0
 
-    session['last_query'] = {'degree': degree, 'year': year, 'department': department}
+    print(f"\n[CHECKPOINT 1 - APP.PY] Incoming weights extracted from UI:")
+    print(f" -> w_ps (Peer History Weight): {w_ps}")
+    print(f" -> w_rrf (Semantic Weight):  {w_rrf}")
 
+    # --- 2. AUTOMATED BACKGROUND LOOKUP ---
     automated_history = fetch_automatic_student_history(student_id) or []
     print(f"[AUTOMATION] Resolved history for {student_id}: {automated_history}")
 
-    minor_branch, _ = detect_minor_intent(interest)
-    is_minor_mode   = bool(minor_branch)
+    # --- 3. LLM-FIRST MINOR DETECTION (mirrors current index()) ---
     minor_candidates = []
+    minor_query_type = "simple"
     query_fallback   = False
     desired_courses  = []
-    minor_query_type = "simple"
-    _processed       = None
+
+    try:
+        llm = LLMService()
+        _processed = llm.rephrase_and_extract_intent(interest)
+
+        constraints = _processed.get("constraints", {})
+        minor_list  = constraints.get("minor", [])
+        minor_branch = minor_list[0] if minor_list else None
+
+        is_minor_mode    = bool(minor_branch)
+        minor_query_type = _processed.get("minor_query_type", "simple")
+    except Exception:
+        traceback.print_exc()
+        _processed       = None
+        minor_branch     = None
+        is_minor_mode    = False
+        minor_query_type = "simple"
 
     if is_minor_mode:
-        try:
-            _llm = LLMService()
-            _processed = _llm.rephrase_and_extract_intent(interest)
-            minor_query_type = _processed.get("minor_query_type", "simple")
-        except Exception as _mq_err:
-            print(f"[MINOR CLASSIFY FALLBACK] Defaulting to simple. Trace: {_mq_err}")
-            _processed       = None
-            minor_query_type = "simple"
-
         minor_candidates = build_minor_candidates(minor_branch, degree)
-
         if minor_query_type == "simple":
             desired_courses = minor_candidates
-            w_ps = w_rrf = 0.0
+            w_rrf = 0.0
+            w_ps  = 0.0
 
+    # Check if the user left the text field blank
     if not interest:
         w_rrf = 0.0
         w_ps  = 1.0
@@ -636,7 +649,7 @@ def api_recommend():
 
     if not is_minor_mode or minor_query_type == "stacked":
         _minor_codes = {c['code'] for c in minor_candidates} if (is_minor_mode and minor_query_type == "stacked") else None
-        _pre_query   = _processed if (is_minor_mode and minor_query_type == "stacked" and _processed) else None
+        _pre_query   = _processed          # reuse the single LLM call, as index() does
         desired_courses = []
         try:
             desired_courses = get_candidate_courses(
@@ -651,15 +664,19 @@ def api_recommend():
                 processed_query=_pre_query,
                 minor_course_codes=_minor_codes
             )
-        except Exception as api_err:
-            print(f"[OFFLINE FALLBACK] Token exhaustion detected. Trace: {api_err}")
-            if is_minor_mode and minor_query_type == "stacked":
-                desired_courses = minor_candidates
+        except Exception:
+            print("===== REAL TRACEBACK =====")
+            traceback.print_exc()
+            print("==========================")
+            return jsonify({"error": "Recommendation engine failed. Check server logs."}), 500
 
+    # --- Manual history (second phase) ---
+    manual_history_raw = data.get("manual_history", "")
     manual_course_history = None
     if manual_history_raw:
         manual_course_history = [c.strip().upper() for c in manual_history_raw.split(",") if c.strip()]
 
+    # --- 4. ELIGIBILITY GATEWAY & SCORING ---
     output = eligibility_recommender(
         student_id=student_id,
         Degree=degree,
@@ -672,6 +689,7 @@ def api_recommend():
         is_minor_mode=is_minor_mode,
     )
 
+    # --- 5. COMPILING DATA OUTPUT ARRAYS ---
     if "need_manual_history" in output:
         return jsonify({"need_manual_history": True})
 
@@ -681,6 +699,7 @@ def api_recommend():
     t_s_c    = output.get("t_s_c", [])
     rejected = output.get("rejected", [])
 
+    # --- 5a. MINOR MODE: annotate every entry with Type + Remark ---
     if is_minor_mode:
         _minor_meta = {c['code']: c for c in minor_candidates}
         _hist = course_history or []
@@ -703,7 +722,7 @@ def api_recommend():
                 if _is_dual:
                     _preferred = [d for d in _divs if d.get('is_minor') == _want_m_side]
                     if _preferred:
-                        _entry['divisions']    = _preferred
+                        _entry['divisions']   = _preferred
                         _entry['default_idx'] = 0
                         _entry['slot']        = _preferred[0]['slot']
                         _entry['instructor']  = _preferred[0]['instructor']
@@ -719,19 +738,18 @@ def api_recommend():
                             _entry['grade_stats'] = _fg or None
 
     return jsonify({
-        "eligible":           eligible,
-        "i_a_r":              i_a_r,
-        "t_s_c":              t_s_c,
-        "rejected":           rejected,
-        "course_history":     course_history,
-        "w_ps":               w_ps,
-        "w_rrf":              w_rrf,
-        "query_fallback":     query_fallback,
-        "is_minor_mode":      is_minor_mode,
-        "minor_branch":       minor_branch,
+        "eligible":            eligible,
+        "i_a_r":               i_a_r,
+        "t_s_c":               t_s_c,
+        "rejected":            rejected,
+        "course_history":      course_history,
+        "w_ps":                w_ps,
+        "w_rrf":               w_rrf,
+        "query_fallback":      query_fallback,
+        "is_minor_mode":       is_minor_mode,
+        "minor_branch":        minor_branch,
         "need_manual_history": False,
     })
-
 
 @app.route("/api/feedback", methods=["POST", "OPTIONS"])
 def api_feedback():
@@ -756,8 +774,8 @@ def api_feedback():
         print(f"[FEEDBACK ERROR] {e}")
         return jsonify({"error": str(e)}), 500
     
-import resource
-print(f"[MEM] Peak RSS at boot: {resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024:.0f} MB")
+#import resource
+#print(f"[MEM] Peak RSS at boot: {resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024:.0f} MB")
 
 if __name__ == "__main__":
     app.run(debug=True)

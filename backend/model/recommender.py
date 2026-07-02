@@ -10,7 +10,6 @@ from sentence_transformers import SentenceTransformer
 from config import MODEL_ASSETS_DIR, MODEL_DATA_DIR, RUNNING_COURSES_PATH, RUNNING_COURSES_PATH_ALT, CORE_COURSES_PATH, MINOR_COURSES_PATH
 from model.llm_service import LLMService
 import time
-import traceback
 
 MODEL_PATH = os.path.join(MODEL_ASSETS_DIR, "course_encoder_new")
 FAISS_INDEX_PATH = os.path.join(MODEL_DATA_DIR, "course_index_new.faiss")
