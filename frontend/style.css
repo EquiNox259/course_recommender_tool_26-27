@@ -1996,3 +1996,30 @@ html, body { overflow-x: hidden; max-width: 100%; }
       color: #F9AB00;
       padding: 4px;
     }
+
+#helper-tips {
+    background-color: #fafafa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 24px;
+    color: #444;
+}
+
+#helper-tips h4 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+    font-size: 15px;
+}
+
+#helper-tips ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+#helper-tips li {
+    font-size: 13.5px;
+    margin-bottom: 6px;
+    padding-left: 12px;
+    border-left: 2px solid #4a90e2; /* Subtle accent matching the blue button */
+}
