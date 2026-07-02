@@ -6,16 +6,21 @@ from flask_cors import CORS
 from model.recommender import get_candidate_courses
 from model.llm_service import LLMService
 from eligibility.rules import recommender as eligibility_recommender, get_core_courses_for_bucket, detect_minor_intent, build_minor_candidates, parse_minor_remark
-from config import FLASK_SECRET, SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, OTP_EXPIRY_SEC, FEEDBACK_PATH, GSHEETS_CREDENTIALS_PATH, GSHEETS_SPREADSHEET_NAME, FRONTEND_ORIGIN
+from config import FLASK_SECRET, SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, OTP_EXPIRY_SEC, DEV_BYPASS_OTP, FEEDBACK_PATH, GSHEETS_CREDENTIALS_PATH, GSHEETS_SPREADSHEET_NAME, FRONTEND_ORIGIN
 import gspread
 
-app = Flask(__name__)
+_FRONTEND = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'frontend')
+app = Flask(__name__,
+            template_folder=_FRONTEND,
+            static_folder=_FRONTEND,
+            static_url_path='')
 app.secret_key = FLASK_SECRET
 
 CORS(app, origins=[FRONTEND_ORIGIN], allow_headers=["Content-Type"], methods=["GET", "POST", "OPTIONS"],
      supports_credentials=True)
 app.config['SESSION_COOKIE_SAMESITE'] = 'None'
-app.config['SESSION_COOKIE_SECURE']   = True
+app.config['SESSION_COOKIE_SECURE']   = os.environ.get('FLASK_ENV') == 'production'
+
 
 # Load student records once when the server boots to keep lookups fast
 STUDENT_DATA_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dataset", "Student_data_combined.csv")
@@ -482,12 +487,43 @@ def about():
 
 # ── API Routes (used by Vercel frontend) ──────────────────────────────────
 
-@app.route("/api/send-otp", methods=["POST"])
+@app.route("/api/send-otp", methods=["POST", "OPTIONS"])
 def api_send_otp():
+    if request.method == "OPTIONS":
+        return jsonify({}), 200
     data       = request.get_json() or {}
     student_id = str(data.get("student_id") or "").strip().lower()
     try:
-        otp, resolved_email = send_otp(student_id)
+        resolved_email = resolve_student_email(student_id)   # always validate roll number
+
+        if DEV_BYPASS_OTP:
+            # Skip email entirely — mark session as verified immediately
+            session['otp_student_id'] = student_id
+            session['otp_email']      = resolved_email
+            session['otp_verified']   = True
+            session['otp_sent']       = True
+
+            # Return same shape as verify-otp so the frontend can pre-fill fields
+            clean_sid      = student_id.strip().lower()
+            default_degree = ""
+            default_year   = ""
+            if len(clean_sid) >= 3 and clean_sid[:2].isdigit():
+                default_year = "20" + clean_sid[:2]
+                deg_char = clean_sid[2]
+                if   deg_char == 'b': default_degree = "B.Tech."
+                elif deg_char == 'm': default_degree = "M.Tech."
+                elif deg_char == 'p': default_degree = "Ph.D."
+                elif deg_char == 'd': default_degree = "Dual Degree (B.Tech. + M.Tech.)"
+
+            return jsonify({
+                "status":         "ok",
+                "bypassed":       True,
+                "student_id":     student_id,
+                "default_degree": default_degree,
+                "default_year":   default_year,
+            })
+
+        otp, _ = send_otp(student_id)
         session['otp_code']       = otp
         session['otp_email']      = resolved_email
         session['otp_sent_at']    = time.time()
@@ -495,12 +531,15 @@ def api_send_otp():
         session['otp_sent']       = True
         session['otp_verified']   = False
         return jsonify({"status": "ok", "email": resolved_email})
+
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
 
-@app.route("/api/verify-otp", methods=["POST"])
+@app.route("/api/verify-otp", methods=["POST", "OPTIONS"])
 def api_verify_otp():
+    if request.method == "OPTIONS":
+        return jsonify({}), 200
     data    = request.get_json() or {}
     entered = str(data.get("otp_input") or "").strip()
     stored  = session.get('otp_code')
@@ -536,10 +575,13 @@ def api_verify_otp():
     })
 
 
-@app.route("/api/recommend", methods=["POST"])
+@app.route("/api/recommend", methods=["POST", "OPTIONS"])
 def api_recommend():
     if not session.get('otp_verified'):
         return jsonify({"error": "Not authenticated"}), 401
+    
+    if request.method == "OPTIONS":
+        return jsonify({}), 200
 
     data       = request.get_json() or {}
     student_id = session.get('otp_student_id')
@@ -690,10 +732,13 @@ def api_recommend():
     })
 
 
-@app.route("/api/feedback", methods=["POST"])
+@app.route("/api/feedback", methods=["POST", "OPTIONS"])
 def api_feedback():
     if not session.get('otp_verified'):
         return jsonify({"error": "Not authenticated"}), 401
+    
+    if request.method == "OPTIONS":
+        return jsonify({}), 200
 
     data       = request.get_json() or {}
     student_id = session.get('otp_student_id', '')

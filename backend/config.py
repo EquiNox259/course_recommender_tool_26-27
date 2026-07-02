@@ -32,6 +32,7 @@ SMTP_USER     = os.environ["SMTP_USER"]
 SMTP_PASS     = os.environ["SMTP_PASS"]
 FLASK_SECRET  = os.environ["FLASK_SECRET"]
 OTP_EXPIRY_SEC = int(os.environ.get("OTP_EXPIRY_SEC", 600))                    # 10 minutes
+DEV_BYPASS_OTP  = os.environ.get("DEV_BYPASS_OTP", "false").lower() == "true"
 
 # Feedback Google Sheet
 _gsheets_json = os.environ.get("GSHEETS_SERVICE_ACCOUNT_JSON")
@@ -47,4 +48,4 @@ else:
 GSHEETS_SPREADSHEET_NAME = os.environ.get("GSHEETS_SPREADSHEET_NAME", "Course Recommender Feedback")
 
 # Frontend
-FRONTEND_ORIGIN = os.environ.get("FRONTEND_ORIGIN", "http://localhost:3000")
+FRONTEND_ORIGIN = os.environ.get("FRONTEND_ORIGIN", "http://127.0.0.1:5000")

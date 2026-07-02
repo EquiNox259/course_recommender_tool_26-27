@@ -7,7 +7,7 @@ import pandas as pd
 import faiss
 import re
 from sentence_transformers import SentenceTransformer
-from config import MODEL_ASSETS_DIR, MODEL_DATA_DIR, RUNNING_COURSES_PATH, RUNNING_COURSES_PATH_ALT, MINOR_COURSES_PATH
+from config import MODEL_ASSETS_DIR, MODEL_DATA_DIR, RUNNING_COURSES_PATH, RUNNING_COURSES_PATH_ALT, CORE_COURSES_PATH, MINOR_COURSES_PATH
 from model.llm_service import LLMService
 import time
 import traceback
@@ -82,7 +82,7 @@ df_courses["Course Code"] = (
     .str.upper()
 )
 
-df_core = pd.read_csv("dataset/ASC_Core_Courses.csv")
+df_core = pd.read_csv(CORE_COURSES_PATH)
 
 core_course_codes = set(
     df_core["Course Code"]

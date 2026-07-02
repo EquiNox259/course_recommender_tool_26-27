@@ -17,7 +17,7 @@
 <nav class="navbar">
   <div class="nav-left">
     <a href="/about" class="nav-brand-link">
-      <img id="dav-icon" class="nav-logo" src="./static/DAV_Logo.svg" alt="DAV">
+      <img id="dav-icon" class="nav-logo" src="./DAV_Logo.svg" alt="DAV">
       <span class="nav-title">Data Analytics and Visualization Team</span>
     </a>
   </div>
@@ -26,7 +26,7 @@
     <a href="/about" class="nav-docs-link">About</a>
     <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">☀️</button>
     <a href="https://ugac-iitb.github.io/UGAC-IITB/divisions/9" target="_blank" rel="noopener">
-        <img id="ugac-icon" class="nav-ugac" src="./static/ugac_logo.svg" alt="UGAC">
+        <img id="ugac-icon" class="nav-ugac" src="./ugac_logo.svg" alt="UGAC">
     </a>
   </div>
 </nav>
@@ -307,11 +307,32 @@ async function doSendOtp() {
   errEl.style.display = 'none';
   const btn = document.getElementById('send-otp-btn');
   setLoading(btn, true);
-  try {
+  
+
+try {
     const data = await api('/api/send-otp', { student_id: studentId });
-    document.getElementById('otp-sent-msg').innerHTML =
-      `An OTP has been sent to <strong>${data.email}</strong>. Valid for 10 minutes.`;
-    showOnly('section-verify-otp');
+    if (data.bypassed) {
+        // Dev bypass — treat exactly like a successful OTP verification
+        if (data.default_degree) {
+            const sel = document.getElementById('degree');
+            for (let opt of sel.options) {
+                if (opt.value === data.default_degree) { sel.value = data.default_degree; break; }
+            }
+            sel.classList.toggle('has-value', !!sel.value);
+        }
+        if (data.default_year) {
+            const sel = document.getElementById('year');
+            for (let opt of sel.options) {
+                if (opt.value === data.default_year) { sel.value = data.default_year; break; }
+            }
+            sel.classList.toggle('has-value', !!sel.value);
+        }
+        showOnly('section-profile');
+    } else {
+        document.getElementById('otp-sent-msg').innerHTML =
+          `An OTP has been sent to <strong>${data.email}</strong>. Valid for 10 minutes.`;
+        showOnly('section-verify-otp');
+    }
   } catch(e) {
     errEl.textContent = '⚠ ' + e.message;
     errEl.style.display = '';
@@ -352,7 +373,6 @@ async function doVerifyOtp() {
 function getWeights() {
   const preset = (document.querySelector('input[name="weight_preset"]:checked') || {}).value || 'semantic';
   if (preset === 'people')  return { w_rrf: 0.0, w_ps: 1.0 };
-  if (preset === 'hybrid')  return { w_rrf: 0.5, w_ps: 0.5 };
   return { w_rrf: 1.0, w_ps: 0.0 };
 }
 
