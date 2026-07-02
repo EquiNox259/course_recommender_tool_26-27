@@ -252,8 +252,9 @@
    Set this to your Render backend URL.
    During local dev you can override via:  localStorage.setItem('API_BASE','http://127.0.0.1:5000')
 ──────────────────────────────────────────────────────────────── */
-// Render :  https://course-recommnder-by-dav-team.onrender.com
-const API_BASE = localStorage.getItem('API_BASE') || 'https://courserecommendertool26-27-production-c019.up.railway.app';
+// Render :  
+// Railway:  https://courserecommendertool26-27-production-c019.up.railway.app
+const API_BASE = localStorage.getItem('API_BASE') || 'https://course-recommnder-by-dav-team.onrender.com';
 
 /* ── Pending recommend args (for manual-history retry) ───────── */
 let _pendingRecommendArgs = null;

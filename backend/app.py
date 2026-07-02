@@ -754,6 +754,9 @@ def api_feedback():
     except Exception as e:
         print(f"[FEEDBACK ERROR] {e}")
         return jsonify({"error": str(e)}), 500
+    
+import resource
+print(f"[MEM] Peak RSS at boot: {resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024:.0f} MB")
 
 if __name__ == "__main__":
     app.run(debug=True)
