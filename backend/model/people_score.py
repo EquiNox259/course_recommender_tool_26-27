@@ -57,7 +57,7 @@ def main():
     courses_df = pd.read_csv(COURSES_DATA_PATH)
 
    # FIX 1: Clean hidden BOM characters and strip extra whitespace from column headers
-    courses_df.columns = courses_df.columns.str.replace(r'^\ufeff', '', regex=True).str.strip()
+    courses_df.columns = courses_df.columns.str.lstrip('\ufeff').str.strip()
     
     # PRINT DEBUG: Let's see exactly what Pandas sees for columns
     print(f"Detected columns in metadata: {list(courses_df.columns)}")

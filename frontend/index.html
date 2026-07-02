@@ -22,6 +22,7 @@
     </a>
   </div>
   <div class="nav-right">
+    <a href="#" id="nav-favs-link" class="nav-docs-link" onclick="event.preventDefault(); showFavouritesModal()">Favourites</a>
     <a href="/documentation" class="nav-docs-link">Documentation</a>
     <a href="/about" class="nav-docs-link">About</a>
     <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">☀️</button>
@@ -232,6 +233,19 @@
   </div><!-- /section-results -->
 
 </main><!-- /content -->
+
+<!-- Favourites Modal -->
+<div id="favs-modal" class="modal-overlay" style="display:none;" onclick="closeFavouritesModal()">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Favourite Courses</h2>
+      <button class="modal-close-btn" onclick="closeFavouritesModal()">&times;</button>
+    </div>
+    <div id="favs-list-container">
+      <!-- Favourites will be loaded dynamically here -->
+    </div>
+  </div>
+</div>
 
 <!-- Footer -->
 <footer style="text-align:center;padding:24px;font-family:var(--font-body);font-size:14px;color:var(--tp);border-top:1px solid var(--bc)">
@@ -516,6 +530,89 @@ function emptyMsg(key) {
   return '';
 }
 
+/* ── Favourites Controller ──────────────────────────────────── */
+function isFavourite(code) {
+  try {
+    const favs = JSON.parse(localStorage.getItem('fav_courses') || '[]');
+    return favs.some(f => f.code === code);
+  } catch (e) {
+    return false;
+  }
+}
+
+function toggleFavourite(btn, code, name) {
+  try {
+    let favs = JSON.parse(localStorage.getItem('fav_courses') || '[]');
+    const idx = favs.findIndex(f => f.code === code);
+    if (idx > -1) {
+      favs.splice(idx, 1);
+      btn.textContent = '☆';
+      btn.style.color = 'var(--ts)';
+    } else {
+      favs.push({ code, name });
+      btn.textContent = '★';
+      btn.style.color = '#F9AB00';
+    }
+    localStorage.setItem('fav_courses', JSON.stringify(favs));
+  } catch (e) {
+    console.error('Failed to toggle favourite:', e);
+  }
+}
+
+function showFavouritesModal() {
+  const modal = document.getElementById('favs-modal');
+  const container = document.getElementById('favs-list-container');
+  container.innerHTML = '';
+  
+  try {
+    const favs = JSON.parse(localStorage.getItem('fav_courses') || '[]');
+    if (favs.length === 0) {
+      container.innerHTML = `<p style="text-align:center;color:var(--tm);margin:20px 0;">No favourite courses added yet.</p>`;
+    } else {
+      favs.forEach(f => {
+        const el = document.createElement('div');
+        el.className = 'fav-item';
+        el.innerHTML = `
+          <div class="fav-item-info">
+            <span class="fav-item-code">${esc(f.code)}</span>
+            <span class="fav-item-name">${esc(f.name)}</span>
+          </div>
+          <button class="fav-remove-btn" onclick="removeFromFavs(this, '${esc(f.code)}')">★</button>
+        `;
+        container.appendChild(el);
+      });
+    }
+  } catch (e) {
+    container.innerHTML = `<p style="text-align:center;color:var(--no);margin:20px 0;">Error loading favourites.</p>`;
+  }
+  modal.style.display = 'flex';
+}
+
+function closeFavouritesModal() {
+  document.getElementById('favs-modal').style.display = 'none';
+}
+
+function removeFromFavs(btn, code) {
+  try {
+    let favs = JSON.parse(localStorage.getItem('fav_courses') || '[]');
+    favs = favs.filter(f => f.code !== code);
+    localStorage.setItem('fav_courses', JSON.stringify(favs));
+    
+    // Refresh modal list view
+    showFavouritesModal();
+    
+    // Update active page stars
+    document.querySelectorAll('.fav-star-btn').forEach(starBtn => {
+      if (starBtn.getAttribute('data-fav-code') === code) {
+        starBtn.textContent = '☆';
+        starBtn.style.color = 'var(--ts)';
+      }
+    });
+  } catch (e) {
+    console.error('Failed to remove favourite:', e);
+  }
+}
+
 function esc(s) {
   return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
@@ -563,12 +660,16 @@ function buildEntry(c, section, isMinorMode, isLast) {
         : '');
 
   /* ── code row ── */
+  const isFav = isFavourite(c.code);
+  const starIcon = isFav ? '★' : '☆';
+  const starColor = isFav ? 'color:#F9AB00;' : 'color:var(--ts);';
   let html = `
     <div class="entry-code-row">
       <span style="font-family:'Source Serif 4',serif;font-size:17px;font-weight:600;opacity:0.75;">${esc(c.code)}</span>
       <span class="entry-name">: ${esc(c.name)}</span>
       ${minorLabelHtml}
-      <span class="entry-chevron" style="margin-left:auto;flex-shrink:0">&#9662;</span>
+      <button data-fav-code="${esc(c.code)}" class="fav-star-btn" style="margin-left:auto;margin-right:12px;background:none;border:none;cursor:pointer;font-size:20px;padding:4px;line-height:1;${starColor}outline:none;" onclick="event.stopPropagation(); toggleFavourite(this, '${esc(c.code)}', '${esc(c.name)}')">${starIcon}</button>
+      <span class="entry-chevron" style="flex-shrink:0">&#9662;</span>
     </div>`;
 
   /* ── division dropdown ── */

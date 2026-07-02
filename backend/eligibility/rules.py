@@ -1010,15 +1010,12 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
         # 3. Check restriction
         if norm_code(course_code) in course_hist_norm:
             continue
-        if is_minor_mode:
-            r_status = 'Valid'
-        else:
-            r_status = check_restriction(
-                Degree=Degree,
-                year=year,
-                department=department,
-                course_code=course_code
-            )
+        r_status = check_restriction(
+            Degree=Degree,
+            year=year,
+            department=department,
+            course_code=course_code
+        )
         
         if r_status != 'Valid':
             if r_status == 'Restricted by year':

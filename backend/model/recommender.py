@@ -59,7 +59,7 @@ df_courses = pd.read_csv(COURSE_META_PATH)
 
 df_courses.columns = (
     df_courses.columns
-    .str.replace(r'^\ufeff', '', regex=True)
+    .str.lstrip('\ufeff')
     .str.strip()
 )
 column_mapping = {

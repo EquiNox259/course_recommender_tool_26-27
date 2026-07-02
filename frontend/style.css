@@ -1759,26 +1759,26 @@ html, body { overflow-x: hidden; max-width: 100%; }
       .score-grid, .elig-grid { grid-template-columns: 1fr; }
       .flow-arrow { display: none; }
     }
-
-  /* ──  Helper Prompts───────────────────────────────────────────────── */
+ 
+  /* ──  Helper Prompts ───────────────────────────────────────────────── */
 .search-helper {
   margin-top: 6px;
   margin-bottom: 22px;
 }
-
+ 
 .helper-rows {
   display: flex;
   flex-direction: column;
   gap: 7px;
 }
-
+ 
 .helper-row {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 6px;
 }
-
+ 
 .helper-cat {
   font-family: var(--font-body);
   font-size: 11.5px;
@@ -1789,7 +1789,7 @@ html, body { overflow-x: hidden; max-width: 100%; }
   min-width: 78px;
   flex-shrink: 0;
 }
-
+ 
 .helper-chip {
   font-family: var(--font-body);
   font-size: 12.5px;
@@ -1797,18 +1797,19 @@ html, body { overflow-x: hidden; max-width: 100%; }
   background: var(--pi);
   border: 1px solid var(--bc);
   border-radius: 50px;
-  padding: 3px 11px;
+  padding: 4px 12px;
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-  user-select: none;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
 }
-
+ 
 .helper-chip:hover {
-  background: var(--al);
-  color: var(--ac);
-  border-color: var(--ac);
+  background: var(--ph);
+  color: var(--tp);
+  border-color: var(--bi);
 }
-
+ 
 .helper-footer {
   display: flex;
   align-items: center;
@@ -1817,13 +1818,13 @@ html, body { overflow-x: hidden; max-width: 100%; }
   gap: 8px;
   margin-top: 10px;
 }
-
+ 
 .helper-tip {
   font-family: var(--font-body);
   font-size: 12px;
   color: var(--tm);
 }
-
+ 
 .helper-expand-btn {
   background: none;
   border: none;
@@ -1886,3 +1887,112 @@ html, body { overflow-x: hidden; max-width: 100%; }
   .helper-cat { min-width: 60px; font-size: 11px; }
   .helper-chip { font-size: 12px; padding: 3px 9px; }
 }
+    /* ── Favourites Modal overlay ── */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.4);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+      backdrop-filter: blur(4px);
+    }
+
+    /* Modal box card */
+    .modal-card {
+      background: var(--pc);
+      border: 1px solid var(--bc);
+      border-radius: 12px;
+      width: 90%;
+      max-width: 500px;
+      max-height: 80vh;
+      box-shadow: var(--shh);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: modalFadeIn 0.25s ease-out;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .modal-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--bd);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--pi);
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 20px;
+      color: var(--tp);
+    }
+
+    .modal-close-btn {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--ts);
+      line-height: 1;
+    }
+
+    .modal-close-btn:hover {
+      color: var(--tp);
+    }
+
+    #favs-list-container {
+      padding: 20px;
+      overflow-y: auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .fav-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: var(--pi);
+      border: 1px solid var(--bd);
+      border-radius: 8px;
+    }
+
+    .fav-item-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .fav-item-code {
+      font-family: 'Source Serif 4', serif;
+      font-weight: 600;
+      font-size: 16px;
+      color: var(--tp);
+    }
+
+    .fav-item-name {
+      font-size: 13px;
+      color: var(--ts);
+    }
+
+    .fav-remove-btn {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #F9AB00;
+      padding: 4px;
+    }
