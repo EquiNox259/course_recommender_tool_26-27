@@ -22,7 +22,7 @@
     </a>
   </div>
   <div class="nav-right">
-    <a href="/favourites" class="nav-docs-link" onclick="event.preventDefault(); showFavouritesModal()><span class="t-full">Favourites</span><span class="t-short">Favs</span></a>
+    <a href="#" class="nav-docs-link" onclick="event.preventDefault(); showFavouritesModal()><span class="t-full">Favourites</span><span class="t-short">Favs</span></a>
     <a href="/documentation" class="nav-docs-link"><span class="t-full">Documentation</span><span class="t-short">Docs</span></a>
     <a href="/about" class="nav-docs-link">About</a>
     <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">☀️</button>
@@ -579,7 +579,7 @@ function showFavouritesModal() {
   try {
     const favs = JSON.parse(localStorage.getItem('fav_courses') || '[]');
     if (favs.length === 0) {
-      container.innerHTML = `<p style="text-align:center;color:var(--tm);margin:20px 0;">No favourite courses added yet.</p>`;
+      container.innerHTML = `<p style="text-align:center;color:var(--tm);margin:20px 0;">No favourite courses added yet</p>`;
     } else {
       favs.forEach(f => {
         const el = document.createElement('div');
