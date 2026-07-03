@@ -205,7 +205,7 @@ def index():
 
             # Guard against blank Degree/Year/Department
             if not degree or not year or not department:
-                flash("Please select Department before generating recommendations.", "recommend_error")
+                flash("Please select the Department before generating recommendations.", "recommend_error")
                 return redirect(url_for('index'))
 
             # Preserve the student's choices (except for interests) across any future redirect
@@ -594,7 +594,7 @@ def api_recommend():
     interest   = data.get("interest", "")
 
     if not degree or not year or not department:
-        return jsonify({"error": "Please select Department."}), 400
+        return jsonify({"error": "Please the select Department."}), 400
 
     session['last_query'] = {'degree': degree, 'year': year, 'department': department}
 
