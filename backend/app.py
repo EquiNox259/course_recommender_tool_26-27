@@ -205,7 +205,7 @@ def index():
 
             # Guard against blank Degree/Year/Department
             if not degree or not year or not department:
-                flash("Please select Degree, Batch Year, and Department before generating recommendations.", "recommend_error")
+                flash("Please select Department before generating recommendations.", "recommend_error")
                 return redirect(url_for('index'))
 
             # Preserve the student's choices (except for interests) across any future redirect
