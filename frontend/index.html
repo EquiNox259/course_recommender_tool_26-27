@@ -415,7 +415,7 @@ async function doRecommend() {
   const interest   = document.getElementById('interest').value.trim();
 
   if (!degree || !year || !department) {
-    showToast('Please select Degree, Batch Year, and Department before generating recommendations.', 'error');
+    showToast('Please select the Department before generating recommendations.', 'error');
     return;
   }
 
