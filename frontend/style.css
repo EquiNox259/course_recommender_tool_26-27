@@ -791,6 +791,13 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   margin-bottom: 16px;
 }
 
+.entry-code {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 600;
+  opacity: 0.75;
+}
+
 .entry-code-row {
   display: flex;
   align-items: baseline;
@@ -1255,9 +1262,12 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   /* ── Course entries ── */
   .entry { padding: 14px 12px; }
   .entry-code-row { flex-wrap: wrap; row-gap: 2px; }
-  .entry-name { font-size: 14px; }
-  .entry-meta { font-size: 12.5px; }
-
+  .entry-code { font-size: 15px; }
+  .entry-name { font-size: 13.5px; }
+  .entry-meta { font-size: 12px; }
+  .score { font-size: 11.5px; }
+  .entry-desc-text { font-size: 12.5px; }
+  .entry-desc-label, .grade-stats-label { font-size: 11px; letter-spacing: 1px; }
   .tab-btn { padding: 12px 14px; font-size: 13.5px; }
   .tabs-container { scrollbar-width: none; -webkit-overflow-scrolling: touch; }
   .tabs-container::-webkit-scrollbar { display: none; }
@@ -1269,11 +1279,15 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   /* ── Badges ── */
   .badge { font-size: 10px; padding: 2px 8px; }
 
-  /* ── Grade statistics: stack years vertically on mobile ── */
-  .grade-years-row { flex-direction: column; gap: 20px; }
-  .grade-divs-row  { flex-wrap: wrap; gap: 12px; }
-  .grade-chart-row { flex-wrap: wrap; gap: 12px; }
-  .grade-pie-chart { max-width: 130px; height: auto; }
+ /* ── Grade statistics: side-by-side years, reduced pie size ── */
+  .grade-year-block { min-width: 0; flex: 1 1 45%; }
+  .grade-years-row  { gap: 12px; }
+  .grade-year-name { font-size: 11.5px; letter-spacing: 1px; }
+  .grade-div-name, .grade-pct-item { font-size: 11px; }
+  .grade-chart-row  { flex-direction: column; align-items: center; gap: 8px; }
+  .grade-pct-col    { flex-direction: row; flex-wrap: wrap; gap: 4px 12px; justify-content: center; }
+  .grade-divs-row   { flex-wrap: wrap; gap: 12px; }
+  .grade-pie-chart  { max-width: 110px; height: auto !important; aspect-ratio: 1 / 1; }
  
   /* ── Prevent any element from causing horizontal scroll ── */
   .results-grid { gap: 14px; }
