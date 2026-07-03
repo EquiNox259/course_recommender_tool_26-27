@@ -281,8 +281,9 @@
    During local dev you can override via:  localStorage.setItem('API_BASE','http://127.0.0.1:5000')
 ──────────────────────────────────────────────────────────────── */
 // Render :  https://course-recommnder-by-dav-team.onrender.com
-// Railway:  
-const API_BASE = localStorage.getItem('API_BASE') || 'https://courserecommendertool26-27-production-c019.up.railway.app';
+// Railway:  https://courserecommendertool26-27-production-c019.up.railway.app
+// gcp:      
+const API_BASE = localStorage.getItem('API_BASE') || 'https://course-recommender-dav-team-703981894282.asia-south1.run.app';
 
 /* ── Pending recommend args (for manual-history retry) ───────── */
 let _pendingRecommendArgs = null;
