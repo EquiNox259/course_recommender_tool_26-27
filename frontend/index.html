@@ -679,8 +679,10 @@ function buildEntry(c, section, isMinorMode, isLast) {
       <span style="font-family:'Source Serif 4',serif;font-size:17px;font-weight:600;opacity:0.75;">${esc(c.code)}</span>
       <span class="entry-name">: ${esc(c.name)}</span>
       ${minorLabelHtml}
-      <button data-fav-code="${esc(c.code)}" class="fav-star-btn" style="margin-left:auto;margin-right:12px;background:none;border:none;cursor:pointer;font-size:20px;padding:4px;line-height:1;${starColor}outline:none;" onclick="event.stopPropagation(); toggleFavourite(this, '${esc(c.code)}', '${esc(c.name)}')">${starIcon}</button>
-      <span class="entry-chevron" style="flex-shrink:0">&#9662;</span>
+      <span class="entry-actions" style="margin-left:auto;display:inline-flex;align-items:center;gap:6px;flex-shrink:0;">
+        <button data-fav-code="${esc(c.code)}" class="fav-star-btn" style="background:none;border:none;cursor:pointer;font-size:20px;padding:4px;line-height:1;${starColor}outline:none;" onclick="event.stopPropagation(); toggleFavourite(this, '${esc(c.code)}', '${esc(c.name)}')">${starIcon}</button>
+        <span class="entry-chevron">&#9662;</span>
+      </span>
     </div>`;
 
   /* ── division dropdown ── */
