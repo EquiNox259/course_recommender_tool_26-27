@@ -1286,6 +1286,8 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
   .grade-div-name, .grade-pct-item { font-size: 11px; }
   .grade-chart-row  { flex-direction: column; align-items: center; gap: 8px; }
   .grade-pct-col    { flex-direction: row; flex-wrap: wrap; gap: 4px 12px; justify-content: center; }
+  .grade-pct-label { min-width: 0; }
+  .grade-pct-item { gap: 4px; }
   .grade-divs-row   { flex-wrap: wrap; gap: 12px; }
   .grade-pie-chart  { max-width: 110px; height: auto !important; aspect-ratio: 1 / 1; }
  
