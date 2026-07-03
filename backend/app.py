@@ -594,7 +594,7 @@ def api_recommend():
     interest   = data.get("interest", "")
 
     if not degree or not year or not department:
-        return jsonify({"error": "Please select Degree, Batch Year, and Department."}), 400
+        return jsonify({"error": "Please select Department."}), 400
 
     session['last_query'] = {'degree': degree, 'year': year, 'department': department}
 
