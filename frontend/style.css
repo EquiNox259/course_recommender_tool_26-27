@@ -1268,6 +1268,12 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
  
   /* ── Badges ── */
   .badge { font-size: 10px; padding: 2px 8px; }
+
+  /* ── Grade statistics: stack years vertically on mobile ── */
+  .grade-years-row { flex-direction: column; gap: 20px; }
+  .grade-divs-row  { flex-wrap: wrap; gap: 12px; }
+  .grade-chart-row { flex-wrap: wrap; gap: 12px; }
+  .grade-pie-chart { max-width: 130px; height: auto; }
  
   /* ── Prevent any element from causing horizontal scroll ── */
   .results-grid { gap: 14px; }
@@ -1770,7 +1776,7 @@ html, body { overflow-x: hidden; max-width: 100%; }
  
     /* Responsive */
     @media (max-width: 768px) {
-      .doc-layout { flex-direction: column; padding: 16px; }
+      .doc-layout { flex-direction: column; padding: 72px 16px 48px; }
       .doc-toc { position: static; width: 100%; flex: none; }
       .score-grid, .elig-grid { grid-template-columns: 1fr; }
       .flow-arrow { display: none; }
