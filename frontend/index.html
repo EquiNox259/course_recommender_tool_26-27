@@ -18,12 +18,12 @@
   <div class="nav-left">
     <a href="/about" class="nav-brand-link">
       <img id="dav-icon" class="nav-logo" src="./DAV_Logo.svg" alt="DAV">
-      <span class="nav-title">Data Analytics and Visualization Team</span>
+      <span class="nav-title"><span class="t-full">Data Analytics and Visualization Team</span><span class="t-short">Course Recommender</span></span>
     </a>
   </div>
   <div class="nav-right">
-    <a href="#" id="nav-favs-link" class="nav-docs-link" onclick="event.preventDefault(); showFavouritesModal()">Favourites</a>
-    <a href="/documentation" class="nav-docs-link">Documentation</a>
+    <a href="/favourites" class="nav-docs-link"><span class="t-full">Favourites</span><span class="t-short">Favs</span></a>
+    <a href="/documentation" class="nav-docs-link"><span class="t-full">Documentation</span><span class="t-short">Docs</span></a>
     <a href="/about" class="nav-docs-link">About</a>
     <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">☀️</button>
     <a href="https://ugac-iitb.github.io/UGAC-IITB/divisions/9" target="_blank" rel="noopener">
@@ -148,7 +148,8 @@
         <span class="btn-label">Generate Recommendations &rarr;</span>
         <span class="btn-loading" hidden>Checking eligibility&hellip;</span>
       </button>
-      <div id="helper-tips" style="background: #f4f4f9; padding: 15px; border-radius: 8px; margin: 20px 0; font-size: 14px; border: 1px solid #ddd; color: #333;">
+
+    <div id="helper-tips">
         <h4 style="margin-top: 0; margin-bottom: 8px;">Search Tips: Combine filters for best results</h4>
         <p style="margin: 0 0 10px 0;"><strong>Tip:</strong> You can combine multiple filters in one query.</p>
         <ul style="margin: 0; padding-left: 20px;">
@@ -275,11 +276,11 @@
 
 /* ── CONFIG ─────────────────────────────────────────────────────
    Set this to your Render backend URL.
-   During local dev you can override via:  localStorage.setItem('API_BASE','http://127.0.0.1:5000')
+   During local dev you can override via:  localStorage.setItem('API_BASE','')
 ──────────────────────────────────────────────────────────────── */
 // Render :  https://course-recommnder-by-dav-team.onrender.com
-// Railway:  
-const API_BASE = localStorage.getItem('API_BASE') || 'https://courserecommendertool26-27-production-c019.up.railway.app';
+// Railway:  https://courserecommendertool26-27-production-c019.up.railway.app
+const API_BASE = localStorage.getItem('API_BASE') || 'http://127.0.0.1:5000';
 
 /* ── Pending recommend args (for manual-history retry) ───────── */
 let _pendingRecommendArgs = null;
@@ -550,7 +551,6 @@ function isFavourite(code) {
     return false;
   }
 }
-
 function toggleFavourite(btn, code, name) {
   try {
     let favs = JSON.parse(localStorage.getItem('fav_courses') || '[]');
@@ -569,7 +569,6 @@ function toggleFavourite(btn, code, name) {
     console.error('Failed to toggle favourite:', e);
   }
 }
-
 function showFavouritesModal() {
   const modal = document.getElementById('favs-modal');
   const container = document.getElementById('favs-list-container');
@@ -598,11 +597,9 @@ function showFavouritesModal() {
   }
   modal.style.display = 'flex';
 }
-
 function closeFavouritesModal() {
   document.getElementById('favs-modal').style.display = 'none';
 }
-
 function removeFromFavs(btn, code) {
   try {
     let favs = JSON.parse(localStorage.getItem('fav_courses') || '[]');
@@ -623,6 +620,7 @@ function removeFromFavs(btn, code) {
     console.error('Failed to remove favourite:', e);
   }
 }
+
 
 function esc(s) {
   return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
