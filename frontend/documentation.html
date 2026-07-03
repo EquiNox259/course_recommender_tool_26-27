@@ -29,11 +29,11 @@
   <div class="nav-left">
     <a href="/about" class="nav-brand-link">
       <img id="dav-icon" class="nav-logo" src="/DAV_Logo.svg" alt="DAV">
-      <span class="nav-title">Data Analytics and Visualization Team</span>
+      <span class="nav-title"><span class="t-full">Data Analytics and Visualization Team</span><span class="t-short">DAV Team</span></span>
     </a>
   </div>
   <div class="nav-right">
-    <a href="/" class="nav-docs-link">Recommender</a>
+    <a href="/" class="nav-docs-link"><span class="t-full">Recommender</span><span class="t-short">Recommender</span></a>
     <a href="/about" class="nav-docs-link">About</a>
     <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">☀️</button>
     <a href="https://ugac-iitb.github.io/UGAC-IITB/divisions/9" target="_blank" rel="noopener">
@@ -52,6 +52,7 @@
     <div class="doc-toc-title">Contents</div>
     <ul>
       <li><a href="#intro">1. Introduction</a></li>
+      <li><a class="toc-sub" href="#search-syntax">Search Syntax</a></li>
       <li><a href="#scores">2. Score Computation</a></li>
       <li><a class="toc-sub" href="#ps">People's Score</a></li>
       <li><a class="toc-sub" href="#iss">Interest Similarity Score</a></li>
@@ -92,29 +93,28 @@
           </li>
           <li>
             <strong>Interest Similarity Score (ISS)</strong> — uses semantic
-            embeddings and keyword mapping to match course content against the student's stated
+            embeddings and keyword mapping to match course content against your stated
             research interests and skills. It answers:
             <em>"What courses are most relevant to what I actually want to learn?"</em>
           </li>
         </ul>
         <p>
           The final recommendation score is a <strong>weighted sum</strong> of PS
-          and ISS, with the weights controlled by a set of options so each student can tune
-          the balance to their preference. After scoring, every candidate course is
+          and ISS, with the weights controlled by a set of options sothat you can tune
+          the balance to your preference. After scoring, every candidate course is
           passed through a multi-layer eligibility engine before being shown.
         </p>
         <div class="doc-infobox">
           &#9432;&nbsp; The recommender operates on the currently running semester's
-          course list. Eligibility checks reflect the student's academic history,
-          department restrictions, prerequisites, and time-slot constraints for that
-          semester.
+          course list. Eligibility checks reflect department restrictions, prerequisites, 
+          and time-slot constraints for that semester.
         </div>
       </div>
     </section>
 <!-- ── 1.5 Search Syntax ──────────────────────────────────── -->
     <section class="doc-section" id="search-syntax">
       <h2 class="doc-section-title">
-        <span class="sec-num">2</span> Search Syntax
+        <span class="sec-num"></span> Search Syntax
       </h2>
       <div class="doc-body">
         <p>
