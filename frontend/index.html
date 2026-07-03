@@ -415,7 +415,7 @@ async function doRecommend() {
   const interest   = document.getElementById('interest').value.trim();
 
   if (!degree || !year || !department) {
-    showToast('Please select the Department before generating recommendations.', 'error');
+    showToast('Please select the Department before generating recommendations', 'error');
     return;
   }
 
@@ -456,7 +456,7 @@ async function doRecommendWithManualHistory() {
 async function doFeedback() {
   const rating = document.getElementById('rating-input').value;
   const text   = document.getElementById('feedback_text').value.trim();
-  if (!rating) { showToast('Please select a star rating.', 'error'); return; }
+  if (!rating) { showToast('Please select a star rating', 'error'); return; }
   const btn = document.getElementById('feedback-submit');
   setLoading(btn, true);
   try {
