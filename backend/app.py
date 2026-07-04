@@ -453,5 +453,12 @@ def api_feedback():
 #import resource
 #print(f"[MEM] Peak RSS at boot: {resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024:.0f} MB")
 
+@app.route("/api/sign-out", methods=["POST", "OPTIONS"])
+def api_sign_out():
+    if request.method == "OPTIONS":
+        return jsonify({}), 200
+    session.clear()
+    return jsonify({"status": "ok"})
+
 if __name__ == "__main__":
     app.run(debug=True)
