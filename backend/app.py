@@ -1,7 +1,7 @@
 import pandas as pd
 import random, time, smtplib, os, ast, traceback
 from email.mime.text import MIMEText
-from flask import Flask, render_template, request, session, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_cors import CORS
 from model.recommender import get_candidate_courses
 from model.llm_service import LLMService
@@ -9,18 +9,48 @@ from eligibility.rules import recommender as eligibility_recommender, get_core_c
 from config import FLASK_SECRET, SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, OTP_EXPIRY_SEC, DEV_BYPASS_OTP, FEEDBACK_PATH, GSHEETS_CREDENTIALS_PATH, GSHEETS_SPREADSHEET_NAME, FRONTEND_ORIGIN
 import gspread
 import traceback
+from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
+import hashlib, hmac
+from functools import wraps
+
 
 _FRONTEND = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'frontend')
 app = Flask(__name__,
             template_folder=_FRONTEND,
             static_folder=_FRONTEND,
             static_url_path='')
-app.secret_key = FLASK_SECRET
 
-CORS(app, origins=[FRONTEND_ORIGIN], allow_headers=["Content-Type"], methods=["GET", "POST", "OPTIONS"],
+CORS(app, origins=[FRONTEND_ORIGIN], allow_headers=["Authorization", "Content-Type"], methods=["GET", "POST", "OPTIONS"],
      supports_credentials=True)
-app.config['SESSION_COOKIE_SAMESITE'] = 'None'
-app.config['SESSION_COOKIE_SECURE']   = os.environ.get('FLASK_ENV') == 'production'
+
+signer = URLSafeTimedSerializer(FLASK_SECRET)
+
+def _otp_hash(otp: str, student_id: str) -> str:
+    return hmac.new(FLASK_SECRET.encode(), f"{otp}:{student_id}".encode(),
+                    hashlib.sha256).hexdigest()
+
+def _issue_auth_token(student_id: str) -> str:
+    return signer.dumps({"sid": student_id, "typ": "auth"})
+
+def require_auth(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if request.method == "OPTIONS":
+            return jsonify({}), 200
+        header = request.headers.get("Authorization", "")
+        if not header.startswith("Bearer "):
+            return jsonify({"error": "Not authenticated"}), 401
+        try:
+            payload = signer.loads(header[7:], max_age=86400)
+        except SignatureExpired:
+            return jsonify({"error": "Session expired. Please verify again."}), 401
+        except BadSignature:
+            return jsonify({"error": "Invalid token"}), 401
+        if payload.get("typ") != "auth":
+            return jsonify({"error": "Invalid token"}), 401
+        request.student_id = payload["sid"]
+        return f(*args, **kwargs)
+    return wrapper
 
 
 # Load student records once when the server boots to keep lookups fast
@@ -106,7 +136,7 @@ def resolve_student_email(student_id):
     email = student_email_map.get(key)
     if not email:
         raise ValueError(
-            "No valid webmail address found for sending OTP."
+            "No valid webmail address found for sending OTP"
         )
     return email
 
@@ -134,28 +164,6 @@ def health():
 def index():
     return redirect(FRONTEND_ORIGIN, code=302)
 
-@app.route("/feedback", methods=["POST"])
-def feedback():
-    if not session.get('otp_verified'):
-        return redirect(url_for('index'))
-
-    student_id = session.get('otp_student_id', '')
-    email      = resolve_student_email(student_id) if student_id else ''
-    rating     = request.form.get('rating', '').strip()
-    text       = request.form.get('feedback_text', '').strip()
-    timestamp  = pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')
-
-    try:
-        if _feedback_sheet is None:
-            raise RuntimeError("Feedback sheet connection was not established at startup.")
-        _feedback_sheet.append_row([email, rating, text, timestamp])
-        flash('Thank you for your feedback!', 'feedback_success')
-    except Exception as e:
-        print(f"[FEEDBACK SAVE ERROR] {e}")
-        flash(f'Could not save feedback: {e}', 'feedback_error')
-
-    return redirect(url_for('index'))
-
 
 # ── API Routes (used by Vercel frontend) ──────────────────────────────────
 
@@ -170,11 +178,7 @@ def api_send_otp():
 
         if DEV_BYPASS_OTP:
             # Skip email entirely — mark session as verified immediately
-            session['otp_student_id'] = student_id
-            session['otp_email']      = resolved_email
-            session['otp_verified']   = True
-            session['otp_sent']       = True
-
+            
             # Return same shape as verify-otp so the frontend can pre-fill fields
             clean_sid      = student_id.strip().lower()
             default_degree = ""
@@ -193,38 +197,44 @@ def api_send_otp():
                 "student_id":     student_id,
                 "default_degree": default_degree,
                 "default_year":   default_year,
+                "token": _issue_auth_token(student_id)
             })
 
         otp, _ = send_otp(student_id)
-        session['otp_code']       = otp
-        session['otp_email']      = resolved_email
-        session['otp_sent_at']    = time.time()
-        session['otp_student_id'] = student_id
-        session['otp_sent']       = True
-        session['otp_verified']   = False
-        return jsonify({"status": "ok", "email": resolved_email})
+        otp_token = signer.dumps({
+        "sid": student_id,
+        "email": resolved_email,
+        "oh": _otp_hash(otp, student_id),
+        "typ": "otp",
+        })
+        return jsonify({"status": "ok", "email": resolved_email, "otp_token": otp_token})
 
     except Exception as e:
         return jsonify({"error": str(e)}), 400
+
 
 
 @app.route("/api/verify-otp", methods=["POST", "OPTIONS"])
 def api_verify_otp():
     if request.method == "OPTIONS":
         return jsonify({}), 200
-    data    = request.get_json() or {}
-    entered = str(data.get("otp_input") or "").strip()
-    stored  = session.get('otp_code')
-    sent_at = session.get('otp_sent_at', 0)
 
-    if time.time() - sent_at > OTP_EXPIRY_SEC:
-        session['otp_sent'] = False
+    data      = request.get_json() or {}
+    entered   = str(data.get("otp_input") or "").strip()
+    otp_token = data.get("otp_token") or ""
+
+    try:
+        payload = signer.loads(otp_token, max_age=OTP_EXPIRY_SEC)
+    except SignatureExpired:
         return jsonify({"error": "OTP has expired. Please request a new one."}), 400
-    if entered != stored:
+    except BadSignature:
+        return jsonify({"error": "Invalid request. Please request a new OTP."}), 400
+
+    if payload.get("typ") != "otp" or not hmac.compare_digest(
+            payload.get("oh", ""), _otp_hash(entered, payload["sid"])):
         return jsonify({"error": "Incorrect OTP. Please try again."}), 400
 
-    session['otp_verified'] = True
-    student_id = session.get('otp_student_id', '')
+    student_id = payload["sid"]
 
     # Auto-detect degree and year from student_id prefix so the frontend
     # can pre-fill the form fields without the student having to select them.
@@ -244,21 +254,17 @@ def api_verify_otp():
         "student_id":     student_id,
         "default_degree": default_degree,
         "default_year":   default_year,
+        "token":          _issue_auth_token(student_id),
     })
 
 
 @app.route("/api/recommend", methods=["POST", "OPTIONS"])
+@require_auth
 def api_recommend():
-
-    if request.method == "OPTIONS":
-        return jsonify({}), 200
-
-    if not session.get('otp_verified'):
-        return jsonify({"error": "Not authenticated"}), 401
 
     # --- 1. EXTRACT FROM INPUTS AND SLIDER PARAMETERS FIRST ---
     data       = request.get_json() or {}
-    student_id = session.get('otp_student_id')
+    student_id = request.student_id
     degree     = data.get("degree", "")
     year       = data.get("year", "")
     department = data.get("department", "")
@@ -266,8 +272,6 @@ def api_recommend():
 
     if not degree or not year or not department:
         return jsonify({"error": "Please the select Department."}), 400
-
-    session['last_query'] = {'degree': degree, 'year': year, 'department': department}
 
     w_ps_raw  = data.get("w_ps")
     w_rrf_raw = data.get("w_rrf")
@@ -423,6 +427,7 @@ def api_recommend():
     })
 
 @app.route("/api/feedback", methods=["POST", "OPTIONS"])
+@require_auth
 def api_feedback():
 
     if request.method == "OPTIONS":
@@ -434,7 +439,7 @@ def api_feedback():
     data       = request.get_json() or {}
     student_id = session.get('otp_student_id', '')
     email      = resolve_student_email(student_id) if student_id else ''
-    timestamp  = pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')
+    timestamp  = pd.Timestamp.now(tz = 'Asia/Kolkata').strftime('%Y-%m-%d %H:%M:%S')
 
     try:
         if _feedback_sheet is None:
