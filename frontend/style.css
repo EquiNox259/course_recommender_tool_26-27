@@ -870,7 +870,7 @@ div, span, p, h1, h2, label, button, input, select, textarea, nav, a, li {
 .entry { cursor: pointer; }
  
 .entry-chevron {
-  font-size: 16px;
+  font-size: 20px;
   color: var(--gr);
   flex-shrink: 0;
   transition: transform 0.25s ease, color 0.2s ease;
