@@ -724,26 +724,13 @@ async function showFavouritesModal() {
     `;
     modal.style.display = 'flex';
 
-    const response = await fetch(API_BASE + '/api/favourites-info', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        codes: favs.map(f => f.code),
-        degree,
-        year,
-        department,
-        manual_history: manualHistory
-      })
+    _favsData = await api('/api/favourites-info', {
+      codes: favs.map(f => f.code),
+      degree,
+      year,
+      department,
+      manual_history: manualHistory
     });
-
-    if (!response.ok) {
-      const errData = await response.json();
-      throw new Error(errData.error || 'Server error fetching favourites');
-    }
-
-    _favsData = await response.json();
     renderFavsResults();
 
   } catch (e) {

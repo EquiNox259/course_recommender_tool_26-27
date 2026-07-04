@@ -565,7 +565,7 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
             # 4. Remove restricted courses (excluding "Restricted by year")
             if degree and year and department:
                 r_status = check_restriction(degree, year, department, clean_code)
-                if r_status != 'Valid' and r_status != 'Restricted by year':
+                if r_status != 'Valid' and 'year students' not in r_status and r_status != 'Restricted by year':
                     # Completely restricted (e.g. Restricted, Invalid Degree), filter out
                     continue
             
