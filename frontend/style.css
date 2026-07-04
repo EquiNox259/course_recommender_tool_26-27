@@ -12,7 +12,7 @@
   --bd:  #E8EAED;
 
   /* Primary — Google Blue */
-  --gr:  #1A73E8;
+  --gr:  #1557B0; /*#1A73E8*/
   --gl:  #E8F0FE;
   --gd:  #1557B0;
 
@@ -42,7 +42,7 @@
   --tm:  #80868B;
 
   /* Navigation */
-  --nv:  #1A73E8;
+  --nv:  #1557B0;
   --nt:  #E8EAED;
   --nm:  rgba(232,234,237,0.55);
   --ns:  rgba(32,33,36,0.12);
