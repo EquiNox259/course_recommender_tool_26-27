@@ -253,6 +253,7 @@
       <h2>Favourite Courses</h2>
       <button class="modal-close-btn" onclick="closeFavouritesModal()">&times;</button>
     </div>
+    <div id="favs-tabs-container" class="tabs-container" style="display:none; margin-bottom: 0;"></div>
     <div id="favs-list-container">
       <!-- Favourites will be loaded dynamically here -->
     </div>
@@ -287,6 +288,27 @@ const API_BASE = localStorage.getItem('API_BASE') || 'https://course-recommender
 
 /* ── Pending recommend args (for manual-history retry) ───────── */
 let _pendingRecommendArgs = null;
+let currentStudentId = '';
+
+function getFavouritesKey() {
+  return currentStudentId ? `fav_courses_${currentStudentId}` : 'fav_courses';
+}
+
+function getFavouritesList() {
+  try {
+    return JSON.parse(localStorage.getItem(getFavouritesKey()) || '[]');
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveFavouritesList(list) {
+  try {
+    localStorage.setItem(getFavouritesKey(), JSON.stringify(list));
+  } catch (e) {
+    console.error('Failed to save favourites:', e);
+  }
+}
 
 /* ── api() helper ───────────────────────────────────────────────
    Wraps fetch with credentials:include (needed for session cookies
@@ -343,6 +365,7 @@ async function doSendOtp() {
 try {
     const data = await api('/api/send-otp', { student_id: studentId });
     if (data.bypassed) {
+        currentStudentId = data.student_id; // Set scoped roll number
         // Dev bypass — treat exactly like a successful OTP verification
         if (data.default_degree) {
             const sel = document.getElementById('degree');
@@ -381,6 +404,7 @@ async function doVerifyOtp() {
   setLoading(btn, true);
   try {
     const data = await api('/api/verify-otp', { otp_input: otpInput });
+    currentStudentId = data.student_id; // Set scoped roll number
     // Pre-fill degree/year from student_id
     if (data.default_degree) {
       const sel = document.getElementById('degree');
@@ -556,9 +580,12 @@ function emptyMsg(key) {
 }
 
 /* ── Favourites Controller ──────────────────────────────────── */
+let _favsData = null;
+let _activeFavTab = 'eligible';
+
 function isFavourite(code) {
   try {
-    const favs = JSON.parse(localStorage.getItem('fav_courses') || '[]');
+    const favs = getFavouritesList();
     return favs.some(f => f.code === code);
   } catch (e) {
     return false;
@@ -566,61 +593,126 @@ function isFavourite(code) {
 }
 function toggleFavourite(btn, code, name) {
   try {
-    let favs = JSON.parse(localStorage.getItem('fav_courses') || '[]');
+    let favs = getFavouritesList();
     const idx = favs.findIndex(f => f.code === code);
+    let removed = false;
     if (idx > -1) {
       favs.splice(idx, 1);
       btn.textContent = '☆';
       btn.style.color = 'var(--ts)';
+      removed = true;
     } else {
       favs.push({ code, name });
       btn.textContent = '★';
       btn.style.color = '#F9AB00';
     }
-    localStorage.setItem('fav_courses', JSON.stringify(favs));
+    saveFavouritesList(favs);
+
+    // Update active page stars if any
+    document.querySelectorAll('.fav-star-btn').forEach(starBtn => {
+      if (starBtn.getAttribute('data-fav-code') === code) {
+        starBtn.textContent = btn.textContent;
+        starBtn.style.color = btn.style.color;
+      }
+    });
+
+    // Dynamically remove from modal list if open without requiring network reload
+    const modal = document.getElementById('favs-modal');
+    if (modal && modal.style.display === 'flex' && _favsData && removed) {
+      for (const key of ['eligible', 'i_a_r', 't_s_c', 'rejected']) {
+        if (_favsData[key]) {
+          _favsData[key] = _favsData[key].filter(c => c.code !== code);
+        }
+      }
+      renderFavsResults();
+    }
   } catch (e) {
     console.error('Failed to toggle favourite:', e);
   }
 }
-function showFavouritesModal() {
+async function showFavouritesModal() {
   const modal = document.getElementById('favs-modal');
-  const container = document.getElementById('favs-list-container');
-  container.innerHTML = '';
+  const card = modal.querySelector('.modal-card');
+  card.classList.add('modal-card-wide');
   
+  const tabsContainer = document.getElementById('favs-tabs-container');
+  const listContainer = document.getElementById('favs-list-container');
+  
+  tabsContainer.style.display = 'none';
+  tabsContainer.innerHTML = '';
+  listContainer.innerHTML = '';
+
   try {
-    const favs = JSON.parse(localStorage.getItem('fav_courses') || '[]');
+    const favs = getFavouritesList();
     if (favs.length === 0) {
-      container.innerHTML = `<p style="text-align:center;color:var(--tm);margin:20px 0;">No favourite courses added yet</p>`;
-    } else {
-      favs.forEach(f => {
-        const el = document.createElement('div');
-        el.className = 'fav-item';
-        el.innerHTML = `
-          <div class="fav-item-info">
-            <span class="fav-item-code">${esc(f.code)}</span>
-            <span class="fav-item-name">${esc(f.name)}</span>
-          </div>
-          <button class="fav-remove-btn" onclick="removeFromFavs(this, '${esc(f.code)}')">★</button>
-        `;
-        container.appendChild(el);
-      });
+      listContainer.innerHTML = `<p style="text-align:center;color:var(--tm);margin:20px 0;">No favourite courses added yet</p>`;
+      modal.style.display = 'flex';
+      return;
     }
+
+    // Check profile variables
+    const degree = document.getElementById('degree').value;
+    const year = document.getElementById('year').value;
+    const department = document.getElementById('department').value;
+    const manualHistoryEl = document.getElementById('manual_history');
+    const manualHistory = manualHistoryEl ? manualHistoryEl.value.trim() : '';
+
+    if (!degree || !year || !department) {
+      listContainer.innerHTML = `
+        <div style="text-align:center;color:var(--no);margin:20px 0;padding:0 20px;">
+          <p style="font-weight:600;margin-bottom:8px;">Profile Information Incomplete</p>
+          <p style="font-size:13px;color:var(--ts);">Please select Degree, Year, and Department in the profile form to check eligibility, course descriptions, and slot clashes for your favourites.</p>
+        </div>
+      `;
+      modal.style.display = 'flex';
+      return;
+    }
+
+    // Show spinner while loading
+    listContainer.innerHTML = `
+      <div style="text-align:center;padding:40px 0;">
+        <div class="spinner" style="margin:0 auto 12px auto;width:30px;height:30px;border:3px solid var(--bd);border-top:3px solid var(--gr);border-radius:50%;animation:spin 1s linear infinite;"></div>
+        <p style="color:var(--ts);font-size:13px;">Analyzing favourites eligibility and slot clashes...</p>
+      </div>
+    `;
+    modal.style.display = 'flex';
+
+    const response = await fetch(API_BASE + '/api/favourites-info', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        codes: favs.map(f => f.code),
+        degree,
+        year,
+        department,
+        manual_history: manualHistory
+      })
+    });
+
+    if (!response.ok) {
+      const errData = await response.json();
+      throw new Error(errData.error || 'Server error fetching favourites');
+    }
+
+    _favsData = await response.json();
+    renderFavsResults();
+
   } catch (e) {
-    container.innerHTML = `<p style="text-align:center;color:var(--no);margin:20px 0;">Error loading favourites.</p>`;
+    console.error(e);
+    listContainer.innerHTML = `<p style="text-align:center;color:var(--no);margin:20px 0;padding: 0 20px;">Error analyzing favourites: ${esc(e.message)}</p>`;
+    modal.style.display = 'flex';
   }
-  modal.style.display = 'flex';
 }
 function closeFavouritesModal() {
   document.getElementById('favs-modal').style.display = 'none';
 }
 function removeFromFavs(btn, code) {
   try {
-    let favs = JSON.parse(localStorage.getItem('fav_courses') || '[]');
+    let favs = getFavouritesList();
     favs = favs.filter(f => f.code !== code);
-    localStorage.setItem('fav_courses', JSON.stringify(favs));
-    
-    // Refresh modal list view
-    showFavouritesModal();
+    saveFavouritesList(favs);
     
     // Update active page stars
     document.querySelectorAll('.fav-star-btn').forEach(starBtn => {
@@ -629,8 +721,67 @@ function removeFromFavs(btn, code) {
         starBtn.style.color = 'var(--ts)';
       }
     });
+
+    // Update modal list view
+    if (_favsData) {
+      for (const key of ['eligible', 'i_a_r', 't_s_c', 'rejected']) {
+        if (_favsData[key]) {
+          _favsData[key] = _favsData[key].filter(c => c.code !== code);
+        }
+      }
+      renderFavsResults();
+    }
   } catch (e) {
     console.error('Failed to remove favourite:', e);
+  }
+}
+function renderFavsResults() {
+  if (!_favsData) return;
+  const { eligible, i_a_r, t_s_c, rejected } = _favsData;
+  const tabsContainer = document.getElementById('favs-tabs-container');
+  const listContainer = document.getElementById('favs-list-container');
+  
+  tabsContainer.innerHTML = '';
+  listContainer.innerHTML = '';
+
+  const sections = [
+    { key: 'eligible', label: 'Eligible',                    list: eligible || [] },
+    { key: 'consent',  label: 'Consent Required',            list: i_a_r || [] },
+    { key: 'tsc',      label: 'Slot Clash',                  list: t_s_c || [] },
+    { key: 'rejected', label: 'Not Eligible',                list: rejected || [] }
+  ];
+
+  const visibleSections = sections.filter(s => s.list.length > 0);
+  
+  if (visibleSections.length === 0) {
+    listContainer.innerHTML = `<p style="text-align:center;color:var(--tm);margin:20px 0;">No active favourites remaining in this status.</p>`;
+    tabsContainer.style.display = 'none';
+    return;
+  }
+
+  tabsContainer.style.display = 'flex';
+
+  if (!visibleSections.some(s => s.key === _activeFavTab)) {
+    _activeFavTab = visibleSections[0].key;
+  }
+
+  visibleSections.forEach(s => {
+    const btn = document.createElement('button');
+    btn.className = 'tab-btn' + (s.key === _activeFavTab ? ' active' : '');
+    btn.onclick = () => {
+      _activeFavTab = s.key;
+      renderFavsResults();
+    };
+    btn.innerHTML = `${s.label} <span class="badge-count">(${s.list.length})</span>`;
+    tabsContainer.appendChild(btn);
+  });
+
+  const activeSection = sections.find(s => s.key === _activeFavTab);
+  if (activeSection && activeSection.list.length > 0) {
+    activeSection.list.forEach((c, idx) => {
+      const card = buildEntry(c, _activeFavTab, false, idx === activeSection.list.length - 1);
+      listContainer.appendChild(card);
+    });
   }
 }
 

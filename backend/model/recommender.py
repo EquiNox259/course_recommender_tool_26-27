@@ -140,12 +140,12 @@ def build_candidate_pool(student_history=None,
         .isin(exclusions)
     ].copy()
 
-    # Include department filter
+    # Include department filter (extract prefix ignoring spaces e.g. "SOM" from "SOM101")
     if include_departments:
         pool = pool[
             pool["Course Code"]
-            .str.split()
-            .str[0]
+            .str.extract(r'^([A-Za-z]+)', expand=False)
+            .str.upper()
             .isin(include_departments)
         ]
 
@@ -153,8 +153,8 @@ def build_candidate_pool(student_history=None,
     if exclude_departments:
         pool = pool[
             ~pool["Course Code"]
-            .str.split()
-            .str[0]
+            .str.extract(r'^([A-Za-z]+)', expand=False)
+            .str.upper()
             .isin(exclude_departments)
         ]
 
@@ -415,15 +415,17 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
     )
         candidates_enriched = []
         for code, row in course_lookup.items():
-            # Respect department exclusions
+            # Respect department exclusions (using regex prefix match)
+            prefix_match = re.match(r'^([A-Za-z]+)', code)
+            prefix = prefix_match.group(1).upper() if prefix_match else ""
             if include_departments:
-                if code.split()[0] not in {
+                if prefix not in {
                     d.strip().upper()
                     for d in include_departments
                 }:
                     continue
             if exclude_departments:
-                if code.split()[0] in {
+                if prefix in {
                     d.strip().upper() for d in exclude_departments
                 }:
                     continue
@@ -636,9 +638,13 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
                 for d in exclude_departments
             }
 
+            def get_prefix(code):
+                match = re.match(r'^([A-Za-z]+)', code)
+                return match.group(1).upper() if match else ""
+
             candidates_enriched = [
                 c for c in candidates_enriched
-                if c["code"].split()[0] not in exclude_departments
+                if get_prefix(c["code"]) not in exclude_departments
             ]
         if exclude_courses:
             exclude_courses = {

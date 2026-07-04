@@ -1935,3 +1935,8 @@ html, body { overflow-x: hidden; max-width: 100%; }
     padding-left: 12px;
     border-left: 2px solid var(--gr); /* Subtle accent matching the blue button */
 }
+
+/* Wide modal for detailed favourites cards */
+.modal-card-wide {
+    max-width: 800px !important;
+}

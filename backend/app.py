@@ -422,6 +422,133 @@ def api_recommend():
         "need_manual_history": False,
     })
 
+@app.route("/api/favourites-info", methods=["POST", "OPTIONS"])
+def api_favourites_info():
+    if request.method == "OPTIONS":
+        return jsonify({}), 200
+
+    if not session.get('otp_verified'):
+        return jsonify({"error": "Not authenticated"}), 401
+
+    data = request.get_json() or {}
+    student_id = session.get('otp_student_id')
+    degree     = data.get("degree", "")
+    year       = data.get("year", "")
+    department = data.get("department", "")
+    codes      = data.get("codes", [])
+
+    if not degree or not year or not department:
+        return jsonify({"error": "Profile details (degree, year, department) are required."}), 400
+
+    # Retrieve student history
+    automated_history = fetch_automatic_student_history(student_id) or []
+    manual_history_raw = data.get("manual_history", "")
+    manual_course_history = None
+    if manual_history_raw:
+        manual_course_history = [c.strip().upper() for c in manual_history_raw.split(",") if c.strip()]
+    history = manual_course_history or automated_history
+
+    # Clean and filter codes
+    clean_codes = list({str(c).strip().upper() for c in codes if c})
+    if not clean_codes:
+        return jsonify({
+            "eligible": [],
+            "i_a_r": [],
+            "t_s_c": [],
+            "rejected": []
+        })
+
+    # Prepare desired_courses shape for eligibility_recommender
+    desired_courses = [{"code": code} for code in clean_codes]
+
+    try:
+        # Run standard eligibility checks
+        output = eligibility_recommender(
+            student_id=student_id,
+            Degree=degree,
+            year=year,
+            department=department,
+            desired_courses=desired_courses,
+            manual_course_history=history,
+            w_rrf=0.0,
+            w_ps=0.0,
+            is_minor_mode=False
+        )
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": f"Eligibility analysis failed: {str(e)}"}), 500
+
+    eligible = output.get("eligible", [])
+    i_a_r    = output.get("i_a_r", [])
+    t_s_c    = output.get("t_s_c", [])
+    rejected = output.get("rejected", [])
+
+    # Group all active/potential courses to evaluate mutual clashes
+    active_courses = eligible + i_a_r + t_s_c
+    
+    # Map slot_num -> list of favorite course codes
+    fav_slot_map = {}
+    for c in active_courses:
+        code = c["code"]
+        for div in c.get("divisions", []):
+            sn = div.get("slot_num")
+            if sn and sn not in ("N/A", "L", "X"):
+                fav_slot_map.setdefault(sn, []).append(code)
+
+    # Re-evaluate clashes for each course considering both core courses and other favorites
+    new_eligible = []
+    new_i_a_r    = []
+    new_t_s_c    = []
+
+    for c in active_courses:
+        code = c["code"]
+        divs_updated = []
+        
+        for div in c.get("divisions", []):
+            sn = div.get("slot_num")
+            core_clashes = div.get("clashes_with", [])
+            fav_clashes = []
+            if sn and sn not in ("N/A", "L", "X"):
+                fav_clashes = [fc for fc in fav_slot_map.get(sn, []) if fc != code]
+            
+            combined_clashes = [f"{cc} (Core)" for cc in core_clashes] + [f"{fc} (Favourite)" for fc in fav_clashes]
+            
+            divs_updated.append({
+                **div,
+                "clashes_with": combined_clashes
+            })
+            
+        # Check if all non-minor divisions clash
+        non_m = [d for d in divs_updated if not d.get('is_minor')] or divs_updated
+        all_clash = all(bool(d.get('clashes_with')) for d in non_m)
+        
+        # Choose a default division (prefer one with fewer/no clashes)
+        default_div = next((d for d in non_m if not d.get('clashes_with')), non_m[0])
+        default_idx = next(i for i, d in enumerate(divs_updated) if d is default_div)
+        
+        # Update the course dictionary details
+        c["divisions"] = divs_updated
+        c["default_idx"] = default_idx
+        c["slot"] = default_div.get("slot", c.get("slot", "N/A"))
+        c["instructor"] = default_div.get("instructor", c.get("instructor", "N/A"))
+        
+        if all_clash:
+            c["clashing_with"] = default_div["clashes_with"]
+            new_t_s_c.append(c)
+        else:
+            # Check if it was in i_a_r originally
+            if code in {x["code"] for x in i_a_r}:
+                new_i_a_r.append(c)
+            else:
+                new_eligible.append(c)
+
+    return jsonify({
+        "eligible": new_eligible,
+        "i_a_r":    new_i_a_r,
+        "t_s_c":    new_t_s_c,
+        "rejected": rejected
+    })
+
 @app.route("/api/feedback", methods=["POST", "OPTIONS"])
 def api_feedback():
 
