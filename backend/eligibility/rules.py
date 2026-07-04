@@ -1072,26 +1072,25 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
                 if 'year students' in r_status:
                     meta = course_meta.get(course_code, {})
                     rejected_courses.append({
-        "code": course_code,
-        "name": course_name,
-        "divisions":  divs,
-        "has_minor":  has_minor,
-        "minor_only": minor_only,
-        "slot": meta.get("slot", "N/A"),
-        "instructor": meta.get("instructor", "N/A"),
-        "description": meta.get("description", ""),
-        "equiv": equiv_map.get(course_code.replace(' ', ''), {'regular': [], 'minor': []}),
-        "score": course.get("score", 0),
-        "reason": r_status,
-        "raw_rrf": course.get("raw_rrf"),
-        "raw_ps": course.get("raw_ps"),
-        "norm_rrf": course.get("norm_rrf"),
-        "norm_ps": course.get("norm_ps"),
-        "final_score": course.get("raw_ts"),
-        "grade_stats": grade_stats_db.get(course_code, None)
-    })
-
-            continue
+                        "code": course_code,
+                        "name": course_name,
+                        "divisions":  divs,
+                        "has_minor":  has_minor,
+                        "minor_only": minor_only,
+                        "slot": meta.get("slot", "N/A"),
+                        "instructor": meta.get("instructor", "N/A"),
+                        "description": meta.get("description", ""),
+                        "equiv": equiv_map.get(course_code.replace(' ', ''), {'regular': [], 'minor': []}),
+                        "score": course.get("score", 0),
+                        "reason": r_status,
+                        "raw_rrf": course.get("raw_rrf"),
+                        "raw_ps": course.get("raw_ps"),
+                        "norm_rrf": course.get("norm_rrf"),
+                        "norm_ps": course.get("norm_ps"),
+                        "final_score": course.get("raw_ts"),
+                        "grade_stats": grade_stats_db.get(course_code, None)
+                    })
+                continue
 
         # 4. Check prerequisite
         p_status, p_remark, p_minor_prereq = check_prereq(

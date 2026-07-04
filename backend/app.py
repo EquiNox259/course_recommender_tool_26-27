@@ -427,15 +427,10 @@ def api_recommend():
     })
 
 @app.route("/api/favourites-info", methods=["POST", "OPTIONS"])
+@require_auth
 def api_favourites_info():
-    if request.method == "OPTIONS":
-        return jsonify({}), 200
-
-    if not session.get('otp_verified'):
-        return jsonify({"error": "Not authenticated"}), 401
-
     data = request.get_json() or {}
-    student_id = session.get('otp_student_id')
+    student_id = request.student_id
     degree     = data.get("degree", "")
     year       = data.get("year", "")
     department = data.get("department", "")
