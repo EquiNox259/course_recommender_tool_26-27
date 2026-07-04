@@ -86,6 +86,7 @@
     <div class="profile-section fade-up">
       <div class="profile-hd">
         <div class="profile-id" id="profile-id-label">Student Profile: —</div>
+        <button class="sign-out-btn" onclick="doSignOut()">Sign out</button>
       </div>
       <div class="profile-rule"></div>
 
@@ -172,7 +173,7 @@
         </label>
         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;">
           <input type="radio" name="weight_preset" value="people" style="cursor:pointer;transform:scale(1.1);">
-          <span><strong>More Safe Route</strong> (100% Peer History Alignment)</span>
+          <span><strong>More Safe Route</strong> (100% Alignment with courses taken by seniors)</span>
         </label>
       </div>
     </div>
@@ -288,10 +289,9 @@ const API_BASE = localStorage.getItem('API_BASE') || 'https://course-recommender
 
 /* ── Pending recommend args (for manual-history retry) ───────── */
 let _pendingRecommendArgs = null;
-let currentStudentId = '';
-
 function getFavouritesKey() {
-  return currentStudentId ? `fav_courses_${currentStudentId}` : 'fav_courses';
+  const sid = sessionStorage.getItem('dav_sid') || '';
+  return sid ? `fav_courses_${sid}` : 'fav_courses';
 }
 
 function getFavouritesList() {
@@ -311,17 +311,26 @@ function saveFavouritesList(list) {
 }
 
 /* ── api() helper ───────────────────────────────────────────────
-   Wraps fetch with credentials:include (needed for session cookies
-   to travel cross-origin to Render).
+   Attaches Bearer token from sessionStorage
 ──────────────────────────────────────────────────────────────── */
+let _otpToken  = null;
+let _authToken = sessionStorage.getItem('dav_token') || null;
+
 async function api(path, body) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (_authToken) headers['Authorization'] = 'Bearer ' + _authToken;
   const res = await fetch(API_BASE + path, {
     method: 'POST',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify(body)
   });
   const data = await res.json();
+  if (res.status === 401) {
+    _authToken = null;
+    sessionStorage.removeItem('dav_token');
+    showOnly('section-send-otp');
+    throw new Error(data.error || 'Please verify again');
+  }
   if (!res.ok) throw new Error(data.error || 'Request failed');
   return data;
 }
@@ -365,7 +374,9 @@ async function doSendOtp() {
 try {
     const data = await api('/api/send-otp', { student_id: studentId });
     if (data.bypassed) {
-        currentStudentId = data.student_id; // Set scoped roll number
+      _authToken = data.token;
+      sessionStorage.setItem('dav_token', _authToken);
+      sessionStorage.setItem('dav_sid', data.student_id);
         // Dev bypass — treat exactly like a successful OTP verification
         if (data.default_degree) {
             const sel = document.getElementById('degree');
@@ -384,6 +395,7 @@ try {
         document.getElementById('profile-id-label').textContent = 'Student Profile: ' + data.student_id;
         showOnly('section-profile');
     } else {
+        _otpToken = data.otp_token;
         document.getElementById('otp-sent-msg').innerHTML =
           `An OTP has been sent to <strong>${data.email}</strong>. Valid for 10 minutes.`;
         showOnly('section-verify-otp');
@@ -403,8 +415,10 @@ async function doVerifyOtp() {
   const btn = document.getElementById('verify-otp-btn');
   setLoading(btn, true);
   try {
-    const data = await api('/api/verify-otp', { otp_input: otpInput });
-    currentStudentId = data.student_id; // Set scoped roll number
+    const data = await api('/api/verify-otp', { otp_input: otpInput, otp_token: _otpToken });
+    _authToken = data.token;
+    sessionStorage.setItem('dav_token', _authToken);
+    sessionStorage.setItem('dav_sid', data.student_id);
     // Pre-fill degree/year from student_id
     if (data.default_degree) {
       const sel = document.getElementById('degree');
@@ -503,6 +517,39 @@ async function doFeedback() {
     showToast('Could not save feedback: ' + e.message, 'error');
     setLoading(btn, false);
   }
+}
+
+/* ── Sign Out ────────────────────────────────────────────────── */
+async function doSignOut() {
+  try { await api('/api/sign-out', {}); } catch(e) { /* ignore */ }
+
+   // Clear auth state
+  _authToken = null;
+  sessionStorage.removeItem('dav_token');
+  sessionStorage.removeItem('dav_sid');
+
+  // Reset all form fields
+  ['student_id_otp','otp_input','interest','manual_history','feedback_text'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  ['degree','year','department'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.value = ''; el.classList.remove('has-value'); }
+  });
+
+  // Reset UI state
+  document.getElementById('profile-id-label').textContent = 'Student Profile: —';
+  document.getElementById('send-otp-error').style.display  = 'none';
+  document.getElementById('verify-otp-error').style.display = 'none';
+  document.getElementById('fallback-alert').style.display   = 'none';
+  document.getElementById('section-results').style.display  = 'none';
+  document.getElementById('feedback-section').style.display = 'none';
+  document.getElementById('tabs-container').innerHTML  = '';
+  document.getElementById('results-grid').innerHTML    = '';
+  document.querySelector('input[name="weight_preset"][value="semantic"]').checked = true;
+
+  showOnly('section-send-otp');
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -1159,11 +1206,36 @@ document.addEventListener('keydown', function(e) {
   else if (verifyOtpSection && verifyOtpSection.style.display !== 'none') { e.preventDefault(); doVerifyOtp(); }
 });
 
+/* ── Session restore on load ─────────────────────────────────── */
+function restoreSession() {
+  if (!_authToken) return;
+  const sid = sessionStorage.getItem('dav_sid') || '';
+  if (!sid) {  // token without sid — stale/partial state, treat as logged out
+    _authToken = null;
+    sessionStorage.removeItem('dav_token');
+    return;
+  }
+  // Same prefix inference the backend does in verify-otp
+  let degree = '', year = '';
+  if (sid.length >= 3 && /^\d\d/.test(sid)) {
+    year = '20' + sid.slice(0, 2);
+    degree = { b: 'B.Tech.', m: 'M.Tech.', p: 'Ph.D.',
+               d: 'Dual Degree (B.Tech. + M.Tech.)' }[sid[2]] || '';
+  }
+  const degSel = document.getElementById('degree');
+  if (degree) { degSel.value = degree; degSel.classList.toggle('has-value', true); }
+  const yrSel = document.getElementById('year');
+  if (year)   { yrSel.value = year; yrSel.classList.toggle('has-value', true); }
+  document.getElementById('profile-id-label').textContent = 'Student Profile: ' + sid;
+  showOnly('section-profile');
+}
+
 /* ── Boot ──────────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', function() {
   initSelects();
   applyTheme(localStorage.getItem('cr-theme') === 'dark');
   initStars();
+  restoreSession();
 });
 
 </script>
