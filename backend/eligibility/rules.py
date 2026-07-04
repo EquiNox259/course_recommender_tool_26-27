@@ -246,6 +246,54 @@ def apply_grade_boost(courses):
     courses.sort(key=lambda x: x["raw_ts"], reverse=True)
     return courses
 
+def _build_year_restriction_msg(restrictions, department, Degree):
+    """
+    When a course is restricted by year (the student's dept/degree is eligible,
+    but their batch year isn't), return a human-readable message listing which
+    year(s) of students are actually allowed.
+    Uses the same batch-year → year-in-program conversion as the recommender.
+    """
+    def _ordinal(n):
+        if n == 1: return "1st"
+        if n == 2: return "2nd"
+        if n == 3: return "3rd"
+        return f"{n}th"
+
+    current_cal_year    = datetime.now().year
+    academic_year_start = current_cal_year if SEMESTER == 'Autumn' else current_cal_year - 1
+
+    # Collect every batch year that has an Allowed rule matching this dept/degree
+    allowed_batch_years = set()
+    for r in restrictions:
+        if r[3] != 'Allowed':
+            continue
+        if r[1] in (department, 'ALL') and r[2] in (Degree, 'ALL') and r[0] != 'ALL':
+            try:
+                allowed_batch_years.add(int(r[0]))
+            except (ValueError, TypeError):
+                pass
+
+    if not allowed_batch_years:
+        return 'Restricted by year'
+
+    # Convert each batch year → year-in-program ordinal, filter implausible values
+    year_labels = []
+    for batch_yr in allowed_batch_years:
+        yip = academic_year_start - batch_yr + 1
+        if 1 <= yip <= 10:
+            year_labels.append((_ordinal(yip), yip))
+
+    year_labels.sort(key=lambda x: x[1])   # ascending: 1st, 2nd, …
+    labels = [y[0] for y in year_labels]
+
+    if not labels:
+        return 'Restricted by year'
+    if len(labels) == 1:
+        return f"{labels[0]} year students only"
+    if len(labels) == 2:
+        return f"{labels[0]} and {labels[1]} year students only"
+    return f"{', '.join(labels[:-1])}, and {labels[-1]} year students only"
+
 def check_restriction(Degree,year,department,course_code, data=data_modified):
     year=str(year)
     # Check if course_code exists in the data
@@ -312,7 +360,7 @@ def check_restriction(Degree,year,department,course_code, data=data_modified):
             break
             
     if branch_allowed:
-        return 'Restricted by year'
+        return _build_year_restriction_msg(restrictions, department, Degree)
         
     return restricted_msg
 
@@ -1018,7 +1066,7 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
         )
         
         if r_status != 'Valid':
-            if r_status == 'Restricted by year':
+            if r_status == _build_year_restriction_msg(restrictions, department, Degree):
                 meta = course_meta.get(course_code, {})
                 rejected_courses.append({
     "code": course_code,
