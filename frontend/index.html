@@ -502,6 +502,11 @@ async function doFeedback() {
 async function doSignOut() {
   try { await api('/api/sign-out', {}); } catch(e) { /* ignore */ }
 
+   // Clear auth state
+  _authToken = null;
+  sessionStorage.removeItem('dav_token');
+  sessionStorage.removeItem('dav_sid');
+
   // Reset all form fields
   ['student_id_otp','otp_input','interest','manual_history','feedback_text'].forEach(id => {
     const el = document.getElementById(id);
