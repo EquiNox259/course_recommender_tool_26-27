@@ -86,6 +86,7 @@
     <div class="profile-section fade-up">
       <div class="profile-hd">
         <div class="profile-id" id="profile-id-label">Student Profile: —</div>
+        <button class="sign-out-btn" onclick="doSignOut()">Sign out</button>
       </div>
       <div class="profile-rule"></div>
 
@@ -495,6 +496,34 @@ async function doFeedback() {
     showToast('Could not save feedback: ' + e.message, 'error');
     setLoading(btn, false);
   }
+}
+
+/* ── Sign Out ────────────────────────────────────────────────── */
+async function doSignOut() {
+  try { await api('/api/sign-out', {}); } catch(e) { /* ignore */ }
+
+  // Reset all form fields
+  ['student_id_otp','otp_input','interest','manual_history','feedback_text'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  ['degree','year','department'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.value = ''; el.classList.remove('has-value'); }
+  });
+
+  // Reset UI state
+  document.getElementById('profile-id-label').textContent = 'Student Profile: —';
+  document.getElementById('send-otp-error').style.display  = 'none';
+  document.getElementById('verify-otp-error').style.display = 'none';
+  document.getElementById('fallback-alert').style.display   = 'none';
+  document.getElementById('section-results').style.display  = 'none';
+  document.getElementById('feedback-section').style.display = 'none';
+  document.getElementById('tabs-container').innerHTML  = '';
+  document.getElementById('results-grid').innerHTML    = '';
+  document.querySelector('input[name="weight_preset"][value="semantic"]').checked = true;
+
+  showOnly('section-send-otp');
 }
 
 /* ════════════════════════════════════════════════════════════
