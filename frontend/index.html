@@ -295,7 +295,7 @@ let _pendingRecommendArgs = null;
 async function api(path, body) {
   const res = await fetch(API_BASE + path, {
     method: 'POST',
-    credentials: 'include',
+    credentials: true,
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
   });
@@ -433,7 +433,11 @@ async function doRecommend() {
       return;
     }
     renderResults(data);
-    document.getElementById('tabs-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const _anchor = document.getElementById('fallback-alert').style.display !== 'none'
+      ? document.getElementById('fallback-alert')
+      : document.getElementById('tabs-container');
+    const _navH = (document.querySelector('.navbar') || {}).offsetHeight || 48;
+    window.scrollTo({ top: _anchor.getBoundingClientRect().top + window.scrollY - _navH - 12, behavior: 'smooth' });
     setLoading(btn, false);
   } catch(e) {
     showToast(e.message, 'error');
@@ -449,7 +453,11 @@ async function doRecommendWithManualHistory() {
   try {
     const data = await api('/api/recommend', body);
     renderResults(data);
-    document.getElementById('tabs-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const _anchor = document.getElementById('fallback-alert').style.display !== 'none'
+    ? document.getElementById('fallback-alert')
+    : document.getElementById('tabs-container');
+    const _navH = (document.querySelector('.navbar') || {}).offsetHeight || 48;
+    window.scrollTo({ top: _anchor.getBoundingClientRect().top + window.scrollY - _navH - 12, behavior: 'smooth' });
   } catch(e) {
     showToast(e.message, 'error');
   }
