@@ -433,6 +433,7 @@ async function doRecommend() {
       return;
     }
     renderResults(data);
+    document.getElementById('tabs-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
     setLoading(btn, false);
   } catch(e) {
     showToast(e.message, 'error');
@@ -448,6 +449,7 @@ async function doRecommendWithManualHistory() {
   try {
     const data = await api('/api/recommend', body);
     renderResults(data);
+    document.getElementById('tabs-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch(e) {
     showToast(e.message, 'error');
   }
