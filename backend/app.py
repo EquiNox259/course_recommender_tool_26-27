@@ -432,12 +432,9 @@ def api_feedback():
 
     if request.method == "OPTIONS":
         return jsonify({}), 200
-    
-    if not session.get('otp_verified'):
-        return jsonify({"error": "Not authenticated"}), 401
 
     data       = request.get_json() or {}
-    student_id = session.get('otp_student_id', '')
+    student_id = student_id = request.student_id
     email      = resolve_student_email(student_id) if student_id else ''
     timestamp  = pd.Timestamp.now(tz = 'Asia/Kolkata').strftime('%Y-%m-%d %H:%M:%S')
 
@@ -457,7 +454,6 @@ def api_feedback():
 def api_sign_out():
     if request.method == "OPTIONS":
         return jsonify({}), 200
-    session.clear()
     return jsonify({"status": "ok"})
 
 if __name__ == "__main__":
