@@ -295,7 +295,7 @@ let _pendingRecommendArgs = null;
 async function api(path, body) {
   const res = await fetch(API_BASE + path, {
     method: 'POST',
-    credentials: true,
+    credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
   });
