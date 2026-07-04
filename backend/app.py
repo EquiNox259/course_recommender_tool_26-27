@@ -130,6 +130,9 @@ def send_otp(student_id):
 def health():
     return "ok", 200
 
+@app.route("/")
+def index():
+    return redirect(FRONTEND_ORIGIN, code=302)
 
 @app.route("/feedback", methods=["POST"])
 def feedback():
