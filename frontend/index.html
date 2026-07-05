@@ -374,6 +374,7 @@ async function doSendOtp() {
 try {
     const data = await api('/api/send-otp', { student_id: studentId });
     if (data.bypassed) {
+      setLoading(btn, false);
       _authToken = data.token;
       sessionStorage.setItem('dav_token', _authToken);
       sessionStorage.setItem('dav_sid', data.student_id);
