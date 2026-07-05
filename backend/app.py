@@ -551,12 +551,8 @@ def api_favourites_info():
 @app.route("/api/feedback", methods=["POST", "OPTIONS"])
 @require_auth
 def api_feedback():
-
-    if request.method == "OPTIONS":
-        return jsonify({}), 200
-
     data       = request.get_json() or {}
-    student_id = student_id = request.student_id
+    student_id = request.student_id
     email      = resolve_student_email(student_id) if student_id else ''
     timestamp  = pd.Timestamp.now(tz = 'Asia/Kolkata').strftime('%Y-%m-%d %H:%M:%S')
 
