@@ -259,6 +259,7 @@ def _build_year_restriction_msg(restrictions, department, Degree):
         if n == 3: return "3rd"
         if n == 4: return "4th"
         if n == 5 and department == 'Electrical Engineering' and Degree == 'Dual Degree (B.Tech. + M.Tech.)': return '5th'
+        return f"{n}th"
     current_cal_year    = datetime.now().year
     academic_year_start = current_cal_year if SEMESTER == 'Autumn' else current_cal_year - 1
 
@@ -280,7 +281,7 @@ def _build_year_restriction_msg(restrictions, department, Degree):
     year_labels = []
     for batch_yr in allowed_batch_years:
         yip = academic_year_start - batch_yr + 1
-        if 1 <= yip <= 10:
+        if 1 <= yip <= 5:
             year_labels.append((_ordinal(yip), yip))
 
     year_labels.sort(key=lambda x: x[1])   # ascending: 1st, 2nd, …
@@ -289,9 +290,10 @@ def _build_year_restriction_msg(restrictions, department, Degree):
     if not labels:
         return 'Restricted by year'
     if len(labels) == 1:
-        return f"{labels[0]} year students only"
+        return f"Available for {labels[0]} year students only"
     if len(labels) == 2:
-        return f"{labels[0]} and {labels[1]} year students only"
+        return f"Available for {labels[0]} and {labels[1]} year students only"
+    return f"Available for {', '.join(labels[:-1])}, and {labels[-1]} year students only"
 
 def check_restriction(Degree,year,department,course_code, data=data_modified):
     year=str(year)
