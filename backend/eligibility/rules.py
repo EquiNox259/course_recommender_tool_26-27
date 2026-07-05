@@ -257,8 +257,8 @@ def _build_year_restriction_msg(restrictions, department, Degree):
         if n == 1: return "1st"
         if n == 2: return "2nd"
         if n == 3: return "3rd"
-        return f"{n}th"
-
+        if n == 4: return "4th"
+        if n == 5 and department == 'Electrical Engineering' and Degree == 'Dual Degree (B.Tech. + M.Tech.)': return '5th'
     current_cal_year    = datetime.now().year
     academic_year_start = current_cal_year if SEMESTER == 'Autumn' else current_cal_year - 1
 
