@@ -213,7 +213,7 @@ grade_stats_db = _build_grade_stats()
 
 GRADE_WEIGHT = 0.15
 
-def apply_grade_boost(courses):
+def apply_grade_boost(courses, w_ps):
     """
     Boost recommendation scores based on historical AA+AB percentage.
 
@@ -224,7 +224,12 @@ def apply_grade_boost(courses):
         return courses
     # If the query didn't request easy grading, do nothing
     if not courses[0].get("easy_grading", False):
-        return courses
+        if w_ps == 1:
+            courses = [course for course in courses if course["raw_ts"] != 0]
+        for course in courses:
+            print(f"Course: {course['code']}, raw_ts: {course['raw_ts']}")
+        courses.sort(key=lambda x: x["raw_ts"], reverse=True)
+        return courses[:30]
     for course in courses:
         grade_stats = grade_stats_db.get(course["code"])
         if not grade_stats:
@@ -244,7 +249,7 @@ def apply_grade_boost(courses):
             course["raw_ts"] = GRADE_WEIGHT * avg_grade_score + (1-GRADE_WEIGHT)*course["raw_ts"]
     # Resort after boosting
     courses.sort(key=lambda x: x["raw_ts"], reverse=True)
-    return courses
+    return courses[:30]
 
 def _build_year_restriction_msg(restrictions, department, Degree):
     """
@@ -957,7 +962,7 @@ def parse_minor_remark(remark: str, course_hist: list, department: str = '') -> 
     out['note'] = remark
     return out
 
-def recommender(student_id, Degree, year, department, desired_courses, manual_course_history=None, is_minor_mode=False, w_rrf=1, w_ps=0):
+def recommender(student_id, Degree, year, department, desired_courses, manual_course_history=None, w_rrf=1, w_ps=0):
     """
     student_id       : string (email prefix)
     Degree           : string (e.g. 'B.Tech.')
@@ -1025,7 +1030,7 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
     i_a_r_courses = []
     t_s_c_courses = []
 
-    desired_courses = apply_grade_boost(desired_courses)
+    desired_courses = apply_grade_boost(desired_courses, w_ps)
 
     # 2. Loop over model-recommended courses
     seen_codes = set()
