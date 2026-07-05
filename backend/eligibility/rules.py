@@ -278,8 +278,7 @@ def _build_year_restriction_msg(restrictions, department, Degree):
         return 'Restricted by year'
 
     # Convert each batch year → year-in-program ordinal, filter implausible values
-    max_yip = 5 if (department == 'Electrical Engineering'
-                    and Degree == 'Dual Degree (B.Tech. + M.Tech.)') else 4
+    max_yip = 5 if Degree == 'Dual Degree (B.Tech. + M.Tech.)' else 4
     year_labels = []
     for batch_yr in allowed_batch_years:
         yip = academic_year_start - batch_yr + 1
