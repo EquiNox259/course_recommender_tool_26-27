@@ -285,65 +285,35 @@ def api_recommend():
     # --- 2. AUTOMATED BACKGROUND LOOKUP ---
     automated_history = fetch_automatic_student_history(student_id) or []
     print(f"[AUTOMATION] Resolved history for {student_id}: {automated_history}")
-
-    # --- 3. LLM-FIRST MINOR DETECTION (mirrors current index()) ---
-    minor_candidates = []
-    minor_query_type = "simple"
-    query_fallback   = False
-    desired_courses  = []
-
-    try:
-        llm = LLMService()
-        _processed = llm.rephrase_and_extract_intent(interest)
-
-        constraints = _processed.get("constraints", {})
-        minor_list  = constraints.get("minor", [])
-        minor_branch = minor_list[0] if minor_list else None
-
-        is_minor_mode    = bool(minor_branch)
-        minor_query_type = _processed.get("minor_query_type", "simple")
+            query_fallback   = False
+            desired_courses  = []
+            try:
+                if interest:
+                    llm = LLMService()
+                    _processed = llm.rephrase_and_extract_intent(interest)
+            except Exception:
+                _processed = None
+            # Check if the user left the text field blank
+            if not interest:
+                w_rrf = 0.0
+                w_ps  = 1.0
+                query_fallback = True
+                _pre_query   = _processed
+            try:
+                desired_courses = get_candidate_courses(
+                    query=interest,
+                    student_history=automated_history,                        
+                    top_k=60,
+                    w_rrf=w_rrf,
+                    w_ps=w_ps,
+                    degree=degree,
+                    year=year,
+                    department=department,                        
+                    processed_query=_pre_query,
+                )
     except Exception:
         traceback.print_exc()
-        _processed       = None
-        minor_branch     = None
-        is_minor_mode    = False
-        minor_query_type = "simple"
-
-    if is_minor_mode:
-        minor_candidates = build_minor_candidates(minor_branch, degree)
-        if minor_query_type == "simple":
-            desired_courses = minor_candidates
-            w_rrf = 0.0
-            w_ps  = 0.0
-
-    # Check if the user left the text field blank
-    if not interest:
-        w_rrf = 0.0
-        w_ps  = 1.0
-        query_fallback = True
-
-    if not is_minor_mode or minor_query_type == "stacked":
-        _minor_codes = {c['code'] for c in minor_candidates} if (is_minor_mode and minor_query_type == "stacked") else None
-        _pre_query   = _processed          # reuse the single LLM call, as index() does
-        desired_courses = []
-        try:
-            desired_courses = get_candidate_courses(
-                query=interest,
-                student_history=automated_history,
-                top_k=60,
-                w_rrf=w_rrf,
-                w_ps=w_ps,
-                degree=degree,
-                year=year,
-                department=department,
-                processed_query=_pre_query,
-                minor_course_codes=_minor_codes
-            )
-        except Exception:
-            print("===== REAL TRACEBACK =====")
-            traceback.print_exc()
-            print("==========================")
-            return jsonify({"error": "Recommendation engine failed. Check server logs."}), 500
+        _processed       = Nonee
 
     # --- Manual history (second phase) ---
     manual_history_raw = data.get("manual_history", "")
@@ -361,7 +331,6 @@ def api_recommend():
         manual_course_history=manual_course_history or automated_history,
         w_rrf=w_rrf,
         w_ps=w_ps,
-        is_minor_mode=is_minor_mode,
     )
 
     # --- 5. COMPILING DATA OUTPUT ARRAYS ---
@@ -373,45 +342,6 @@ def api_recommend():
     i_a_r    = output.get("i_a_r", [])
     t_s_c    = output.get("t_s_c", [])
     rejected = output.get("rejected", [])
-
-    # --- 5a. MINOR MODE: annotate every entry with Type + Remark ---
-    if is_minor_mode:
-        _minor_meta = {c['code']: c for c in minor_candidates}
-        _hist = course_history or []
-        for _section in (eligible, i_a_r, t_s_c, rejected):
-            for _entry in _section:
-                _m      = _minor_meta.get(_entry['code'], {})
-                _raw    = _m.get('minor_remark', '')
-                _parsed = (parse_minor_remark(_raw, _hist, department) if _raw else {})
-                _entry['minor_type']           = _m.get('minor_type', '')
-                _entry['minor_remark_note']    = _parsed.get('note', '')
-                _entry['minor_remark_warning'] = _parsed.get('warning', '')
-                if _parsed.get('prereq_unmet') and _entry in eligible:
-                    _entry['minor_prereq_note'] = _parsed['prereq_unmet']
-
-                _mtype       = (_entry.get('minor_type') or '').lower()
-                _want_m_side = 'elective' not in _mtype
-                _divs        = _entry.get('divisions', [])
-                _is_dual     = (any(d.get('is_minor') for d in _divs) and
-                                any(not d.get('is_minor') for d in _divs))
-                if _is_dual:
-                    _preferred = [d for d in _divs if d.get('is_minor') == _want_m_side]
-                    if _preferred:
-                        _entry['divisions']   = _preferred
-                        _entry['default_idx'] = 0
-                        _entry['slot']        = _preferred[0]['slot']
-                        _entry['instructor']  = _preferred[0]['instructor']
-                    _gstats = _entry.get('grade_stats')
-                    if _gstats:
-                        _has_m = any(e.get('division') == 'M'
-                                     for _yr_entries in _gstats.values() for e in _yr_entries)
-                        if _has_m:
-                            _fg = {}
-                            for _yr, _ents in _gstats.items():
-                                _kept = [e for e in _ents if (e.get('division') == 'M') == _want_m_side]
-                                if _kept: _fg[_yr] = _kept
-                            _entry['grade_stats'] = _fg or None
-
     return jsonify({
         "eligible":            eligible,
         "i_a_r":               i_a_r,
@@ -421,8 +351,6 @@ def api_recommend():
         "w_ps":                w_ps,
         "w_rrf":               w_rrf,
         "query_fallback":      query_fallback,
-        "is_minor_mode":       is_minor_mode,
-        "minor_branch":        minor_branch,
         "need_manual_history": False,
     })
 
@@ -471,7 +399,6 @@ def api_favourites_info():
             manual_course_history=history,
             w_rrf=0.0,
             w_ps=0.0,
-            is_minor_mode=False
         )
     except Exception as e:
         traceback.print_exc()
