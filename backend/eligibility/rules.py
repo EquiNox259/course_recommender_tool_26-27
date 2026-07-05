@@ -292,7 +292,6 @@ def _build_year_restriction_msg(restrictions, department, Degree):
         return f"{labels[0]} year students only"
     if len(labels) == 2:
         return f"{labels[0]} and {labels[1]} year students only"
-    return f"{', '.join(labels[:-1])}, and {labels[-1]} year students only"
 
 def check_restriction(Degree,year,department,course_code, data=data_modified):
     year=str(year)
