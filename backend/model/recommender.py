@@ -28,6 +28,23 @@ except Exception as e:
 
 model = SentenceTransformer(MODEL_PATH)
 index = faiss.read_index(FAISS_INDEX_PATH)
+DEPARTMENT_TO_CODE = {
+    "Aerospace Engineering": "AE",
+    "Computer Science and Engineering": "CS",
+    "Chemical Engineering": "CL",
+    "Chemistry": "CH",
+    "Civil Engineering": "CE",
+    "Economics": "EC",
+    "Electrical Engineering": "EE",
+    "Energy Science and Engineering": "EN",
+    "Environmental Science and Engineering": "ENV",
+    "Industrial Engineering and Operations Research": "IE",
+    "Mathematics": "MA",
+    "Mechanical Engineering": "ME",
+    "Metallurgical Engineering and Materials Science": "MM",
+    "Physics": "PH",
+}
+
 
 df_minor_courses = pd.read_csv(MINOR_COURSES_PATH)
 df_minor_courses["Branch"] = (
@@ -201,26 +218,90 @@ def build_candidate_pool(student_history=None,
     return pool
 
 
-def calculate_people_score(student_history: list, target_course_code: str) -> float:
+def calculate_people_score(
+    student_history,
+    target_course_code,
+    student_department,
+    year=None,
+):
     """
-    Computes the decayed People Score (FS) for a candidate elective course
-    based on a student's taken course codes.
+    If use_department_popularity=True (recommended for browse mode),
+    returns department popularity instead of similarity score.
+
+    target_course_code can be:
+        - "CS 419"
+        - ["CS 419", "EE 782", ...]
     """
-    if not ps_matrix_data or not student_history:
+    if "department_popularity" in ps_matrix_data:
+        dp = ps_matrix_data["department_popularity"]
+
+    if not ps_matrix_data:
+        if isinstance(target_course_code, (list, tuple, set)):
+            return {c: 0.0 for c in target_course_code}
         return 0.0
-        
+
+    # Sophomore browse mode
+    if year == "2025":
+        dept_pop = ps_matrix_data.get("sophomore_popularity", {}).get(student_department, {})
+        def popularity(course):
+            clean = str(course).strip().upper()
+            score = dept_pop.get(clean, 0)
+            if dept_pop:
+                max_score = max(dept_pop.values())
+                if max_score > 0:
+                    score /= max_score
+            return float(score)
+
+        if isinstance(target_course_code, (list, tuple, set)):
+            return {
+                str(c).strip().upper(): popularity(c)
+                for c in target_course_code
+            }
+        return popularity(target_course_code)
+    # ---------------------------------------------------------
+    # ORIGINAL PEOPLE SCORE
+    # ---------------------------------------------------------
+    if not student_history:
+        if isinstance(target_course_code, (list, tuple, set)):
+            return {c: 0.0 for c in target_course_code}
+        return 0.0
+
     course_to_idx = ps_matrix_data["course_to_idx"]
     similarity_matrix = ps_matrix_data["similarity_matrix"]
-    
-    # Standardize codes to matching lookup keys
-    clean_target = str(target_course_code).strip().upper()
-    if clean_target not in course_to_idx:
-        return 0.0
-        
-    target_idx = course_to_idx[clean_target]
-    final_score = 0.0
-    
-    clean_history = [str(c).strip().upper() for c in student_history if c]
+
+    def score_one(course):
+        clean_target = str(course).strip().upper()
+
+        if clean_target not in course_to_idx:
+            return 0.0
+
+        target_idx = course_to_idx[clean_target]
+        final_score = 0.0
+
+        clean_history = []
+
+        for c in student_history:
+            cleaned = clean_student_course_string(c)
+            if cleaned:
+                clean_history.append(cleaned)
+
+        for i, hist_course in enumerate(reversed(clean_history), start=1):
+            if hist_course in course_to_idx:
+                hist_idx = course_to_idx[hist_course]
+                sim = similarity_matrix[hist_idx, target_idx]
+                final_score += sim / i
+
+        return float(final_score)
+
+    # ---------- list input ----------
+    if isinstance(target_course_code, (list, tuple, set)):
+        return {
+            str(c).strip().upper(): score_one(c)
+            for c in target_course_code
+        }
+
+    # ---------- single course ----------
+    return score_one(target_course_code)
     
     for i, hist_course in enumerate(reversed(clean_history), start=1):
         if hist_course in course_to_idx:
@@ -333,25 +414,45 @@ def compute_rrf(semantic_codes, keyword_codes, k=60):
     return sorted(rrf_scores.items(), key=lambda x: x[1], reverse=True)
 
 
-def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps=1.0, degree=None, year=None, department=None, processed_query=None, minor_course_codes=None):
+def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps=1.0, degree=None, year=None, department=None, processed_query=None):
     """Unified entrypoint called by app.py."""
     llm = LLMService()
     clean_query = query.lower().strip()
+    student_dept = DEPARTMENT_TO_CODE.get(
+        str(department).strip(),
+        str(department).strip().upper()
+    )
 
     print(f"[PRE-PROCESSING] Original Query: '{query}'")
     try:
-        if processed_query is None:
+        if processed_query is None and clean_query:
             processed_query = llm.rephrase_and_extract_intent(query)
-
+            print("intent detected")
+        if processed_query is None and not clean_query:
+            processed_query = {
+                "is_valid": True,
+                "combined": [],
+                "primary": [],
+                "secondary": [],
+                "expanded": [],
+                "constraints": {
+                    "include_departments": [],
+                    "exclude_departments": [],
+                    "exclude_courses": [],
+                    "minor": [],
+                    "easy_grading": False
+                }
+            }
+        
         print(f"[PRE-PROCESSING] LLM Optimized Query: '{processed_query}'")
 
         # NEW: Garbage-query short circuit
         if not processed_query.get("is_valid", True):
-            print("invalid query")
+            print(
+                f"[QUERY REJECTED] {processed_query.get('reject_reason', 'Invalid query')}"
+            )
             return []
-        is_valid = processed_query.get("is_valid", [])
-        if not is_valid:
-            return []
+    
         semantic_query = processed_query.get("combined", [])
         primary_keywords = processed_query.get("primary", [])
         secondary_keywords = processed_query.get("secondary", [])
@@ -381,7 +482,7 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
             "easy_grading": False
             }
         }
-
+        is_valid = processed_query["is_valid"]
         semantic_query = processed_query["combined"]
         primary_keywords = processed_query["primary"]
         secondary_keywords = processed_query["secondary"]
@@ -400,6 +501,7 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
         student_history = []
 
     if not primary_keywords:
+        dept_pop = ps_matrix_data["sophomore_popularity"].get(student_dept, {})
         # Build lookup once
         course_lookup = (
         candidate_pool
@@ -412,32 +514,18 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
         .drop_duplicates("_code")
         .set_index("_code")
         .to_dict("index")
-    )
-        candidates_enriched = []
+        )
+        candidates_enriched = []                
         for code, row in course_lookup.items():
-            # Respect department exclusions (using regex prefix match)
-            prefix_match = re.match(r'^([A-Za-z]+)', code)
-            prefix = prefix_match.group(1).upper() if prefix_match else ""
-            if include_departments:
-                if prefix not in {
-                    d.strip().upper()
-                    for d in include_departments
-                }:
-                    continue
-            if exclude_departments:
-                if prefix in {
-                    d.strip().upper() for d in exclude_departments
-                }:
-                    continue
-            # Respect course exclusions
-            if exclude_courses:
-                if code.replace(" ", "") in {
-                    c.strip().upper().replace(" ", "")
-                    for c in exclude_courses
-                }:
-                    continue
-            ps_score = calculate_people_score(student_history, code)
-            ps_score = ps_score*w_ps
+            course_dept = str(row["Department"]).strip().upper()
+            ps_score = calculate_people_score(
+                student_history,
+                code,
+                student_dept,
+                year=year
+            )
+            ps_score *= w_ps
+
             candidates_enriched.append({
                 "code": code,
                 "name": str(row["Course Name"]),
@@ -446,8 +534,10 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
                 "norm_rrf": 0.0,
                 "norm_ps": 0.0,
                 "easy_grading": easy_grading,
-                "raw_ts": ps_score,      # temporary, rules.py will rerank by grades
+                "raw_ts": ps_score,
             })
+        candidates_enriched = sorted(candidates_enriched, key=lambda x: x["raw_ts"], reverse=True)
+        print("[INFO] Candidate enrichment complete. Total candidates:", len(candidates_enriched))
         return candidates_enriched
 
     try:
@@ -514,7 +604,7 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
         )
         for code, rrf_score in all_fused_candidates:
             clean_code = str(code).strip().upper()
-            ps_score = calculate_people_score(student_history, clean_code)
+            ps_score = calculate_people_score(student_history, clean_code, student_dept)
             
             rrf_vals.append(rrf_score if clean_query else 0.0)
             ps_vals.append(ps_score)
@@ -585,7 +675,7 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
             ps_vals_2 = {}
             for code in df_electives["Course Code"].unique():
                 clean_code = str(code).strip().upper()
-                ps_vals_2[clean_code] = calculate_people_score(student_history, clean_code)
+                ps_vals_2[clean_code] = calculate_people_score(student_history, clean_code, student_dept, year)
                 
             top_50_ps = sorted(ps_vals_2.items(), key=lambda item: item[1], reverse=True)[:50]
             master_pool = {c["code"]: c for c in candidates_enriched}
