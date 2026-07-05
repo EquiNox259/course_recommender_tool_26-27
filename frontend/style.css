@@ -1863,6 +1863,7 @@ html, body { overflow-x: hidden; max-width: 100%; }
       font-family: var(--font-display);
       font-size: 20px;
       color: var(--tp);
+      flex-shrink: 0;
     }
 
     .modal-close-btn {
@@ -1872,10 +1873,15 @@ html, body { overflow-x: hidden; max-width: 100%; }
       cursor: pointer;
       color: var(--ts);
       line-height: 1;
+      flex-shrink: 0;
     }
 
     .modal-close-btn:hover {
       color: var(--tp);
+    }
+
+    #favs-tabs-container {
+      flex-shrink: 0;
     }
 
     #favs-list-container {
@@ -1894,6 +1900,10 @@ html, body { overflow-x: hidden; max-width: 100%; }
       overflow-y: hidden;
       overscroll-behavior-x: contain;
       touch-action: pan-x;
+    }
+
+    #favs-list-container .entry {
+      flex-shrink: 0;
     }
 
     .fav-item {

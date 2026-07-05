@@ -19,6 +19,7 @@ rename_map = {
 }
 df.rename(columns=rename_map, inplace=True)
 df_prereq = pd.read_excel(PREREQ_PATH)
+df_prereq['CourseCode'] = df_prereq['CourseCode'].astype(str).str.replace(" ", "", regex=False).str.upper()
 df_core = pd.read_csv(CORE_COURSES_PATH)
 df_core_sem = df_core[df_core['Sem'] == SEMESTER].copy()
 
@@ -43,7 +44,7 @@ def extract_slot_num(slot_str):
 
 running_slot_map = {}
 for _, _row in df.iterrows():
-    _code = str(_row['Course Code']).strip()
+    _code = str(_row['Course Code']).replace(" ", "").upper().strip()
     _sn   = extract_slot_num(_row['Slot'])
     if _sn:
         running_slot_map.setdefault(_code, set()).add(_sn)
@@ -53,7 +54,7 @@ for _, _row in df.iterrows():
 
 _raw = defaultdict(list)
 for _, row in df.iterrows():
-    code = str(row['Course Code']).strip()
+    code = str(row['Course Code']).replace(" ", "").upper().strip()
     div  = str(row.get('Division', '')).strip()
     _raw[code].append({
         "slot":        str(row.get('Slot',        'N/A')),
@@ -168,6 +169,7 @@ for i in df_restrictions:
     restrictions_modified.append(i_array_np_T)
 
 df['Restriction'] = restrictions_modified
+df['CourseCodeNorm'] = df['Course Code'].astype(str).str.replace(" ", "", regex=False).str.upper()
 
 data_modified=df.copy()
 
@@ -189,7 +191,7 @@ def _build_grade_stats():
         num_cols  = available + ['Total']
         df_g[num_cols] = df_g[num_cols].apply(pd.to_numeric, errors='coerce').fillna(0)
         for _, row in df_g.iterrows():
-            code     = row['Course Code'].strip()
+            code     = str(row['Course Code']).replace(" ", "").upper().strip()
             division = str(row['Division']).strip() if 'Division' in df_g.columns else 'Main'
             total = row['Total']
             if total <= 0:
@@ -226,7 +228,7 @@ def apply_grade_boost(courses):
     if not courses[0].get("easy_grading", False):
         return courses
     for course in courses:
-        grade_stats = grade_stats_db.get(course["code"])
+        grade_stats = grade_stats_db.get(str(course.get("code", "")).replace(" ", "").upper())
         if not grade_stats:
             continue
         scores = []
@@ -275,7 +277,7 @@ def _build_year_restriction_msg(restrictions, department, Degree):
                 pass
 
     if not allowed_batch_years:
-        return 'Restricted by year'
+        return 'Restricted'
 
     # Convert each batch year → year-in-program ordinal, filter implausible values
     max_yip = 5 if Degree == 'Dual Degree (B.Tech. + M.Tech.)' else 4
@@ -296,78 +298,113 @@ def _build_year_restriction_msg(restrictions, department, Degree):
         return f"Available for {labels[0]} and {labels[1]} year students only"
     return f"Available for {', '.join(labels[:-1])}, and {labels[-1]} year students only"
 
-def check_restriction(Degree,year,department,course_code, data=data_modified):
+def check_restriction(Degree,year,department,course_code, data=data_modified, is_minor=False, division=None):
     year=str(year)
+    course_code_norm = str(course_code).replace(" ", "").upper().strip()
     # Check if course_code exists in the data
-    if course_code not in data['Course Code'].values:
+    if course_code_norm not in data['CourseCodeNorm'].values:
         return 'Not in available data'
 
-    # Fetch restriction value
-    restrictions = data.loc[data['Course Code'] == course_code, 'Restriction'].values[0]
-
-    # If no restriction
-    if (len(restrictions) == 0) or (isinstance(restrictions, float) and pd.isna(restrictions)) or (isinstance(restrictions, str) and restrictions.lower() == 'no restrictions'):
-        return 'Valid'
-    elif isinstance(restrictions, str):
-        return 'Restricted'
-
-    # Support all degrees! No hardcoded lists.
-    allowed_groups = []
-    for j in restrictions:
-        if j[3] == 'Allowed':
-            parts = []
-            if j[2] != 'ALL': parts.append(j[2])
-            if j[1] != 'ALL': parts.append(j[1])
-            if j[0] != 'ALL': parts.append(f"{j[0]}")
-            allowed_groups.append(', '.join(parts) if parts else 'specific students')
-    if allowed_groups:
-        restricted_msg = f"Open only to {' / '.join(allowed_groups)}"
+    subset = data[data['CourseCodeNorm'] == course_code_norm]
+    if division is not None:
+        div_row = subset[subset['Division'].astype(str).str.strip() == str(division).strip()]
+        if not div_row.empty:
+            rows_to_check = div_row
+        else:
+            rows_to_check = subset
+    elif is_minor:
+        minor_row = subset[subset['Division'].astype(str).str.strip() == 'M']
+        if not minor_row.empty:
+            rows_to_check = minor_row
+        else:
+            rows_to_check = subset
     else:
-        restricted_msg = 'Restricted'
+        regular_rows = subset[subset['Division'].astype(str).str.strip() != 'M']
+        if not regular_rows.empty:
+            rows_to_check = regular_rows
+        else:
+            return 'Restricted to minor students'
 
-    def get_specificity(rule):
-        score = 0
-        if rule[0] != 'ALL': score += 1
-        if rule[1] != 'ALL': score += 1
-        if rule[2] != 'ALL': score += 1
-        return score
+    def evaluate_single_row(restrictions):
+        # If no restriction
+        if (len(restrictions) == 0) or (isinstance(restrictions, float) and pd.isna(restrictions)) or (isinstance(restrictions, str) and restrictions.lower() == 'no restrictions'):
+            return 'Valid'
+        elif isinstance(restrictions, str):
+            return 'Restricted'
 
-    def evaluate_rules(Degree, year, department, restrictions):
-        matching_rules = []
-        for r in restrictions:
-            if r[0] in (year, 'ALL') and r[1] in (department, 'ALL') and r[2] in (Degree, 'ALL'):
-                matching_rules.append(r)
-        
-        if not matching_rules:
-            has_allowed_rule = any(r[3] == 'Allowed' for r in restrictions)
-            return 'Deny' if has_allowed_rule else 'Allowed'
-        
-        max_spec = max(get_specificity(r) for r in matching_rules)
-        best_rules = [r for r in matching_rules if get_specificity(r) == max_spec]
-        
-        actions = [r[3] for r in best_rules]
-        if 'Deny' in actions:
-            return 'Deny'
-        return 'Allowed'
+        # Support all degrees! No hardcoded lists.
+        allowed_groups = []
+        for j in restrictions:
+            if j[3] == 'Allowed':
+                parts = []
+                if j[2] != 'ALL': parts.append(j[2])
+                if j[1] != 'ALL': parts.append(j[1])
+                if j[0] != 'ALL': parts.append(f"{j[0]}")
+                allowed_groups.append(', '.join(parts) if parts else 'specific students')
+        if allowed_groups:
+            restricted_msg = f"Open only to {' / '.join(allowed_groups)}"
+        else:
+            restricted_msg = 'Restricted'
 
-    status = evaluate_rules(Degree, year, department, restrictions)
-    
-    if status == 'Allowed':
-        return 'Valid'
-        
-    branch_allowed = False
-    for r in restrictions:
-        if r[1] in (department, 'ALL') and r[2] in (Degree, 'ALL') and r[3] == 'Allowed':
-            branch_allowed = True
-            break
+        def get_specificity(rule):
+            score = 0
+            if rule[0] != 'ALL': score += 1
+            if rule[1] != 'ALL': score += 1
+            if rule[2] != 'ALL': score += 1
+            return score
+
+        def evaluate_rules(Degree, year, department, restrictions):
+            matching_rules = []
+            for r in restrictions:
+                if r[0] in (year, 'ALL') and r[1] in (department, 'ALL') and r[2] in (Degree, 'ALL'):
+                    matching_rules.append(r)
             
-    if branch_allowed:
-        return _build_year_restriction_msg(restrictions, department, Degree)
+            if not matching_rules:
+                has_allowed_rule = any(r[3] == 'Allowed' for r in restrictions)
+                return 'Deny' if has_allowed_rule else 'Allowed'
+            
+            max_spec = max(get_specificity(r) for r in matching_rules)
+            best_rules = [r for r in matching_rules if get_specificity(r) == max_spec]
+            
+            actions = [r[3] for r in best_rules]
+            if 'Deny' in actions:
+                return 'Deny'
+            return 'Allowed'
+
+        status = evaluate_rules(Degree, year, department, restrictions)
         
-    return restricted_msg
+        if status == 'Allowed':
+            return 'Valid'
+            
+        branch_allowed = False
+        for r in restrictions:
+            if r[1] in (department, 'ALL') and r[2] in (Degree, 'ALL') and r[3] == 'Allowed':
+                branch_allowed = True
+                break
+                
+        if branch_allowed:
+            return _build_year_restriction_msg(restrictions, department, Degree)
+            
+        return restricted_msg
+
+    results = []
+    for _, row in rows_to_check.iterrows():
+        res = evaluate_single_row(row['Restriction'])
+        if res == 'Valid':
+            return 'Valid'
+        results.append(res)
+
+    for r in results:
+        if 'year students' in r or r == 'Restricted':
+            return r
+    return results[0] if results else 'Restricted'
 
 #check prerequsite
 def check_prereq(course_code,course_hist,degree = None, data=df_prereq):
+    # Normalize course_code to a stripped uppercase code (without spaces)
+    course_code = str(course_code).replace(" ", "").upper().strip()
+    # Normalize course_hist to a set of stripped uppercase codes (without spaces)
+    course_hist = {str(c).replace(" ", "").upper() for c in course_hist if c}
     # Check if course_code exists in the data
     #course_hist is course history of student
     if course_code not in data['CourseCode'].values: # No prereq
@@ -631,7 +668,7 @@ def get_core_courses_for_bucket(degree, department, batch_year):
     for _, row in rows.iterrows():
         code = str(row['Course Code']).strip()
         # Look up slot from running courses; take first slot found
-        slot_nums = running_slot_map.get(code, set())
+        slot_nums = running_slot_map.get(code.replace(" ", "").upper(), set())
         slot_num  = next(iter(slot_nums), 'N/A')
         try:
             credits = int(str(row.get('Credits', 6)).strip() or 6)
@@ -656,7 +693,7 @@ _course_name_map: dict = {}
 _cn_col = next((c for c in df.columns if 'course name' in c.lower()), None)
 if _cn_col:
     for _, _r in df.iterrows():
-        _code = str(_r['Course Code']).strip()
+        _code = str(_r['Course Code']).replace(" ", "").upper().strip()
         _name = str(_r.get(_cn_col, '')).strip()
         if _code and _name and _name.lower() not in ('nan', ''):
             _course_name_map.setdefault(_code, _name)
@@ -665,7 +702,7 @@ try:
     from config import MINOR_COURSES_PATH as _MINOR_PATH, RUNNING_COURSES_PATH as _META_PATH
     _df_meta_raw = pd.read_csv(_META_PATH)
     for _, _r in _df_meta_raw.iterrows():
-        _code = str(_r.get('Course Code', '')).strip()
+        _code = str(_r.get('Course Code', '')).replace(" ", "").upper().strip()
         _name = str(_r.get('Course Name', '')).strip()
         if _code and _name and _name.lower() not in ('nan', ''):
             _course_name_map.setdefault(_code, _name)
@@ -782,21 +819,26 @@ def build_minor_candidates(branch: str, degree: str) -> list:
         mask_deg = _df_minor['Degree'] == 'B.Tech.'
     subset = _df_minor[mask_deg & (_df_minor['Branch'] == branch)]
 
+    # Build a lookup of normalized running course codes -> actual course code in course_meta
+    running_normalized = {k.replace(" ", "").upper(): k for k in course_meta.keys()}
+
     candidates, seen = [], set()
     for _, row in subset.iterrows():
         code = str(row['Course Code']).strip()
         if code.startswith('All ') or code in seen:
             continue
         seen.add(code)
-        if code not in course_meta:          # not offered this semester → skip
+
+        code_norm = code.replace(" ", "").upper()
+        if code_norm not in running_normalized:          # not offered this semester → skip
             continue
+        actual_code = running_normalized[code_norm]
         
         # Enforce Minor/Elective variant only for courses that have
         # historically had an M-tagged variant.
-        code_norm = code.replace(" ", "")
 
         # Running-semester divisions
-        divs = course_divisions.get(code, [])
+        divs = course_divisions.get(actual_code, [])
 
         has_minor_division = any(d["is_minor"] for d in divs)
         has_regular_division = any(not d["is_minor"] for d in divs)
@@ -819,8 +861,8 @@ def build_minor_candidates(branch: str, degree: str) -> list:
                 continue
 
         candidates.append({
-            'code':         code,
-            'name':         _course_name_map.get(code, ''),
+            'code':         actual_code,
+            'name':         _course_name_map.get(actual_code.replace(" ", "").upper(), _course_name_map.get(code.replace(" ", "").upper(), '')),
             'score':        0.0,
             'raw_rrf':      None,            # None → scores hidden in template
             'raw_ps':       None,
@@ -1019,7 +1061,7 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
         code_orig = str(crow['Course Code']).strip()
         if code_norm in course_hist_norm:
             continue
-        for sn in running_slot_map.get(code_orig, set()):
+        for sn in running_slot_map.get(code_orig.replace(" ", "").upper(), set()):
             core_slot_to_courses.setdefault(sn, []).append(code_orig)
 
     eligible_courses = []
@@ -1032,7 +1074,7 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
     # 2. Loop over model-recommended courses
     seen_codes = set()
     for course in desired_courses:
-        course_code = course["code"]
+        course_code = str(course["code"]).replace(" ", "").upper().strip()
         if course_code in seen_codes:
             continue
         seen_codes.add(course_code)
@@ -1052,23 +1094,35 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
         if norm_code(course_code) in all_core_codes:
             continue
 
-        # Pre-compute division metadata once per course
-        divs       = course_divisions.get(course_code, [])
+        # Pre-compute division metadata once per course, filtering out divisions restricted for this student
+        raw_divs = course_divisions.get(course_code, [])
+        valid_divs = []
+        for d in raw_divs:
+            div_status = check_restriction(
+                Degree=Degree,
+                year=year,
+                department=department,
+                course_code=course_code,
+                division=d['division']
+            )
+            if div_status == 'Valid' or 'year students' in div_status or div_status == 'Restricted':
+                valid_divs.append((d, div_status))
+
+        if not valid_divs:
+            continue
+
+        divs = [vd[0] for vd in valid_divs]
         has_minor  = any(d['is_minor'] for d in divs)
         minor_only = all(d['is_minor'] for d in divs) and bool(divs)
 
         # 3. Check restriction
         if norm_code(course_code) in course_hist_norm:
             continue
-        r_status = check_restriction(
-            Degree=Degree,
-            year=year,
-            department=department,
-            course_code=course_code
-        )
+
+        r_status = 'Valid' if any(vd[1] == 'Valid' for vd in valid_divs) else valid_divs[0][1]
         
         if r_status != 'Valid':
-            if 'year students' in r_status:
+            if 'year students' in r_status or r_status == 'Restricted':
                 meta = course_meta.get(course_code, {})
                 rejected_courses.append({
                     "code": course_code,

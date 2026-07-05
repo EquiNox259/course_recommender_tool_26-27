@@ -102,13 +102,26 @@ def build_candidate_pool(student_history=None,
                          include_departments=None,
                          exclude_departments=None,
                          exclude_courses=None,
-                         minor = None
+                         minor = None,
+                         degree = None,
+                         department = None
                          ):
     if student_history is None:
         student_history = []
-    core_exclusions = core_course_codes - all_minor_courses
 
-    exclusions = core_exclusions.union(
+    own_core_codes = set()
+    if department and degree:
+        dept_core = df_core[
+            (df_core['Branch'] == department) &
+            (df_core['Degree'] == degree)
+        ]
+        own_core_codes = {
+            str(c).strip().upper()
+            for c in dept_core['Course Code']
+            if pd.notna(c)
+        }
+
+    exclusions = own_core_codes.union(
         {
             str(c).strip().upper()
             for c in student_history
@@ -171,32 +184,18 @@ def build_candidate_pool(student_history=None,
         for m in minor:
             allowed_courses |= minor_lookup.get(m, set())
 
-        tmp = df_courses[
-        df_courses["Course Code"]
-        .astype(str)
-        .str.strip()
-        .str.upper()
-        .isin(allowed_courses)
-        ]
-
-        tmp = tmp[
-            ~tmp["Course Code"]
-            .astype(str)
-            .str.strip()
-            .str.upper()
-            .isin(exclusions)
-        ]
-        allowed_courses = {
-            c.strip().upper()
+        allowed_courses_norm = {
+            c.replace(" ", "").upper()
             for c in allowed_courses
+            if c
         }
 
         pool = pool[
             pool["Course Code"]
             .astype(str)
-            .str.strip()
+            .str.replace(" ", "", regex=False)
             .str.upper()
-            .isin(allowed_courses)
+            .isin(allowed_courses_norm)
         ]
     return pool
 
@@ -393,7 +392,9 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
         include_departments=include_departments,
         exclude_departments=exclude_departments,
         exclude_courses=exclude_courses,
-        minor = minor
+        minor = minor,
+        degree = degree,
+        department = department
     )
 
     if student_history is None:
@@ -564,9 +565,14 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
                 
             # 4. Remove restricted courses (excluding "Restricted by year")
             if degree and year and department:
-                r_status = check_restriction(degree, year, department, clean_code)
-                if r_status != 'Valid' and 'year students' not in r_status and r_status != 'Restricted by year':
-                    # Completely restricted (e.g. Restricted, Invalid Degree), filter out
+                # A course is candidates-eligible if at least one division pathway (regular or minor) is valid/open
+                r_status_reg = check_restriction(degree, year, department, clean_code, is_minor=False)
+                r_status_min = check_restriction(degree, year, department, clean_code, is_minor=True)
+                
+                def is_candidate_eligible(r):
+                    return r == 'Valid' or 'year students' in r or r == 'Restricted'
+                
+                if not is_candidate_eligible(r_status_reg) and not is_candidate_eligible(r_status_min):
                     continue
             
             filtered_candidates.append(c)

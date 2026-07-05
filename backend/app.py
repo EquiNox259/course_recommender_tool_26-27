@@ -162,6 +162,8 @@ def health():
 
 @app.route("/")
 def index():
+    if "127.0.0.1:5000" in FRONTEND_ORIGIN or "localhost:5000" in FRONTEND_ORIGIN:
+        return render_template('index.html')
     return redirect(FRONTEND_ORIGIN, code=302)
 
 
