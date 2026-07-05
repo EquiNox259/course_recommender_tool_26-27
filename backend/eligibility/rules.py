@@ -258,7 +258,7 @@ def _build_year_restriction_msg(restrictions, department, Degree):
         if n == 2: return "2nd"
         if n == 3: return "3rd"
         if n == 4: return "4th"
-        if n == 5 and department == 'Electrical Engineering' and Degree == 'Dual Degree (B.Tech. + M.Tech.)': return '5th'
+        if n == 5: return '5th'
         return f"{n}th"
     current_cal_year    = datetime.now().year
     academic_year_start = current_cal_year if SEMESTER == 'Autumn' else current_cal_year - 1
@@ -278,10 +278,12 @@ def _build_year_restriction_msg(restrictions, department, Degree):
         return 'Restricted by year'
 
     # Convert each batch year → year-in-program ordinal, filter implausible values
+    max_yip = 5 if (department == 'Electrical Engineering'
+                    and Degree == 'Dual Degree (B.Tech. + M.Tech.)') else 4
     year_labels = []
     for batch_yr in allowed_batch_years:
         yip = academic_year_start - batch_yr + 1
-        if 1 <= yip <= 5:
+        if 1 <= yip <= max_yip:
             year_labels.append((_ordinal(yip), yip))
 
     year_labels.sort(key=lambda x: x[1])   # ascending: 1st, 2nd, …
