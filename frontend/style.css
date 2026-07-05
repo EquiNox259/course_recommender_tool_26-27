@@ -1885,6 +1885,15 @@ html, body { overflow-x: hidden; max-width: 100%; }
       display: flex;
       flex-direction: column;
       gap: 12px;
+      overscroll-behavior: contain;
+    }
+
+    #favs-tabs-container {
+      flex-shrink: 0;
+      overflow-x: auto;
+      overflow-y: hidden;
+      overscroll-behavior-x: contain;
+      touch-action: pan-x;
     }
 
     .fav-item {
