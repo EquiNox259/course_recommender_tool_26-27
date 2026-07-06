@@ -920,9 +920,9 @@ function buildEntry(c, section, isMinorMode, isLast) {
   /* ── minor mode remarks ── */
   if (isMinorMode) {
     if (c.minor_remark_warning) {
-      html += `<div class="minor-remark-warning">&#9432;&nbsp;${esc(c.minor_remark_warning)}</div>`;
+      html += `<div class="minor-remark-warning">&#9432;&nbsp; <strong>For taking this as a part of a minor:</strong> ${esc(c.minor_remark_warning)}</div>`;
     } else if (c.minor_remark_note) {
-      html += `<div class="minor-remark-note">&#9432;&nbsp;${esc(c.minor_remark_note)}</div>`;
+      html += `<div class="minor-remark-note">&#9432;&nbsp; <strong>For taking this as a part of a minor:</strong> ${esc(c.minor_remark_note)}</div>`;
     }
     if (c.minor_prereq_note) {
       html += `<div class="minor-remark-warning">&#9432;&nbsp;${esc(c.minor_prereq_note)}</div>`;
