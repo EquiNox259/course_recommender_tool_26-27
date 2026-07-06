@@ -215,7 +215,7 @@ grade_stats_db = _build_grade_stats()
 
 GRADE_WEIGHT = 0.15
 
-def apply_grade_boost(courses):
+def apply_grade_boost(courses, w_ps):
     """
     Boost recommendation scores based on historical AA+AB percentage.
 
@@ -226,7 +226,13 @@ def apply_grade_boost(courses):
         return courses
     # If the query didn't request easy grading, do nothing
     if not courses[0].get("easy_grading", False):
-        return courses
+        if w_ps == 1:
+            courses = [course for course in courses if course["raw_ts"] != 0]
+        for course in courses:
+            print(f"Course: {course['code']}, raw_ts: {course['raw_ts']}")
+        courses.sort(key=lambda x: x["raw_ts"], reverse=True)
+
+        return courses[:30]
     for course in courses:
         grade_stats = grade_stats_db.get(str(course.get("code", "")).replace(" ", "").upper())
         if not grade_stats:
@@ -246,7 +252,7 @@ def apply_grade_boost(courses):
             course["raw_ts"] = GRADE_WEIGHT * avg_grade_score + (1-GRADE_WEIGHT)*course["raw_ts"]
     # Resort after boosting
     courses.sort(key=lambda x: x["raw_ts"], reverse=True)
-    return courses
+    return courses[:30]
 
 def _build_year_restriction_msg(restrictions, department, Degree):
     """
@@ -1001,7 +1007,7 @@ def parse_minor_remark(remark: str, course_hist: list, department: str = '') -> 
     out['note'] = remark
     return out
 
-def recommender(student_id, Degree, year, department, desired_courses, manual_course_history=None, is_minor_mode=False, w_rrf=1, w_ps=0):
+def recommender(student_id, Degree, year, department, desired_courses, manual_course_history=None, w_rrf=1, w_ps=0):
     """
     student_id       : string (email prefix)
     Degree           : string (e.g. 'B.Tech.')
@@ -1011,7 +1017,6 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
 
     returns          : list of eligible course codes
     """
-
     # 1. Fetch course history
     if student_id in data_dict:
        course_hist = data_dict[student_id]
@@ -1024,6 +1029,7 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
       else:
         course_hist = manual_course_history
         history_source = "manual"
+    
 
     # Build slot-number → core course name map for this student
     current_cal_year = datetime.now().year
@@ -1068,9 +1074,8 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
     rejected_courses = []
     i_a_r_courses = []
     t_s_c_courses = []
-
-    desired_courses = apply_grade_boost(desired_courses)
-
+    
+    desired_courses = apply_grade_boost(desired_courses, w_ps)
     # 2. Loop over model-recommended courses
     seen_codes = set()
     for course in desired_courses:
@@ -1090,7 +1095,7 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
 
         if re.search(r'\bPROJECT\s*(I{1,3}|[1-4])?\s*$', course_name.upper()):
            continue
-
+        
         if norm_code(course_code) in all_core_codes:
             continue
 
@@ -1118,12 +1123,23 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
         # 3. Check restriction
         if norm_code(course_code) in course_hist_norm:
             continue
+<<<<<<< Updated upstream
 
         r_status = 'Valid' if any(vd[1] == 'Valid' for vd in valid_divs) else valid_divs[0][1]
+=======
+        else:
+            r_status = check_restriction(
+                Degree=Degree,
+                year=year,
+                department=department,
+                course_code=course_code
+            )
+>>>>>>> Stashed changes
         
         if r_status != 'Valid':
             if 'year students' in r_status or r_status == 'Restricted':
                 meta = course_meta.get(course_code, {})
+                print(course_code, "GOING TO REJECTED")
                 rejected_courses.append({
                     "code": course_code,
                     "name": course_name,
@@ -1144,7 +1160,6 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
                     "grade_stats": grade_stats_db.get(course_code, None)
                 })
             continue
-
         # 4. Check prerequisite
         p_status, p_remark, p_minor_prereq = check_prereq(
             course_code=course_code,
@@ -1307,7 +1322,19 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
     "final_score": course.get("raw_ts"),
     "grade_stats": grade_stats_db.get(course_code, None)
 })
+    print("Eligible list:")
+    print([c["code"] for c in eligible_courses])
 
+    print("TSC list:")
+    print([c["code"] for c in t_s_c_courses])
+
+    print("IAR list:")
+    print([c["code"] for c in i_a_r_courses])
+
+    print("Rejected list:")
+    print([c["code"] for c in rejected_courses])
+
+    
     return {
         "course_history": course_hist,
         "history_source": history_source,
