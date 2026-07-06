@@ -279,20 +279,13 @@
 <script>
 
 /* ── CONFIG ─────────────────────────────────────────────────────
-   Defaults to local backend if opened locally or via localhost,
-   otherwise points to production cloud server.
+   Set this to your Render backend URL.
+   During local dev you can override via:  localStorage.setItem('API_BASE','http://127.0.0.1:5000')
 ──────────────────────────────────────────────────────────────── */
-const getApiBase = () => {
-  const stored = localStorage.getItem('API_BASE');
-  if (stored) return stored;
-  
-  const loc = window.location;
-  if (loc.hostname === 'localhost' || loc.hostname === '127.0.0.1' || loc.protocol === 'file:') {
-    return 'http://127.0.0.1:5000';
-  }
-  return 'https://course-recommender-dav-team-703981894282.asia-south1.run.app';
-};
-const API_BASE = getApiBase();
+// Render :  https://course-recommnder-by-dav-team.onrender.com
+// Railway:  https://courserecommendertool26-27-production-c019.up.railway.app
+// gcp:      
+const API_BASE = localStorage.getItem('API_BASE') || 'https://course-recommender-dav-team-703981894282.asia-south1.run.app';
 
 /* ── Pending recommend args (for manual-history retry) ───────── */
 let _pendingRecommendArgs = null;
@@ -381,7 +374,6 @@ async function doSendOtp() {
 try {
     const data = await api('/api/send-otp', { student_id: studentId });
     if (data.bypassed) {
-      setLoading(btn, false);
       _authToken = data.token;
       sessionStorage.setItem('dav_token', _authToken);
       sessionStorage.setItem('dav_sid', data.student_id);
@@ -566,33 +558,10 @@ async function doSignOut() {
 
 function renderResults(data) {
   const { eligible, i_a_r, t_s_c, rejected,
-          query_fallback, is_minor_mode, is_valid, reject_reason } = data;
+          query_fallback, is_minor_mode } = data;
 
   /* fallback alert */
   document.getElementById('fallback-alert').style.display = query_fallback ? '' : 'none';
-  if (is_valid === false) {
-    const grid = document.getElementById("results-grid");
-
-    grid.innerHTML = `
-        <div class="empty-result" style="display:block;">
-            <div class="empty-title">
-                ${reject_reason || "This doesn't look like a course recommendation query."}
-            </div>
-            <div class="empty-sub">
-                Try asking about subjects, departments, minors, grading, careers, or academic interests.
-            </div>
-        </div>
-    `;
-
-    document.getElementById('tabs-container').innerHTML = '';
-
-    document.getElementById('section-profile').style.display = '';
-    document.getElementById('section-manual-history').style.display = 'none';
-    document.getElementById('section-results').style.display = '';
-    document.getElementById('feedback-section').style.display = 'none';
-
-    return;
-}
 
   /* build tabs */
   const tabsCon = document.getElementById('tabs-container');
@@ -949,12 +918,15 @@ function buildEntry(c, section, isMinorMode, isLast) {
   }
 
   /* ── minor mode remarks ── */
-  if (c.minor_remark) {
-      html += `
-          <div class="minor-remark-warning">
-              &#9432;&nbsp;${esc(c.minor_remark)}
-          </div>
-      `;
+  if (isMinorMode) {
+    if (c.minor_remark_warning) {
+      html += `<div class="minor-remark-warning">&#9432;&nbsp; <strong>For taking this as a part of a minor:</strong> ${esc(c.minor_remark_warning)}</div>`;
+    } else if (c.minor_remark_note) {
+      html += `<div class="minor-remark-note">&#9432;&nbsp; <strong>For taking this as a part of a minor:</strong> ${esc(c.minor_remark_note)}</div>`;
+    }
+    if (c.minor_prereq_note) {
+      html += `<div class="minor-remark-warning">&#9432;&nbsp;${esc(c.minor_prereq_note)}</div>`;
+    }
   }
 
   /* ── eligibility reason ── */
@@ -966,28 +938,14 @@ function buildEntry(c, section, isMinorMode, isLast) {
   if (section === 'tsc' && c.clashing_with) {
     html += `<div class="entry-clash-msg">&#9203;&nbsp;Time slot clashes with <span class="clash-courses">${esc((c.clashing_with||[]).join(', '))}</span></div>`;
   }
-  const scores = [];
 
-  if ((c.norm_rrf || 0) > 0) {
-    scores.push(
-      `<span><strong>Semantic Score</strong>: ${((c.norm_rrf || 0) * 100).toFixed(1)}%</span>`
-    );
-  }
-
-  if ((c.norm_ps || 0) > 0) {
-    scores.push(
-      `<span><strong>People Score</strong>: ${((c.norm_ps || 0) * 100).toFixed(1)}%</span>`
-    );
-  }
-
-  if ((c.final_score || 0) > 0) {
-    scores.push(
-      `<span><strong>Final Score</strong>: ${((c.final_score || 0) * 100).toFixed(1)}%</span>`
-    );
-  }
-
-  if (scores.length > 0) {
-    html += `<div class="score">${scores.join("")}</div>`;
+  /* ── scores (non-minor-mode only) ── */
+  if (!isMinorMode) {
+    html += `<div class="score">
+      <span><strong>Semantic Score</strong>: ${((c.norm_rrf||0)*100).toFixed(1)}%</span>
+      <span><strong>People Score</strong>: ${((c.norm_ps||0)*100).toFixed(1)}%</span>
+      <span><strong>Final Score</strong>: ${((c.final_score||0)*100).toFixed(1)}%</span>
+    </div>`;
   }
 
   /* ── description + grade stats ── */
