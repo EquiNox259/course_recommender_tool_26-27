@@ -952,7 +952,7 @@ function buildEntry(c, section, isMinorMode, isLast) {
   if (c.minor_remark) {
       html += `
           <div class="minor-remark-warning">
-              &#9432;&nbsp;${esc(c.minor_remark)}
+              &#9432;&nbsp; <strong>For taking this course as part of a minor:</strong>${esc(c.minor_remark)}
           </div>
       `;
   }
