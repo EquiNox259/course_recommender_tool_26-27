@@ -198,7 +198,7 @@ class LLMService:
             "- Centre of Studies in Resources Engineering: GNR (gnr, csre, geoinformatics, resources engineering)\n"
             "- Statistics: SI (statistics, stats, si)\n"
             "- Centre for Machine Intelligence and Data Science: DS (only when referring to DS-prefixed courses)\n"
-            "- Humanities and Social Sciences: HSS (hss, humanities, social sciences, hasmed)\n"
+            "- Humanities and Social Sciences: HS (hss, humanities, social sciences, hasmed, hs)\n"
             "- Industrial Design: DE (de, industrial design, design, idc)"
             "\n"
             "The values inside include_departments and exclude_departments MUST ONLY be these course prefixes:\n"
@@ -234,7 +234,7 @@ class LLMService:
             "- Energy Science and Engineering (aliases: energy science, energy engineering, esed, en)\n"
             "- Robotics (aliases: robotics)\n"
             "- Industrial Engineering and Operations Research (aliases: industrial engineering, operations research, ieor, ie)\n"
-            "- Humanities and Social Sciences (aliases: humanities, social sciences, hss)\n"
+            "- Humanities and Social Sciences (aliases: humanities, social sciences, hss, hs)\n"
             "- Industrial Design (aliases: design, idc, de)"
             "\n"
             "The values inside constraints.minor MUST contain ONLY these standardized minor names.\n"
@@ -319,7 +319,7 @@ class LLMService:
             "    \"image processing\"\n"
             "  ],\n"
             "  \"constraints\": {\n"
-            "    \"include departments\":[]"
+            "    \"include_departments\":[], \n"
             "    \"exclude_departments\": [],\n"
             "    \"exclude_courses\": [],\n"
             "    \"minor\": [],\n"
@@ -337,7 +337,7 @@ class LLMService:
             "  \"secondary\": [\"fundamental\", \"basic\"],\n"
             "  \"expanded\": [\"optimization\", \"probability\", \"statistics\"],\n"
             "  \"constraints\": {\n"
-            "    \"include_departments\":[\"CS\"]"
+            "    \"include_departments\":[\"CS\"], \n"
             "    \"exclude_departments\": [\"EE\", \"ME\"],\n"
             "    \"exclude_courses\": [\"CS 747\"],\n"
             "    \"minor\": [],\n"
@@ -354,7 +354,7 @@ class LLMService:
             "  \"secondary\": [],\n"
             "  \"expanded\": [],\n"
             "  \"constraints\": {\n"
-            "    \"include departments\":[]"
+            "    \"include_departments\":[], \n"
             "    \"exclude_departments\": [],\n"
             "    \"exclude_courses\": [],\n"
             "    \"minor\": [\"CS\"],\n"
@@ -391,7 +391,7 @@ class LLMService:
             "  \"secondary\": [],\n"
             "  \"expanded\": [],\n"
             "  \"constraints\": {\n"
-            "    \"include departments\":[]"
+            "    \"include_departments\":[], \n"
             "    \"exclude_departments\": [],\n"
             "    \"exclude_courses\": [],\n"
             "    \"minor\": [],\n"
@@ -441,6 +441,7 @@ class LLMService:
 
             if "minor_query_type" not in result or result["minor_query_type"] not in ("simple", "stacked"):
                 result["minor_query_type"] = "simple"
+            return result
             
         except Exception as e:
             print(f"[LLM COMBINED PIPELINE ERROR] Fallback due to: {e}")
@@ -454,6 +455,7 @@ class LLMService:
                 "expanded": [],
                 "constraints": {
                     "exclude_departments": [],
+                    "include_departments": [],
                     "exclude_courses": [],
                     "minor": [],
                     "easy_grading": False

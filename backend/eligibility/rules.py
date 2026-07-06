@@ -1147,7 +1147,8 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
                     "norm_rrf": course.get("norm_rrf"),
                     "norm_ps": course.get("norm_ps"),
                     "final_score": course.get("raw_ts"),
-                    "grade_stats": grade_stats_db.get(course_code, None)
+                    "grade_stats": grade_stats_db.get(course_code, None),
+                    "minor_remark": course.get("minor_remark")
                 })
             continue
         # 4. Check prerequisite
@@ -1194,7 +1195,8 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
                         "norm_rrf": course.get("norm_rrf"),
                         "norm_ps": course.get("norm_ps"),
                         "final_score": course.get("raw_ts"),
-                        "grade_stats": grade_stats_db.get(course_code, None)
+                        "grade_stats": grade_stats_db.get(course_code, None),
+                        "minor_remark": course.get("minor_remark")
                     })
                 else:
                     reason = (p_remark if p_remark
@@ -1220,7 +1222,8 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
                         "norm_rrf": course.get("norm_rrf"),
                         "norm_ps": course.get("norm_ps"),
                         "final_score": course.get("raw_ts"),
-                        "grade_stats": grade_stats_db.get(course_code, None)
+                        "grade_stats": grade_stats_db.get(course_code, None),
+                        "minor_remark": course.get("minor_remark")
                     })
 
             else:
@@ -1243,7 +1246,8 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
                     "norm_rrf": course.get("norm_rrf"),
                     "norm_ps": course.get("norm_ps"),
                     "final_score": course.get("raw_ts"),
-                    "grade_stats": grade_stats_db.get(course_code, None)
+                    "grade_stats": grade_stats_db.get(course_code, None),
+                    "minor_remark": course.get("minor_remark")
                 })
             continue
 
@@ -1310,7 +1314,8 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
     "norm_rrf": course.get("norm_rrf"),
     "norm_ps": course.get("norm_ps"),
     "final_score": course.get("raw_ts"),
-    "grade_stats": grade_stats_db.get(course_code, None)
+    "grade_stats": grade_stats_db.get(course_code, None),
+    "minor_remark": course.get("minor_remark")
 })
     print("Eligible list:")
     print([c["code"] for c in eligible_courses])

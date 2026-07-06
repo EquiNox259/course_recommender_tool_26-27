@@ -149,12 +149,8 @@
         <span class="btn-label">Generate Recommendations &rarr;</span>
         <span class="btn-loading" hidden>Checking eligibility&hellip;</span>
       </button>
-<<<<<<< Updated upstream
 
     <div id="helper-tips">
-=======
-      <div id="helper-tips" style="background: #f4f4f9; padding: 15px; border-radius: 8px; margin: 20px 0; font-size: 14px; border: 1px solid #ddd; color: #333;">
->>>>>>> Stashed changes
         <h4 style="margin-top: 0; margin-bottom: 8px;">Search Tips: Combine filters for best results</h4>
         <p style="margin: 0 0 10px 0;"><strong>Tip:</strong> You can combine multiple filters in one query.</p>
         <ul style="margin: 0; padding-left: 20px;">
@@ -286,7 +282,6 @@
    Defaults to local backend if opened locally or via localhost,
    otherwise points to production cloud server.
 ──────────────────────────────────────────────────────────────── */
-<<<<<<< Updated upstream
 const getApiBase = () => {
   const stored = localStorage.getItem('API_BASE');
   if (stored) return stored;
@@ -299,12 +294,6 @@ const getApiBase = () => {
 };
 const API_BASE = getApiBase();
 
-=======
-// Render :  https://course-recommnder-by-dav-team.onrender.com
-// Railway:  
-/// const API_BASE = localStorage.getItem('API_BASE') || 'https://courserecommendertool26-27-production-c019.up.railway.app';
-const API_BASE = localStorage.getItem('API_BASE') || 'http://127.0.0.1:5000';
->>>>>>> Stashed changes
 /* ── Pending recommend args (for manual-history retry) ───────── */
 let _pendingRecommendArgs = null;
 function getFavouritesKey() {
@@ -577,10 +566,33 @@ async function doSignOut() {
 
 function renderResults(data) {
   const { eligible, i_a_r, t_s_c, rejected,
-          query_fallback, is_minor_mode } = data;
+          query_fallback, is_minor_mode, is_valid, reject_reason } = data;
 
   /* fallback alert */
   document.getElementById('fallback-alert').style.display = query_fallback ? '' : 'none';
+  if (is_valid === false) {
+    const grid = document.getElementById("results-grid");
+
+    grid.innerHTML = `
+        <div class="empty-result" style="display:block;">
+            <div class="empty-title">
+                ${reject_reason || "This doesn't look like a course recommendation query."}
+            </div>
+            <div class="empty-sub">
+                Try asking about subjects, departments, minors, grading, careers, or academic interests.
+            </div>
+        </div>
+    `;
+
+    document.getElementById('tabs-container').innerHTML = '';
+
+    document.getElementById('section-profile').style.display = '';
+    document.getElementById('section-manual-history').style.display = 'none';
+    document.getElementById('section-results').style.display = '';
+    document.getElementById('feedback-section').style.display = 'none';
+
+    return;
+}
 
   /* build tabs */
   const tabsCon = document.getElementById('tabs-container');
@@ -937,15 +949,12 @@ function buildEntry(c, section, isMinorMode, isLast) {
   }
 
   /* ── minor mode remarks ── */
-  if (isMinorMode) {
-    if (c.minor_remark_warning) {
-      html += `<div class="minor-remark-warning">&#9432;&nbsp;${esc(c.minor_remark_warning)}</div>`;
-    } else if (c.minor_remark_note) {
-      html += `<div class="minor-remark-note">&#9432;&nbsp;${esc(c.minor_remark_note)}</div>`;
-    }
-    if (c.minor_prereq_note) {
-      html += `<div class="minor-remark-warning">&#9432;&nbsp;${esc(c.minor_prereq_note)}</div>`;
-    }
+  if (c.minor_remark) {
+      html += `
+          <div class="minor-remark-warning">
+              &#9432;&nbsp;${esc(c.minor_remark)}
+          </div>
+      `;
   }
 
   /* ── eligibility reason ── */
@@ -957,14 +966,28 @@ function buildEntry(c, section, isMinorMode, isLast) {
   if (section === 'tsc' && c.clashing_with) {
     html += `<div class="entry-clash-msg">&#9203;&nbsp;Time slot clashes with <span class="clash-courses">${esc((c.clashing_with||[]).join(', '))}</span></div>`;
   }
+  const scores = [];
 
-  /* ── scores (non-minor-mode only) ── */
-  if (!isMinorMode) {
-    html += `<div class="score">
-      <span><strong>Semantic Score</strong>: ${((c.norm_rrf||0)*100).toFixed(1)}%</span>
-      <span><strong>People Score</strong>: ${((c.norm_ps||0)*100).toFixed(1)}%</span>
-      <span><strong>Final Score</strong>: ${((c.final_score||0)*100).toFixed(1)}%</span>
-    </div>`;
+  if ((c.norm_rrf || 0) > 0) {
+    scores.push(
+      `<span><strong>Semantic Score</strong>: ${((c.norm_rrf || 0) * 100).toFixed(1)}%</span>`
+    );
+  }
+
+  if ((c.norm_ps || 0) > 0) {
+    scores.push(
+      `<span><strong>People Score</strong>: ${((c.norm_ps || 0) * 100).toFixed(1)}%</span>`
+    );
+  }
+
+  if ((c.final_score || 0) > 0) {
+    scores.push(
+      `<span><strong>Final Score</strong>: ${((c.final_score || 0) * 100).toFixed(1)}%</span>`
+    );
+  }
+
+  if (scores.length > 0) {
+    html += `<div class="score">${scores.join("")}</div>`;
   }
 
   /* ── description + grade stats ── */

@@ -1813,7 +1813,6 @@ html, body { overflow-x: hidden; max-width: 100%; }
       .score-grid, .elig-grid { grid-template-columns: 1fr; }
       .flow-arrow { display: none; }
     }
-<<<<<<< Updated upstream
 
     /* ── Favourites Modal overlay ── */
     .modal-overlay {
@@ -1956,19 +1955,6 @@ html, body { overflow-x: hidden; max-width: 100%; }
 
 #helper-tips h4 {
     color: var(--tp);
-=======
-#helper-tips {
-    background-color: #fafafa;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 16px;
-    margin-bottom: 24px;
-    color: #444;
-}
-
-#helper-tips h4 {
-    color: #2c3e50;
->>>>>>> Stashed changes
     margin-bottom: 10px;
     font-size: 15px;
 }
@@ -1982,7 +1968,6 @@ html, body { overflow-x: hidden; max-width: 100%; }
     font-size: 13.5px;
     margin-bottom: 6px;
     padding-left: 12px;
-<<<<<<< Updated upstream
     border-left: 2px solid var(--gr); /* Subtle accent matching the blue button */
 }
 
@@ -1990,7 +1975,3 @@ html, body { overflow-x: hidden; max-width: 100%; }
 .modal-card-wide {
     max-width: 800px !important;
 }
-=======
-    border-left: 2px solid #4a90e2; /* Subtle accent matching the blue button */
-}
->>>>>>> Stashed changes

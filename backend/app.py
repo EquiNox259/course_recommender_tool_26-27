@@ -307,8 +307,9 @@ def api_recommend():
         query_fallback = True
 
     desired_courses = []
+    is_valid = True
     try:
-        desired_courses = get_candidate_courses(
+        desired_courses, is_valid, reject_reason = get_candidate_courses(
             query=interest,
             student_history=automated_history,
             top_k=60,                
@@ -321,6 +322,20 @@ def api_recommend():
         )
     except Exception as api_err:
         print(f"[OFFLINE FALLBACK] Token exhaustion detected. Trace: {api_err}")
+    if is_valid == False:
+        return jsonify({
+            "eligible":           [],
+            "i_a_r":              [],
+            "t_s_c":              [],
+            "rejected":           [],
+            "course_history":     [],
+            "w_ps":               0,
+            "w_rrf":              0,
+            "query_fallback":     query_fallback,
+            "need_manual_history": False,
+            "is_valid" : False,
+            "reject_reason": reject_reason
+        })
 
     # --- Manual history (second phase) ---
     manual_history_raw = data.get("manual_history", "")
@@ -360,6 +375,8 @@ def api_recommend():
         "w_rrf":              w_rrf,
         "query_fallback":     query_fallback,
         "need_manual_history": False,
+        "is_valid": True,
+        "reject_reason": ""
     })
 
 @app.route("/api/favourites-info", methods=["POST", "OPTIONS"])

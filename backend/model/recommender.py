@@ -97,6 +97,24 @@ all_minor_courses = set(
     .str.strip()
     .str.upper()
 )
+
+minor_remark_lookup = (
+    df_minor_courses
+    .assign(
+        **{
+            "Course Code": df_minor_courses["Course Code"]
+                .astype(str)
+                .str.strip()
+                .str.upper(),
+            "Remarks": df_minor_courses["Remarks"]
+                .fillna("")
+                .astype(str)
+                .str.strip()
+        }
+    )
+    .set_index("Course Code")["Remarks"]
+    .to_dict()
+)
 df_courses = pd.read_csv(COURSE_META_PATH)
 
 df_courses.columns = (
@@ -241,7 +259,6 @@ def build_candidate_pool(student_history=None,
             .str.upper()
             .isin(allowed_courses_norm)
         ]
-    print(pool)
     return pool
 
 
@@ -470,7 +487,7 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
             print(
                 f"[QUERY REJECTED] {processed_query.get('reject_reason', 'Invalid query')}"
             )
-            return []
+            return [], False,  processed_query.get("reject_reason", "Invalid query")
     
         semantic_query = processed_query.get("combined", [])
         primary_keywords = processed_query.get("primary", [])
@@ -554,13 +571,14 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
                 "raw_rrf": 0.0,
                 "raw_ps": ps_score,
                 "norm_rrf": 0.0,
-                "norm_ps": 0.0,
+                "norm_ps": ps_score,
                 "easy_grading": easy_grading,
                 "raw_ts": ps_score,
+                "minor_remark": minor_remark_lookup.get(code, "")
             })
         candidates_enriched = sorted(candidates_enriched, key=lambda x: x["raw_ts"], reverse=True)
         print("[INFO] Candidate enrichment complete. Total candidates:", len(candidates_enriched))
-        return candidates_enriched
+        return candidates_enriched, True, ""
 
     try:
         description_lookup = (
@@ -588,7 +606,7 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
             all_fused_candidates = compute_rrf(semantic_list, keyword_list, k=60)
 
             if not all_fused_candidates:
-                return []
+                return [], True, ""
         else:
             all_fused_candidates = []
 
@@ -621,7 +639,7 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
                 "name": str(row["Course Name"]),
                 "description": description_lookup.get(clean_code, ""),
                 "raw_rrf": rrf_score if clean_query else 0.0,
-                "raw_ps": ps_score
+                "raw_ps": ps_score,
             })
 
         # Filter (remove duplicates, completed, LLM constraints, and completely restricted courses)
@@ -760,7 +778,7 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
     except Exception as e:
         print(f"\n[CRITICAL LOCAL PIPELINE EXCEPTION]: {e}")
         traceback.print_exc()
-        return []
+        return [], True, ""
   
     try:
         if clean_query:
@@ -784,10 +802,11 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
                     "norm_ps": c["norm_ps"], 
                     "raw_ts" : c["combined_score"],
                     "easy_grading": easy_grading,
+                    "minor_remark": minor_remark_lookup.get(c["code"], ""),
                 })
                 if len(final_output) == top_k:
                     break
-        return final_output
+        return final_output, True, ""
 
     except Exception as e:
         print(f"\n[WARNING - GEMINI FILTER FAILED]: {e}. Falling back to pre-filtered rank pool.")
@@ -802,5 +821,6 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
                 "norm_ps": c["norm_ps"], 
                 "raw_ts" : c["combined_score"],
                 "easy_grading": easy_grading,
+                "minor_remark": minor_remark_lookup.get(c["code"], ""),
             })
-        return fallback_output
+        return fallback_output, True, ""
