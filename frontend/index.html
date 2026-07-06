@@ -949,14 +949,12 @@ function buildEntry(c, section, isMinorMode, isLast) {
   }
 
   /* ── minor mode remarks ── */
-  if(isMinorMode)
-    if (c.minor_remark) {
-        html += `
-            <div class="minor-remark-warning">
-                &#9432;&nbsp;${esc(c.minor_remark)}
-            </div>
-        `;
-    }
+  if (c.minor_remark) {
+      html += `
+          <div class="minor-remark-warning">
+              &#9432;&nbsp;${esc(c.minor_remark)}
+          </div>
+      `;
   }
 
   /* ── eligibility reason ── */
