@@ -195,16 +195,6 @@ def extract_master_courses(metadata_path):
     df = pd.read_csv(metadata_path)
     df.columns = df.columns.str.replace(r'^\ufeff', '', regex=True).str.strip()
 
-<<<<<<< Updated upstream
-   # FIX 1: Clean hidden BOM characters and strip extra whitespace from column headers
-    courses_df.columns = courses_df.columns.str.lstrip('\ufeff').str.strip()
-    
-    # PRINT DEBUG: Let's see exactly what Pandas sees for columns
-    print(f"Detected columns in metadata: {list(courses_df.columns)}")
-    
-    # FIX 2: Normalize known variations back to 'Course Code'
-=======
->>>>>>> Stashed changes
     column_mapping = {
         "code": "Course Code",
         "course code": "Course Code",

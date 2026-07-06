@@ -1123,18 +1123,8 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
         # 3. Check restriction
         if norm_code(course_code) in course_hist_norm:
             continue
-<<<<<<< Updated upstream
 
         r_status = 'Valid' if any(vd[1] == 'Valid' for vd in valid_divs) else valid_divs[0][1]
-=======
-        else:
-            r_status = check_restriction(
-                Degree=Degree,
-                year=year,
-                department=department,
-                course_code=course_code
-            )
->>>>>>> Stashed changes
         
         if r_status != 'Valid':
             if 'year students' in r_status or r_status == 'Restricted':

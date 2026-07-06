@@ -9,13 +9,10 @@ from eligibility.rules import recommender as eligibility_recommender, get_core_c
 from config import FLASK_SECRET, SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, OTP_EXPIRY_SEC, DEV_BYPASS_OTP, FEEDBACK_PATH, GSHEETS_CREDENTIALS_PATH, GSHEETS_SPREADSHEET_NAME, FRONTEND_ORIGIN
 import gspread
 import traceback
-<<<<<<< Updated upstream
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 import hashlib, hmac
 from functools import wraps
 
-=======
->>>>>>> Stashed changes
 
 _FRONTEND = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'frontend')
 app = Flask(__name__,
@@ -25,7 +22,6 @@ app = Flask(__name__,
 
 CORS(app, origins=[FRONTEND_ORIGIN], allow_headers=["Authorization", "Content-Type"], methods=["GET", "POST", "OPTIONS"],
      supports_credentials=True)
-<<<<<<< Updated upstream
 
 signer = URLSafeTimedSerializer(FLASK_SECRET)
 
@@ -55,12 +51,6 @@ def require_auth(f):
         request.student_id = payload["sid"]
         return f(*args, **kwargs)
     return wrapper
-=======
-is_prod = os.environ.get("FLASK_ENV") == "production"
-
-app.config["SESSION_COOKIE_SAMESITE"] = "None" if is_prod else "Lax"
-app.config["SESSION_COOKIE_SECURE"] = is_prod
->>>>>>> Stashed changes
 
 
 # Load student records once when the server boots to keep lookups fast
@@ -176,253 +166,6 @@ def index():
         return render_template('index.html')
     return redirect(FRONTEND_ORIGIN, code=302)
 
-<<<<<<< Updated upstream
-=======
-    # Clear stale sessions if student ID is missing
-    if otp_verified and not session.get('otp_student_id'):
-        session.clear()
-        otp_verified = False
-        otp_sent = False
-
-    # Establish strict initial baseline defaults
-    w_ps = 0.0
-    w_rrf = 1.0
-    eligible = None
-    rejected = None
-    i_a_r = None
-    t_s_c = None
-    course_history = None
-    need_manual_history = False
-    query_fallback = False
-   # core_courses_for_bucket = []
-
-    if request.method == "POST":
-        action = request.form.get("action")
-
-         # ── Step 1: Send OTP ──────────────────────────────────────
-        if action == "send_otp":
-            student_id = request.form.get("student_id", "").strip().lower()
-            try:
-                otp, resolved_email = send_otp(student_id)
-                session['otp_code']       = otp
-                session['otp_email'] = resolved_email
-                session['otp_sent_at']    = time.time()
-                session['otp_student_id'] = student_id
-                session['otp_sent']       = True
-                session['otp_verified']   = False
-                otp_sent = True
-            except Exception as e:
-                flash(f"Could not send OTP: {e}", "send_error")
-                return redirect(url_for('index'))
-            
-         # ── Step 2: Verify OTP ────────────────────────────────────
-        elif action == "verify_otp":
-            entered  = request.form.get("otp_input", "").strip()
-            stored   = session.get('otp_code')
-            sent_at  = session.get('otp_sent_at', 0)
-            otp_sent = True
-            if time.time() - sent_at > OTP_EXPIRY_SEC:
-                otp_error = "OTP has expired. Please request a new one."
-                session['otp_sent'] = False
-                otp_sent = False
-            elif entered != stored:
-                otp_error = "Incorrect OTP. Please try again."
-            else:
-                session['otp_verified'] = True
-                otp_verified = True
-
-         # ── Step 3: Generate recommendations ─────────────────────
-        elif action == "recommend":
-            if not session.get('otp_verified'):
-                return redirect(url_for('index'))
-
-            # --- 1. EXTRACT FROM INPUTS AND SLIDER PARAMENTERS FIRST ---
-            student_id = session.get('otp_student_id')
-            degree = request.form.get("degree")
-            year = request.form.get("year")
-            department = request.form.get("department")
-            interest = request.form.get("interest")
-
-            # Guard against blank Degree/Year/Department
-            if not degree or not year or not department:
-                flash("Please select Degree, Batch Year, and Department before generating recommendations.", "recommend_error")
-                return redirect(url_for('index'))
-
-            # Preserve the student's choices (except for interests) across any future redirect
-            # (e.g. after filling the feedback section) so the form doesn't reset.
-            session['last_query'] = {
-                'degree': degree, 'year': year,
-                'department': department,
-            }
-
-
-            # Capture weight inputs from form fields or fallback to default
-            w_ps_raw = request.form.get('w_ps') or request.args.get('w_ps')
-            w_rrf_raw = request.form.get('w_rrf') or request.args.get('w_rrf')
-            
-
-            w_ps = float(w_ps_raw) if w_ps_raw else 0
-            w_rrf = float(w_rrf_raw) if w_rrf_raw else 1
-
-            print(f"\n[CHECKPOINT 1 - APP.PY] Incoming weights extracted from UI:")
-            print(f" -> w_ps (Peer History Weight): {w_ps} (Type: {type(w_ps)})")
-            print(f" -> w_rrf (Semantic Weight):  {w_rrf} (Type: {type(w_rrf)})")
-            print("\n\n\n")
-
-            # --- 2. AUTOMATED BACKGROUND LOOKUP ---
-            automated_history = fetch_automatic_student_history(student_id) or []
-            print(f"[AUTOMATION] Resolved history for {student_id}: {automated_history}")
-            try:
-                if interest:
-                    llm = LLMService()
-                    _processed = llm.rephrase_and_extract_intent(interest)
-            except Exception:
-                _processed = None
-            # Check if the user left the text field blank
-            if not interest:
-                w_rrf = 0.0
-                w_ps  = 1.0
-                query_fallback = True
-                _pre_query   = _processed
-                desired_courses = []
-            try:
-                desired_courses = get_candidate_courses(
-                    query=interest,
-                    student_history=automated_history,                        
-                    top_k=60,
-                    w_rrf=w_rrf,
-                    w_ps=w_ps,
-                    degree=degree,
-                    year=year,
-                    department=department,                        
-                    processed_query=_pre_query,
-                )
-            except Exception:
-                print("===== REAL TRACEBACK =====")
-                traceback.print_exc()
-                print("==========================")                    
-                raise
-
-
-            # --- Manual history (second phase) ---
-            manual_history_raw = request.form.get("manual_history")
-            manual_course_history = None
-
-            if manual_history_raw:
-                manual_course_history = [
-                    c.strip().upper()
-                    for c in manual_history_raw.split(",")
-                    if c.strip()
-                ]
-
-            # --- 4. ELIGIBILITY GATEWAY & SCORING ---
-            # Now passing the correctly updated slider parameters down to your engine matrix!
-            output = eligibility_recommender(
-                student_id=student_id,
-                Degree=degree,
-                year=year,
-                department=department,
-                desired_courses=desired_courses,
-                manual_course_history=manual_course_history or automated_history,
-                w_rrf=w_rrf,
-                w_ps=w_ps
-            )
-
-            # --- 5. COMPILING DATA OUTPUT ARRAYS, ACCOUNT FOR MANUAL HISTORY---
-            if "need_manual_history" in output:
-                need_manual_history = True
-            else:
-                course_history = output.get("course_history", automated_history)
-                eligible = output.get("eligible", [])
-                i_a_r = output.get("i_a_r", [])
-                t_s_c = output.get("t_s_c", [])
-                rejected = output.get("rejected", [])
-
-            # --- 6. CORE COURSES FOR BUCKET ---
-            '''core_courses_for_bucket = get_core_courses_for_bucket(
-                degree=degree,
-                department=department,
-                batch_year=year
-            )'''
-
-
-    # Auto-detect degree and year from student_id prefix
-    default_degree = ""
-    default_year = ""
-    default_dept = ""
-    
-    otp_student_id = session.get('otp_student_id', '')
-    if otp_student_id:
-        clean_sid = str(otp_student_id).strip().lower()
-        if len(clean_sid) >= 3 and clean_sid[:2].isdigit():
-            default_year = "20" + clean_sid[:2]
-            deg_char = clean_sid[2]
-            if deg_char == 'b':
-                default_degree = "B.Tech."
-            elif deg_char == 'm':
-                default_degree = "M.Tech."
-            elif deg_char == 'p':
-                default_degree = "Ph.D."
-            elif deg_char == 'd':
-                default_degree = "Dual Degree (B.Tech. + M.Tech.)"
-
-    return render_template(
-        "index.html",
-        otp_sent=otp_sent,
-        otp_verified=otp_verified,
-        otp_error=otp_error,
-        otp_email = session.get('otp_email', ''),
-        student_id=session.get('otp_student_id', ''),
-        eligible=eligible,
-        i_a_r = i_a_r,
-        t_s_c = t_s_c,
-        rejected=rejected,
-        course_history=course_history,
-        need_manual_history=need_manual_history,
-        w_rrf=w_rrf,
-        w_ps=w_ps,
-        query_fallback=query_fallback,
-        form_values={
-            'degree':     request.form.get('degree')     or session.get('last_query', {}).get('degree', ''),
-            'year':       request.form.get('year')       or session.get('last_query', {}).get('year', ''),
-            'department': request.form.get('department') or session.get('last_query', {}).get('department', ''),
-            'interest':   request.form.get('interest', ''),
-        },
-        default_degree=default_degree,
-        default_year=default_year,
-        default_dept=default_dept
-    )
-
-@app.route("/feedback", methods=["POST"])
-def feedback():
-    if not session.get('otp_verified'):
-        return redirect(url_for('index'))
-
-    student_id = session.get('otp_student_id', '')
-    email      = resolve_student_email(student_id) if student_id else ''
-    rating     = request.form.get('rating', '').strip()
-    text       = request.form.get('feedback_text', '').strip()
-    timestamp  = pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')
-
-    try:
-        if _feedback_sheet is None:
-            raise RuntimeError("Feedback sheet connection was not established at startup.")
-        _feedback_sheet.append_row([email, rating, text, timestamp])
-        flash('Thank you for your feedback!', 'feedback_success')
-    except Exception as e:
-        print(f"[FEEDBACK SAVE ERROR] {e}")
-        flash(f'Could not save feedback: {e}', 'feedback_error')
-
-    return redirect(url_for('index'))
-
-@app.route('/documentation')
-def documentation():
-    return render_template('documentation.html')
-
-@app.route('/about')
-def about():
-    return render_template('about.html')
->>>>>>> Stashed changes
 
 # ── API Routes (used by Vercel frontend) ──────────────────────────────────
 
@@ -545,37 +288,6 @@ def api_recommend():
     automated_history = fetch_automatic_student_history(student_id) or []
     print(f"[AUTOMATION] Resolved history for {student_id}: {automated_history}")
 
-<<<<<<< Updated upstream
-    # --- 3. LLM-FIRST MINOR DETECTION (mirrors current index()) ---
-    minor_candidates = []
-    minor_query_type = "simple"
-    query_fallback   = False
-    desired_courses  = []
-
-    try:
-        llm = LLMService()
-        _processed = llm.rephrase_and_extract_intent(interest)
-
-        constraints = _processed.get("constraints", {})
-        minor_list  = constraints.get("minor", [])
-        minor_branch = minor_list[0] if minor_list else None
-
-        is_minor_mode    = bool(minor_branch)
-        minor_query_type = _processed.get("minor_query_type", "simple")
-    except Exception:
-        traceback.print_exc()
-        _processed       = None
-        minor_branch     = None
-        is_minor_mode    = False
-        minor_query_type = "simple"
-
-    if is_minor_mode:
-        minor_candidates = build_minor_candidates(minor_branch, degree)
-        if minor_query_type == "simple":
-            desired_courses = minor_candidates
-            w_rrf = 0.0
-            w_ps  = 0.0
-=======
     query_fallback   = False
     desired_courses  = []
 
@@ -587,7 +299,6 @@ def api_recommend():
             _processed = None
     except Exception:
         _processed = None
->>>>>>> Stashed changes
 
     # Check if the user left the text field blank
     if not interest:
@@ -595,30 +306,6 @@ def api_recommend():
         w_ps  = 1.0
         query_fallback = True
 
-<<<<<<< Updated upstream
-    if not is_minor_mode or minor_query_type == "stacked":
-        _minor_codes = {c['code'] for c in minor_candidates} if (is_minor_mode and minor_query_type == "stacked") else None
-        _pre_query   = _processed          # reuse the single LLM call, as index() does
-        desired_courses = []
-        try:
-            desired_courses = get_candidate_courses(
-                query=interest,
-                student_history=automated_history,
-                top_k=60,
-                w_rrf=w_rrf,
-                w_ps=w_ps,
-                degree=degree,
-                year=year,
-                department=department,
-                processed_query=_pre_query,
-                minor_course_codes=_minor_codes
-            )
-        except Exception:
-            print("===== REAL TRACEBACK =====")
-            traceback.print_exc()
-            print("==========================")
-            return jsonify({"error": "Recommendation engine failed. Check server logs."}), 500
-=======
     desired_courses = []
     try:
         desired_courses = get_candidate_courses(
@@ -634,18 +321,14 @@ def api_recommend():
         )
     except Exception as api_err:
         print(f"[OFFLINE FALLBACK] Token exhaustion detected. Trace: {api_err}")
->>>>>>> Stashed changes
 
     # --- Manual history (second phase) ---
     manual_history_raw = data.get("manual_history", "")
     manual_course_history = None
     if manual_history_raw:
         manual_course_history = [c.strip().upper() for c in manual_history_raw.split(",") if c.strip()]
-<<<<<<< Updated upstream
 
     # --- 4. ELIGIBILITY GATEWAY & SCORING ---
-=======
->>>>>>> Stashed changes
     output = eligibility_recommender(
         student_id=student_id,
         Degree=degree,
@@ -656,11 +339,8 @@ def api_recommend():
         w_rrf=w_rrf,
         w_ps=w_ps
     )
-<<<<<<< Updated upstream
 
     # --- 5. COMPILING DATA OUTPUT ARRAYS ---
-=======
->>>>>>> Stashed changes
     if "need_manual_history" in output:
         return jsonify({"need_manual_history": True})
 
@@ -670,57 +350,6 @@ def api_recommend():
     t_s_c    = output.get("t_s_c", [])
     rejected = output.get("rejected", [])
 
-<<<<<<< Updated upstream
-    # --- 5a. MINOR MODE: annotate every entry with Type + Remark ---
-    if is_minor_mode:
-        _minor_meta = {c['code']: c for c in minor_candidates}
-        _hist = course_history or []
-        for _section in (eligible, i_a_r, t_s_c, rejected):
-            for _entry in _section:
-                _m      = _minor_meta.get(_entry['code'], {})
-                _raw    = _m.get('minor_remark', '')
-                _parsed = (parse_minor_remark(_raw, _hist, department) if _raw else {})
-                _entry['minor_type']           = _m.get('minor_type', '')
-                _entry['minor_remark_note']    = _parsed.get('note', '')
-                _entry['minor_remark_warning'] = _parsed.get('warning', '')
-                if _parsed.get('prereq_unmet') and _entry in eligible:
-                    _entry['minor_prereq_note'] = _parsed['prereq_unmet']
-
-                _mtype       = (_entry.get('minor_type') or '').lower()
-                _want_m_side = 'elective' not in _mtype
-                _divs        = _entry.get('divisions', [])
-                _is_dual     = (any(d.get('is_minor') for d in _divs) and
-                                any(not d.get('is_minor') for d in _divs))
-                if _is_dual:
-                    _preferred = [d for d in _divs if d.get('is_minor') == _want_m_side]
-                    if _preferred:
-                        _entry['divisions']   = _preferred
-                        _entry['default_idx'] = 0
-                        _entry['slot']        = _preferred[0]['slot']
-                        _entry['instructor']  = _preferred[0]['instructor']
-                    _gstats = _entry.get('grade_stats')
-                    if _gstats:
-                        _has_m = any(e.get('division') == 'M'
-                                     for _yr_entries in _gstats.values() for e in _yr_entries)
-                        if _has_m:
-                            _fg = {}
-                            for _yr, _ents in _gstats.items():
-                                _kept = [e for e in _ents if (e.get('division') == 'M') == _want_m_side]
-                                if _kept: _fg[_yr] = _kept
-                            _entry['grade_stats'] = _fg or None
-
-    return jsonify({
-        "eligible":            eligible,
-        "i_a_r":               i_a_r,
-        "t_s_c":               t_s_c,
-        "rejected":            rejected,
-        "course_history":      course_history,
-        "w_ps":                w_ps,
-        "w_rrf":               w_rrf,
-        "query_fallback":      query_fallback,
-        "is_minor_mode":       is_minor_mode,
-        "minor_branch":        minor_branch,
-=======
     return jsonify({
         "eligible":           eligible,
         "i_a_r":              i_a_r,
@@ -730,7 +359,6 @@ def api_recommend():
         "w_ps":               w_ps,
         "w_rrf":              w_rrf,
         "query_fallback":     query_fallback,
->>>>>>> Stashed changes
         "need_manual_history": False,
     })
 
@@ -873,7 +501,6 @@ def api_feedback():
         print(f"[FEEDBACK ERROR] {e}")
         return jsonify({"error": str(e)}), 500
     
-<<<<<<< Updated upstream
 #import resource
 #print(f"[MEM] Peak RSS at boot: {resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024:.0f} MB")
 
@@ -882,13 +509,6 @@ def api_sign_out():
     if request.method == "OPTIONS":
         return jsonify({}), 200
     return jsonify({"status": "ok"})
-=======
-try:
-    import resource
-    print(f"[MEM] Peak RSS at boot: {resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024:.0f} MB")
-except ImportError:
-    pass
->>>>>>> Stashed changes
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -197,7 +197,6 @@ def build_candidate_pool(student_history=None,
         .str.upper()
         .isin(exclusions)
     ].copy()
-<<<<<<< Updated upstream
 
     # Include department filter (extract prefix ignoring spaces e.g. "SOM" from "SOM101")
     if include_departments:
@@ -206,24 +205,14 @@ def build_candidate_pool(student_history=None,
             .str.extract(r'^([A-Za-z]+)', expand=False)
             .str.upper()
             .isin(include_departments)
-=======
-    # Include department filter
-    if include_departments:
-        pool = pool[
-            pool["Department"].isin(include_departments)
->>>>>>> Stashed changes
         ]
     # Exclude department filter
     if exclude_departments:
         pool = pool[
-<<<<<<< Updated upstream
             ~pool["Course Code"]
             .str.extract(r'^([A-Za-z]+)', expand=False)
             .str.upper()
             .isin(exclude_departments)
-=======
-            ~pool["Department"].isin(exclude_departments)
->>>>>>> Stashed changes
         ]
 
     # Exclude individual courses
@@ -478,19 +467,11 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
 
         # NEW: Garbage-query short circuit
         if not processed_query.get("is_valid", True):
-<<<<<<< Updated upstream
-            print("invalid query")
-            return []
-        is_valid = processed_query.get("is_valid", [])
-        if not is_valid:
-            return []
-=======
             print(
                 f"[QUERY REJECTED] {processed_query.get('reject_reason', 'Invalid query')}"
             )
             return []
     
->>>>>>> Stashed changes
         semantic_query = processed_query.get("combined", [])
         primary_keywords = processed_query.get("primary", [])
         secondary_keywords = processed_query.get("secondary", [])
@@ -558,31 +539,6 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
         )
         candidates_enriched = []                
         for code, row in course_lookup.items():
-<<<<<<< Updated upstream
-            # Respect department exclusions (using regex prefix match)
-            prefix_match = re.match(r'^([A-Za-z]+)', code)
-            prefix = prefix_match.group(1).upper() if prefix_match else ""
-            if include_departments:
-                if prefix not in {
-                    d.strip().upper()
-                    for d in include_departments
-                }:
-                    continue
-            if exclude_departments:
-                if prefix in {
-                    d.strip().upper() for d in exclude_departments
-                }:
-                    continue
-            # Respect course exclusions
-            if exclude_courses:
-                if code.replace(" ", "") in {
-                    c.strip().upper().replace(" ", "")
-                    for c in exclude_courses
-                }:
-                    continue
-            ps_score = calculate_people_score(student_history, code)
-            ps_score = ps_score*w_ps
-=======
             course_dept = str(row["Department"]).strip().upper()
             ps_score = calculate_people_score(
                 student_history,
@@ -592,7 +548,6 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
             )
             ps_score *= w_ps
 
->>>>>>> Stashed changes
             candidates_enriched.append({
                 "code": code,
                 "name": str(row["Course Name"]),
@@ -776,37 +731,8 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
                     }
 
             candidates_enriched = list(master_pool.values())
-<<<<<<< Updated upstream
-
-        if exclude_departments:
-            exclude_departments = {
-                d.strip().upper()
-                for d in exclude_departments
-            }
-
-            def get_prefix(code):
-                match = re.match(r'^([A-Za-z]+)', code)
-                return match.group(1).upper() if match else ""
-
-            candidates_enriched = [
-                c for c in candidates_enriched
-                if get_prefix(c["code"]) not in exclude_departments
-            ]
-        if exclude_courses:
-            exclude_courses = {
-                c.strip().upper()
-                for c in exclude_courses
-            }
-
-            candidates_enriched = [
-                c for c in candidates_enriched
-                if c["code"].replace(" ", "") not in exclude_courses
-            ]
-       
-=======
             print("[INFO] Candidate enrichment complete. Total candidates:", len(candidates_enriched))
      
->>>>>>> Stashed changes
         valid_rrf_vals = [c["raw_rrf"] for c in candidates_enriched if c["raw_rrf"] > 0.0]
         valid_ps_vals = [c["raw_ps"] for c in candidates_enriched if c["raw_ps"] > 0.0]
 

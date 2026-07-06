@@ -108,21 +108,12 @@ class LLMService:
             "- Reject coding questions unrelated to course recommendations.\n"
             "- Reject mathematics.\n"
             "- Reject programming help.\n"
-<<<<<<< Updated upstream
-            "- Reject history.\n"
-            "- Reject politics.\n"
-=======
->>>>>>> Stashed changes
             "- Reject health.\n"
             "- Reject travel.\n"
             "- Reject shopping.\n"
             "- Reject entertainment.\n"
             "- Reject current events.\n"
             "- Reject requests unrelated to university course selection.\n\n"
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
 
             "STEP 2: EXTRACT KEYPHRASES (Only if 'is_valid' is true)\n"
             "Extract complete academic phrases. Never split multi-word concepts into individual words. "
@@ -192,34 +183,23 @@ class LLMService:
             "- Computer Science and Engineering: CS (cs, cse, computer science, comp sci)\n"
             "- Chemical Engineering: CL (chemical engineering, chem eng, chemical, cl)\n"
             "- Chemistry: CH (chemistry, ch)\n"
-<<<<<<< Updated upstream
-            "- Economics: EC (economics, economics department, ec)\n"
-            "- Electrical Engineering: EE (electrical engineering, electrical, ee)\n"
-=======
             "- Civil Engineering: CE (civil engineering, civil, ce)\n"
             "- Economics: EC (economics, economics department, ec)\n"
             "- Electrical Engineering: EE (electrical engineering, electrical, ee)\n"
             "- Energy Science and Engineering: EN (energy science, energy engineering, esed, en)\n"
             "- Environmental Science and Engineering: ENV (environmental engineering, env, environmental)\n"
->>>>>>> Stashed changes
             "- Industrial Engineering and Operations Research: IE (industrial engineering, operations research, ieor, ie)\n"
             "- Mathematics: MA (mathematics, math, maths, ma)\n"
             "- Mechanical Engineering: ME (mechanical engineering, mechanical, mech, me)\n"
             "- Metallurgical Engineering and Materials Science: MM (metallurgical engineering, materials science, mems, mm)\n"
             "- Physics: PH (physics, ph)\n"
-<<<<<<< Updated upstream
-            "- Shailesh J. Mehta School of Management: SOM (management, som)\n"
-=======
             "- Shailesh J. Mehta School of Management: MG (management, som, mgmt, mg)\n"
->>>>>>> Stashed changes
             "- Desai Sethi School of Entrepreneurship: ENT (entrepreneurship, ent, dsse)\n"
             "- Centre of Studies in Resources Engineering: GNR (gnr, csre, geoinformatics, resources engineering)\n"
             "- Statistics: SI (statistics, stats, si)\n"
             "- Centre for Machine Intelligence and Data Science: DS (only when referring to DS-prefixed courses)\n"
-<<<<<<< Updated upstream
-=======
-            "- Humanities and Social Sciences: HSS (hss, humanities, social sciences)\n"
->>>>>>> Stashed changes
+            "- Humanities and Social Sciences: HSS (hss, humanities, social sciences, hasmed)\n"
+            "- Industrial Design: DE (de, industrial design, design, idc)"
             "\n"
             "The values inside include_departments and exclude_departments MUST ONLY be these course prefixes:\n"
             "AE, BB, CS, CL, CH, EC, EE, IE, MA, ME, MM, PH, SOM, ENT, GNR, SI, DS.\n"
@@ -237,21 +217,8 @@ class LLMService:
             "- Centre for Machine Intelligence and Data Science (aliases: cminds, machine intelligence, machine intelligence and data science, data science, ds)\n"
             "- Centre for Systems and Control (aliases: syscon, systems and control)\n"
             "- Centre of Studies in Resources Engineering (aliases: csre, geoinformatics, gnr, resources engineering)\n"
+            "- Centre for Digital Health (aliases: KCDH, DH)"
             "- Computer Science and Engineering (aliases: cs, cse, computer science, comp sci)\n"
-<<<<<<< Updated upstream
-            "- Desai Sethi School of Entrepreneurship (aliases: entrepreneurship, ent, dsse)\n"
-            "- Electrical Engineering (aliases: electrical engineering, electrical)\n"
-            "- Mathematics (aliases: mathematics, math, maths)\n"
-            "- Mechanical Engineering (aliases: mechanical engineering, mechanical, mech)\n"
-            "- Metallurgical Engineering and Materials Science (aliases: metallurgical engineering, materials science, mems)\n"
-            "- Physics (aliases: physics)\n"
-            "- Shailesh J. Mehta School of Management (aliases: management, som)\n"
-            "- Statistics (aliases: statistics, stats)\n"
-            "- Chemistry (aliases: chemistry)\n"
-            "- Economics (aliases: economics)\n"
-            "- Robotics (aliases: robotics, robot)\n"
-            "- Industrial Engineering and Operations Research (aliases: industrial engineering, operations research, ieor)\n"
-=======
             "- Chemical Engineering (aliases: chemical engineering, chem eng, chemical, cl)\n"
             "- Civil Engineering (aliases: civil engineering, civil, ce)\n"
             "- Desai Sethi School of Entrepreneurship (aliases: entrepreneurship, ent, dsse)\n"
@@ -268,7 +235,7 @@ class LLMService:
             "- Robotics (aliases: robotics)\n"
             "- Industrial Engineering and Operations Research (aliases: industrial engineering, operations research, ieor, ie)\n"
             "- Humanities and Social Sciences (aliases: humanities, social sciences, hss)\n"
->>>>>>> Stashed changes
+            "- Industrial Design (aliases: design, idc, de)"
             "\n"
             "The values inside constraints.minor MUST contain ONLY these standardized minor names.\n"
             "\n"
@@ -332,10 +299,7 @@ class LLMService:
             "- If the prompt says 'courses from EE minor and CS department', include departments should only have 'CS', and minor should have 'EE'"
             "- Never include good grading, departments or minor in the combined, primary, secondary or expanded lists. These are constraints, not academic concepts.\n"
             "- If there are no primary keywords, leave combined empty\n\n" 
-<<<<<<< Updated upstream
-=======
             "- If only minor, department or dept are mentioned along with a department name, leave combined, primary, secondary and expanded empty. Only add if more academic concepts are mentioned\n\n"
->>>>>>> Stashed changes
 
             "Example Output (Valid Input):\n"
             "{\n"
@@ -436,7 +400,6 @@ class LLMService:
             "}"
         )
 
-        
         try:
             response = self.client.models.generate_content(
                 model="gemini-2.5-flash",
@@ -478,9 +441,7 @@ class LLMService:
 
             if "minor_query_type" not in result or result["minor_query_type"] not in ("simple", "stacked"):
                 result["minor_query_type"] = "simple"
-
-            return result
-        
+            
         except Exception as e:
             print(f"[LLM COMBINED PIPELINE ERROR] Fallback due to: {e}")
             clean_raw = [w.strip() for w in raw_query.lower().split() if w.strip()]
