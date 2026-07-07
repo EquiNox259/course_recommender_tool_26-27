@@ -424,7 +424,6 @@ def api_favourites_info():
             manual_course_history=history,
             w_rrf=0.0,
             w_ps=0.0,
-            is_minor_mode=False
         )
     except Exception as e:
         traceback.print_exc()
