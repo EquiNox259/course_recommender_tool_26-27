@@ -28,12 +28,39 @@ DEPARTMENT_TO_CODE = {
     "Economics": "EC",
     "Electrical Engineering": "EE",
     "Energy Science and Engineering": "EN",
-    "Environmental Science and Engineering": "ENV",
+    "Environmental Science and Engineering": "ES",
+    "Applied Geophysics": "GP",
     "Industrial Engineering and Operations Research": "IE",
     "Mathematics": "MA",
     "Mechanical Engineering": "ME",
     "Metallurgical Engineering and Materials Science": "MM",
     "Physics": "PH",
+}
+
+CODE_TO_DEPT: dict = {
+    'AE':    'Aerospace Engineering',
+    'BB':    'Biosciences and Bioengineering',
+    'CE':    'Civil Engineering',
+    'CL':    'Chemical Engineering',
+    'CS':    'Computer Science and Engineering',
+    'CH':    'Chemistry',
+    'EE':    'Electrical Engineering',
+    'EN':    'Energy Science and Engineering',
+    'EP':    'Engineering Physics',
+    'ES':    'Earth Sciences',
+    'ESE':   'Environmental Science and Engineering',
+    'GNR':   'Centre of Studies in Resources Engineering',
+    'GP':     'Applied Geophysics',
+    'HSS':   'Humanities & Social Science',
+    'IE':    'Industrial Engineering and Operations Research',
+    'IEOR':  'Industrial Engineering and Operations Research',
+    'MA':    'Mathematics',
+    'ME':    'Mechanical Engineering',
+    'MEMS':  'Metallurgical Engineering and Materials Science',
+    'MM':    'Metallurgical Engineering and Materials Science',
+    'PH':    'Physics',
+    'SC':    'Systems and Control',
+    'SOM':   'Shailesh J. Mehta School of Management',
 }
 
 DEPT_TO_DIC = {
@@ -453,6 +480,7 @@ def compute_rrf(semantic_codes, keyword_codes, k=60):
 def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps=1.0, degree=None, year=None, department=None, processed_query=None):
     """Unified entrypoint called by app.py."""
     llm = LLMService()
+    query = " ".join(CODE_TO_DEPT.get(w.upper(), w) for w in query.split())   # expand dept codes
     clean_query = query.lower().strip()
     student_dept = DEPARTMENT_TO_CODE.get(
         str(department).strip(),
