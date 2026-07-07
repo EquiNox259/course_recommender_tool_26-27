@@ -300,6 +300,8 @@ class LLMService:
             "- Never include good grading, departments or minor in the combined, primary, secondary or expanded lists. These are constraints, not academic concepts.\n"
             "- If there are no primary keywords, leave combined empty\n\n" 
             "- If only minor, department or dept are mentioned along with a department name, leave combined, primary, secondary and expanded empty. Only add if more academic concepts are mentioned\n\n"
+            "- If good grading is mentioned, do not add 'good grading' in the combined, primary or expanded fields. Only add academic concepts in primary, secondary and expanded.\n\n"
+
 
             "Example Output (Valid Input):\n"
             "{\n"
