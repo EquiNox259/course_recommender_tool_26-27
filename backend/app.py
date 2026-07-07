@@ -1,5 +1,5 @@
 import pandas as pd
-import random, time, smtplib, os, ast, traceback
+import random, time, smtplib, os, ast, re
 from email.mime.text import MIMEText
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_cors import CORS
@@ -117,7 +117,6 @@ def fetch_automatic_student_history(student_id):
         
     # Clean up names to get pure base codes (e.g., "MA 105-2024-1-ALL Calculus" -> "MA 105")
     clean_codes = []
-    import re
     for item in course_list:
         if not item:
             continue
@@ -289,7 +288,6 @@ def api_recommend():
     print(f"[AUTOMATION] Resolved history for {student_id}: {automated_history}")
 
     query_fallback   = False
-    desired_courses  = []
 
     try:
         if interest:
@@ -411,7 +409,7 @@ def api_favourites_info():
         })
 
     # Prepare desired_courses shape for eligibility_recommender
-    desired_courses = [{"code": code} for code in clean_codes]
+    desired_courses = [{"code": code, "raw_rrf": 0.0, "raw_ps": 0.0, "raw_ts": 0.0} for code in clean_codes]
 
     try:
         # Run standard eligibility checks
