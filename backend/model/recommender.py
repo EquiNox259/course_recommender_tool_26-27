@@ -50,7 +50,7 @@ CODE_TO_DEPT: dict = {
     'ES':    'Environmental Science and Engineering',
     'ESE':   'Environmental Science and Engineering',
     'GNR':   'Centre of Studies in Resources Engineering',
-    'GP':     'Applied Geophysics',
+    'GP':    'Applied Geophysics',
     'HSS':   'Humanities & Social Science',
     'IE':    'Industrial Engineering and Operations Research',
     'IEOR':  'Industrial Engineering and Operations Research',
@@ -62,6 +62,71 @@ CODE_TO_DEPT: dict = {
     'SC':    'Systems and Control',
     'SOM':   'Shailesh J. Mehta School of Management',
 }
+
+# ── Comprehensive remark-abbreviation → full department name ──────────────
+_DEPT_TO_ABBREVS: dict = {}
+for _abbr, _full in CODE_TO_DEPT.items():
+    _DEPT_TO_ABBREVS.setdefault(_full, set()).add(_abbr)
+
+
+def _sentence_applies(sentence: str, student_dept: str) -> bool:
+    s = sentence.strip()
+    positive = set(re.findall(r'\b([A-Z]{2,6})\s+students\b', s)) & set(CODE_TO_DEPT)
+    negated  = set(re.findall(r'[Nn]on-([A-Z]{2,6})', s)) & set(CODE_TO_DEPT)
+    positive -= negated
+    if not positive and not negated:
+        return True
+    student_abbrevs = _DEPT_TO_ABBREVS.get(student_dept)
+    if not student_abbrevs:
+        return True
+    if negated and not positive:
+        return not bool(student_abbrevs & negated)
+    if positive and not negated:
+        return bool(student_abbrevs & positive)
+    return True
+
+
+def parse_minor_remark(remark: str, course_hist: list, department: str = '') -> dict:
+    out = {'prereq_unmet': None, 'warning': None, 'note': None}
+    if not remark or str(remark).strip().lower() in ('nan', 'none', ''):
+        return out
+    remark = str(remark).strip()
+
+    sentences = re.split(r'(?<=\.)\s+', remark)
+    kept = [s for s in sentences if _sentence_applies(s, department)]
+    if not kept:
+        return out
+    remark = ' '.join(kept)
+    rl = remark.lower()
+
+    prereq_m = re.search(
+        r'([A-Z]{2,3}\s?\d{3,4})\s+(?:is\s+(?:a\s+)?)?(?:mandatory\s+)?prerequisite\s+for'
+        r'|must\s+(?:first\s+)?complete\s+([A-Z]{2,3}\s?\d{3,4})\s+before'
+        r'|([A-Z]{2,3}\s?\d{3,4})\s+is\s+(?:a\s+)?pre-?req(?:uisite)?',
+        remark, re.IGNORECASE
+    )
+    if prereq_m:
+        codes = re.findall(r'[A-Z]{2,3}\s?\d{3,4}', prereq_m.group(0))
+        norm_hist = {c.replace(' ', '').upper() for c in course_hist}
+        missing = [c for c in codes if c.replace(' ', '').upper() not in norm_hist]
+        if missing:
+            out['prereq_unmet'] = f"Minor requirement not met. Complete {', '.join(missing)} first"
+        out['note'] = remark
+        return out
+
+    if re.search(r'cannot\s+be\s+counted|not\s+be\s+counted|excluded|not\s+allowed|cannot\s+count|will\s+not\s+count', rl):
+        out['warning'] = remark
+        return out
+
+    out['note'] = remark
+    return out
+
+
+def _flatten_minor_remark(parsed: dict) -> str:
+    """Collapse the classified remark back to a single display string,
+    prioritising the most actionable message. Keeps the existing
+    frontend contract (c.minor_remark as a plain string) unchanged."""
+    return parsed.get('prereq_unmet') or parsed.get('warning') or parsed.get('note') or ''
 
 DEPT_TO_DIC = {
     "AE": "AE 103",
@@ -117,6 +182,15 @@ minor_lookup = (
     .apply(lambda x: set(x.str.strip().str.upper()))
     .to_dict()
 )
+
+minor_type_lookup = (
+    df_minor_courses
+    .assign(Type=df_minor_courses["Type"].fillna("").astype(str).str.strip())
+    .groupby("Branch")
+    .apply(lambda g: dict(zip(g["Course Code"], g["Type"])))
+    .to_dict()
+)
+
 all_minor_courses = set(
     df_minor_courses["Course Code"]
     .dropna()
@@ -139,7 +213,8 @@ minor_remark_lookup = (
                 .str.strip()
         }
     )
-    .set_index("Course Code")["Remarks"]
+    .groupby("Branch")
+    .apply(lambda g: dict(zip(g["Course Code"], g["Remarks"])))
     .to_dict()
 )
 df_courses = pd.read_csv(COURSE_META_PATH)
@@ -515,7 +590,7 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
             print(
                 f"[QUERY REJECTED] {processed_query.get('reject_reason', 'Invalid query')}"
             )
-            return [], False,  processed_query.get("reject_reason", "Invalid query")
+            return [], False,  processed_query.get("reject_reason", "Invalid query"), False, {}
     
         semantic_query = processed_query.get("combined", [])
         primary_keywords = processed_query.get("primary", [])
@@ -552,6 +627,7 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
         secondary_keywords = processed_query["secondary"]
         expanded_keywords = processed_query["expanded"]
         constraints = processed_query["constraints"]
+        minor = constraints.get("minor", [])
     
     candidate_pool = build_candidate_pool(
         student_history=student_history,
@@ -562,6 +638,19 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
         degree = degree,
         department = department
     )
+
+    is_minor_query = bool(minor)
+
+    # Curriculum-mandated Type ('Minor'/'Elective') per requested minor branch,
+    # merged across all requested branches for this query.
+    requested_minor_types = {}
+    for m in minor:
+        for k, v in minor_type_lookup.get(m.strip(), {}).items():
+            requested_minor_types[k.replace(" ", "")] = v
+
+    requested_minor_remarks = {}
+    for m in minor:
+        requested_minor_remarks.update(minor_remark_lookup.get(m.strip(), {}))
 
     if student_history is None:
         student_history = []
@@ -602,34 +691,35 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
                 "norm_ps": ps_score,
                 "easy_grading": easy_grading,
                 "raw_ts": ps_score,
-                "minor_remark": minor_remark_lookup.get(code, "")
+                "minor_remark": _flatten_minor_remark(
+                parse_minor_remark(requested_minor_remarks.get(code, ""), student_history, department))
             })
 
-        if easy_grading:
-            from eligibility.rules import grade_stats_db
-            filtered_candidates = []
-            for c in candidates_enriched:
-                clean_code = c["code"].strip().upper()
-                grade_stats = grade_stats_db.get(clean_code)
-                if not grade_stats:
+            if easy_grading:
+                from eligibility.rules import grade_stats_db
+                filtered_candidates = []
+                for c in candidates_enriched:
+                    clean_code = c["code"].strip().upper()
+                    grade_stats = grade_stats_db.get(clean_code)
+                    if not grade_stats:
+                        filtered_candidates.append(c)
+                        continue
+                    scores = []
+                    for _, entries in grade_stats.items():
+                        for entry in entries:
+                            scores.append(entry["score_aa_ab"])
+                    if not scores:
+                        filtered_candidates.append(c)
+                        continue
+                    avg_grade_score = sum(scores) / len(scores)
+                    if avg_grade_score < 0.303629:
+                        continue
                     filtered_candidates.append(c)
-                    continue
-                scores = []
-                for _, entries in grade_stats.items():
-                    for entry in entries:
-                        scores.append(entry["score_aa_ab"])
-                if not scores:
-                    filtered_candidates.append(c)
-                    continue
-                avg_grade_score = sum(scores) / len(scores)
-                if avg_grade_score < 0.303629:
-                    continue
-                filtered_candidates.append(c)
-            candidates_enriched = filtered_candidates
+                candidates_enriched = filtered_candidates
 
         candidates_enriched = sorted(candidates_enriched, key=lambda x: x["raw_ts"], reverse=True)
         print("[INFO] Candidate enrichment complete. Total candidates:", len(candidates_enriched))
-        return candidates_enriched, True, ""
+        return candidates_enriched, True, "", is_minor_query, requested_minor_types
 
     try:
         description_lookup = (
@@ -657,7 +747,7 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
             all_fused_candidates = compute_rrf(semantic_list, keyword_list, k=60)
 
             if not all_fused_candidates:
-                return [], True, ""
+                return [], True, "", is_minor_query, requested_minor_types
         else:
             all_fused_candidates = []
 
@@ -801,29 +891,30 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
 
             candidates_enriched = list(master_pool.values())
             print("[INFO] Candidate enrichment complete. Total candidates:", len(candidates_enriched))
-     
-        if easy_grading:
-            from eligibility.rules import grade_stats_db
-            filtered_candidates = []
-            for c in candidates_enriched:
-                clean_code = c["code"].strip().upper()
-                grade_stats = grade_stats_db.get(clean_code)
-                if not grade_stats:
-                    filtered_candidates.append(c)
-                    continue
-                scores = []
-                for _, entries in grade_stats.items():
-                    for entry in entries:
-                        scores.append(entry["score_aa_ab"])
-                if not scores:
-                    filtered_candidates.append(c)
-                    continue
-                avg_grade_score = sum(scores) / len(scores)
-                if avg_grade_score < 0.303629:
-                    continue
-                filtered_candidates.append(c)
-            candidates_enriched = filtered_candidates
 
+            if easy_grading:
+                from eligibility.rules import grade_stats_db
+                filtered_candidates = []
+                for c in candidates_enriched:
+                    clean_code = c["code"].strip().upper()
+                    grade_stats = grade_stats_db.get(clean_code)
+                    if not grade_stats:
+                        filtered_candidates.append(c)
+                        continue
+                    scores = []
+                    for _, entries in grade_stats.items():
+                        for entry in entries:
+                            scores.append(entry["score_aa_ab"])
+                    if not scores:
+                        filtered_candidates.append(c)
+                        continue
+                    avg_grade_score = sum(scores) / len(scores)
+                    if avg_grade_score < 0.303629:
+                        continue
+                    filtered_candidates.append(c)
+                candidates_enriched = filtered_candidates
+
+     
         valid_rrf_vals = [c["raw_rrf"] for c in candidates_enriched if c["raw_rrf"] > 0.0]
         valid_ps_vals = [c["raw_ps"] for c in candidates_enriched if c["raw_ps"] > 0.0]
 
@@ -844,16 +935,18 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
             c["norm_rrf"] = norm_rrf if w_rrf > 0.0 else 0.0
             c["norm_ps"] = norm_ps if w_ps > 0.0 else 0.0
             c["combined_score"] = (w_rrf * c["norm_rrf"]) + (w_ps * c["norm_ps"])
+          #We take the top 30 courses and give to the LLM, these coures were sorted by their scores  
         candidates_enriched = sorted(candidates_enriched, key=lambda x: x["combined_score"], reverse=True)
         llm_input_pool = candidates_enriched[:30]
 
     except Exception as e:
         print(f"\n[CRITICAL LOCAL PIPELINE EXCEPTION]: {e}")
         traceback.print_exc()
-        return [], True, ""
+        return [], True, "", is_minor_query, requested_minor_types
   
     try:
         if clean_query:
+            
             cleaned_json_string = llm.filter_courses(query, processed_query, llm_input_pool)
             parsed_data = json.loads(cleaned_json_string)
             valid_codes = set(str(c).strip().upper() for c in parsed_data.get("valid_course_codes", []))
@@ -873,11 +966,12 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
                     "norm_ps": c["norm_ps"], 
                     "raw_ts" : c["combined_score"],
                     "easy_grading": easy_grading,
-                    "minor_remark": minor_remark_lookup.get(c["code"], ""),
+                    "minor_remark": _flatten_minor_remark(
+                    parse_minor_remark(requested_minor_remarks.get(code, ""), student_history, department))
                 })
                 if len(final_output) == top_k:
                     break
-        return final_output, True, ""
+        return final_output, True, "", is_minor_query, requested_minor_types
 
     except Exception as e:
         print(f"\n[WARNING - GEMINI FILTER FAILED]: {e}. Falling back to pre-filtered rank pool.")
@@ -892,6 +986,7 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
                 "norm_ps": c["norm_ps"], 
                 "raw_ts" : c["combined_score"],
                 "easy_grading": easy_grading,
-                "minor_remark": minor_remark_lookup.get(c["code"], ""),
+                "minor_remark": _flatten_minor_remark(
+                parse_minor_remark(requested_minor_remarks.get(code, ""), student_history, department))
             })
-        return fallback_output, True, ""
+        return fallback_output, True, "", is_minor_query, requested_minor_types
