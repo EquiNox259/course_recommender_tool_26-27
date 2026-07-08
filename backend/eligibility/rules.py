@@ -233,7 +233,7 @@ def apply_grade_boost(courses, w_ps):
         courses.sort(key=lambda x: x["raw_ts"], reverse=True)
 
         return courses
-
+    
     filtered_courses = []
     for course in courses:
         grade_stats = grade_stats_db.get(str(course.get("code", "")).replace(" ", "").upper())
@@ -251,17 +251,17 @@ def apply_grade_boost(courses, w_ps):
             filtered_courses.append(course)
             continue
         avg_grade_score = sum(scores) / len(scores)
+        # Boost the existing recommendation 
         
         # Hard cutoff: filter out courses in the bottom 30% of grading (below 30.36%)
         if avg_grade_score < 0.303629:
             continue
-            
-        # Boost the existing recommendation score
+
         if course["raw_ts"] == 0:
             course["raw_ts"] = avg_grade_score
         else:
-            course["raw_ts"] = GRADE_WEIGHT * avg_grade_score + (1 - GRADE_WEIGHT) * course["raw_ts"]
-            
+            course["raw_ts"] = GRADE_WEIGHT * avg_grade_score + (1-GRADE_WEIGHT)*course["raw_ts"]
+
         filtered_courses.append(course)
 
     # Resort after boosting
@@ -1021,7 +1021,7 @@ def parse_minor_remark(remark: str, course_hist: list, department: str = '') -> 
     out['note'] = remark
     return out
 
-def recommender(student_id, Degree, year, department, desired_courses, manual_course_history=None, w_rrf=1, w_ps=0):
+def recommender(student_id, Degree, year, department, desired_courses, manual_course_history=None, w_rrf=1, w_ps=0, prefer_minor_division = False):
     """
     student_id       : string (email prefix)
     Degree           : string (e.g. 'B.Tech.')
@@ -1100,8 +1100,8 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
 
         # some course names are NaN for some reason, this deals with that 
         course_name = course.get("name")
-        if not isinstance(course_name, str) or pd.isna(course_name):
-            course_name = ""
+        if not isinstance(course_name, str) or pd.isna(course_name) or not course_name.strip():
+            course_name = _course_name_map.get(course_code, "")
         # ignores any courses with the below words (for future DAV members, remove this and see what semantic search gives to know why its there)
         blacklist = ["SEMINAR", "MINI PROJECT", "SUPERVISED", "BTP"]
         if any(term in course_name.upper() for term in blacklist):
@@ -1185,7 +1185,10 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
                     )
                 } for d in divs]
 
-                non_m = [d for d in divs_with_clash if not d['is_minor']] or divs_with_clash
+                if prefer_minor_division:
+                    non_m = [d for d in divs_with_clash if d['is_minor']] or divs_with_clash
+                else:
+                    non_m = [d for d in divs_with_clash if not d['is_minor']] or divs_with_clash
                 all_clash = all(bool(d['clashes_with']) for d in non_m)
 
                 if all_clash:
