@@ -47,7 +47,7 @@ CODE_TO_DEPT: dict = {
     'EE':    'Electrical Engineering',
     'EN':    'Energy Science and Engineering',
     'EP':    'Engineering Physics',
-    'ES':    'Earth Sciences',
+    'ES':    'Environmental Science and Engineering',
     'ESE':   'Environmental Science and Engineering',
     'GNR':   'Centre of Studies in Resources Engineering',
     'GP':     'Applied Geophysics',
