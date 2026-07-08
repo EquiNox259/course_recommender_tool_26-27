@@ -213,7 +213,7 @@ def _build_grade_stats():
 
 grade_stats_db = _build_grade_stats()
 
-GRADE_WEIGHT = 0.15
+GRADE_WEIGHT = 0.30
 
 def apply_grade_boost(courses, w_ps):
     """
@@ -232,10 +232,14 @@ def apply_grade_boost(courses, w_ps):
             print(f"Course: {course['code']}, raw_ts: {course['raw_ts']}")
         courses.sort(key=lambda x: x["raw_ts"], reverse=True)
 
-        return courses[:30]
+        return courses
+
+    filtered_courses = []
     for course in courses:
         grade_stats = grade_stats_db.get(str(course.get("code", "")).replace(" ", "").upper())
         if not grade_stats:
+            # Keep neutral courses with no grade stats
+            filtered_courses.append(course)
             continue
         scores = []
         # Collect AA+AB scores from every year/division
@@ -243,16 +247,26 @@ def apply_grade_boost(courses, w_ps):
             for entry in entries:
                 scores.append(entry["score_aa_ab"])
         if not scores:
+            # Keep neutral courses with empty grade stats
+            filtered_courses.append(course)
             continue
         avg_grade_score = sum(scores) / len(scores)
+        
+        # Hard cutoff: filter out courses in the bottom 30% of grading (below 30.36%)
+        if avg_grade_score < 0.303629:
+            continue
+            
         # Boost the existing recommendation score
         if course["raw_ts"] == 0:
             course["raw_ts"] = avg_grade_score
         else:
-            course["raw_ts"] = GRADE_WEIGHT * avg_grade_score + (1-GRADE_WEIGHT)*course["raw_ts"]
+            course["raw_ts"] = GRADE_WEIGHT * avg_grade_score + (1 - GRADE_WEIGHT) * course["raw_ts"]
+            
+        filtered_courses.append(course)
+
     # Resort after boosting
-    courses.sort(key=lambda x: x["raw_ts"], reverse=True)
-    return courses[:30]
+    filtered_courses.sort(key=lambda x: x["raw_ts"], reverse=True)
+    return filtered_courses
 
 def _build_year_restriction_msg(restrictions, department, Degree):
     """

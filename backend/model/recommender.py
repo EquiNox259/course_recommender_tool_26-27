@@ -604,6 +604,29 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
                 "raw_ts": ps_score,
                 "minor_remark": minor_remark_lookup.get(code, "")
             })
+
+        if easy_grading:
+            from eligibility.rules import grade_stats_db
+            filtered_candidates = []
+            for c in candidates_enriched:
+                clean_code = c["code"].strip().upper()
+                grade_stats = grade_stats_db.get(clean_code)
+                if not grade_stats:
+                    filtered_candidates.append(c)
+                    continue
+                scores = []
+                for _, entries in grade_stats.items():
+                    for entry in entries:
+                        scores.append(entry["score_aa_ab"])
+                if not scores:
+                    filtered_candidates.append(c)
+                    continue
+                avg_grade_score = sum(scores) / len(scores)
+                if avg_grade_score < 0.303629:
+                    continue
+                filtered_candidates.append(c)
+            candidates_enriched = filtered_candidates
+
         candidates_enriched = sorted(candidates_enriched, key=lambda x: x["raw_ts"], reverse=True)
         print("[INFO] Candidate enrichment complete. Total candidates:", len(candidates_enriched))
         return candidates_enriched, True, ""
@@ -779,6 +802,28 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
             candidates_enriched = list(master_pool.values())
             print("[INFO] Candidate enrichment complete. Total candidates:", len(candidates_enriched))
      
+        if easy_grading:
+            from eligibility.rules import grade_stats_db
+            filtered_candidates = []
+            for c in candidates_enriched:
+                clean_code = c["code"].strip().upper()
+                grade_stats = grade_stats_db.get(clean_code)
+                if not grade_stats:
+                    filtered_candidates.append(c)
+                    continue
+                scores = []
+                for _, entries in grade_stats.items():
+                    for entry in entries:
+                        scores.append(entry["score_aa_ab"])
+                if not scores:
+                    filtered_candidates.append(c)
+                    continue
+                avg_grade_score = sum(scores) / len(scores)
+                if avg_grade_score < 0.303629:
+                    continue
+                filtered_candidates.append(c)
+            candidates_enriched = filtered_candidates
+
         valid_rrf_vals = [c["raw_rrf"] for c in candidates_enriched if c["raw_rrf"] > 0.0]
         valid_ps_vals = [c["raw_ps"] for c in candidates_enriched if c["raw_ps"] > 0.0]
 
@@ -799,7 +844,6 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
             c["norm_rrf"] = norm_rrf if w_rrf > 0.0 else 0.0
             c["norm_ps"] = norm_ps if w_ps > 0.0 else 0.0
             c["combined_score"] = (w_rrf * c["norm_rrf"]) + (w_ps * c["norm_ps"])
-          #We take the top 30 courses and give to the LLM, these coures were sorted by their scores  
         candidates_enriched = sorted(candidates_enriched, key=lambda x: x["combined_score"], reverse=True)
         llm_input_pool = candidates_enriched[:30]
 
@@ -810,7 +854,6 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
   
     try:
         if clean_query:
-            
             cleaned_json_string = llm.filter_courses(query, processed_query, llm_input_pool)
             parsed_data = json.loads(cleaned_json_string)
             valid_codes = set(str(c).strip().upper() for c in parsed_data.get("valid_course_codes", []))
