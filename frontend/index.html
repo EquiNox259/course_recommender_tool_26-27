@@ -604,6 +604,21 @@ function renderResults(data) {
     { key: 'rejected', label: 'Not Eligible',                   list: rejected },
   ].filter(s => s.list && s.list.length > 0);
 
+  if (sections.length === 0) {
+  document.getElementById('tabs-container').innerHTML = '';
+  document.getElementById('results-grid').innerHTML = `
+      <div class="empty-result" style="display:block;">
+          <div class="empty-title">No courses match your query</div>
+          <div class="empty-sub">Try different interests, a broader query, or review your filters.</div>
+      </div>
+  `;
+  document.getElementById('section-profile').style.display = '';
+  document.getElementById('section-manual-history').style.display = 'none';
+  document.getElementById('section-results').style.display = '';
+  document.getElementById('feedback-section').style.display = 'none';
+  return;
+}
+
   sections.forEach((s, i) => {
     const btn = document.createElement('button');
     btn.className = 'tab-btn' + (i === 0 ? ' active' : '');
@@ -739,7 +754,7 @@ async function showFavouritesModal() {
       listContainer.innerHTML = `
         <div style="text-align:center;color:var(--no);margin:20px 0;padding:0 20px;">
           <p style="font-weight:600;margin-bottom:8px;">Profile Information Incomplete</p>
-          <p style="font-size:13px;color:var(--ts);">Please select Degree, Year, and Department in the profile form to check eligibility, course descriptions, and slot clashes for your favourites.</p>
+          <p style="font-size:13px;color:var(--ts);">Please select the Department in the profile form to check eligibility, course descriptions, and slot clashes for your favourites</p>
         </div>
       `;
       modal.style.display = 'flex';
@@ -819,7 +834,7 @@ function renderFavsResults() {
   const visibleSections = sections.filter(s => s.list.length > 0);
   
   if (visibleSections.length === 0) {
-    listContainer.innerHTML = `<p style="text-align:center;color:var(--tm);margin:20px 0;">No active favourites remaining in this status.</p>`;
+    listContainer.innerHTML = `<p style="text-align:center;color:var(--tm);margin:20px 0;">No active favourites remaining in this status</p>`;
     tabsContainer.style.display = 'none';
     return;
   }
@@ -949,12 +964,14 @@ function buildEntry(c, section, isMinorMode, isLast) {
   }
 
   /* ── minor mode remarks ── */
-  if (c.minor_remark) {
-      html += `
-          <div class="minor-remark-warning">
-              &#9432;&nbsp; <strong>For taking this course as part of a minor:</strong>${esc(c.minor_remark)}
-          </div>
-      `;
+  if(isMinorMode){
+    if (c.minor_remark) {
+        html += `
+            <div class="minor-remark-warning">
+                &#9432;&nbsp;${esc(c.minor_remark)}
+            </div>
+        `;
+    }
   }
 
   /* ── eligibility reason ── */
@@ -970,13 +987,13 @@ function buildEntry(c, section, isMinorMode, isLast) {
 
   if ((c.norm_rrf || 0) > 0) {
     scores.push(
-      `<span><strong>Semantic Score</strong>: ${((c.norm_rrf || 0) * 100).toFixed(1)}%</span>`
+      `<span><strong>Semantic Score</strong>: ${((c.norm_rrf || 0) * 100).toFixed(1)}% &nbsp</span>`
     );
   }
 
   if ((c.norm_ps || 0) > 0) {
     scores.push(
-      `<span><strong>People Score</strong>: ${((c.norm_ps || 0) * 100).toFixed(1)}%</span>`
+      `<span><strong>People Score</strong>: ${((c.norm_ps || 0) * 100).toFixed(1)}% &nbsp</span>`
     );
   }
 
