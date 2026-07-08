@@ -139,6 +139,45 @@ def resolve_student_email(student_id):
         )
     return email
 
+def _apply_minor_type_override(course_list, minor_type_map):
+    """
+    Overrides the displayed division using the authoritative 'Type' column
+    from ASC_Minor_Courses.csv, collapsing to a single division (no dropdown).
+    If the mandated division isn't offered this semester, the course is
+    DROPPED — different minors may require different divisions (M-tagged
+    vs Elective) for the same course, so showing the wrong one would
+    misrepresent whether it satisfies THIS minor's requirement.
+    """
+    filtered = []
+    for c in course_list:
+        clean_code = c.get("code", "").replace(" ", "").upper()
+        minor_type = minor_type_map.get(clean_code, "")
+        if not minor_type:
+            filtered.append(c)   # not part of the requested minor basket — leave untouched
+            continue
+
+        divisions = c.get("divisions", [])
+        if not divisions:
+            continue  # drop
+
+        wants_minor = "minor" in minor_type.lower()
+        matching = [d for d in divisions if d.get("is_minor") == wants_minor]
+
+        if not matching:
+            continue  # drop — mandated division not offered this semester
+
+        chosen = dict(matching[0])
+        chosen["is_minor"] = wants_minor
+
+        c["divisions"]   = [chosen]
+        c["default_idx"] = 0
+        c["has_minor"]   = wants_minor
+        c["minor_only"]  = wants_minor
+        c["minor_type"]  = minor_type
+        filtered.append(c)
+
+    return filtered
+
 def send_otp(student_id):
     otp = str(random.randint(100000, 999999))
     to_email = resolve_student_email(student_id)
@@ -163,6 +202,18 @@ def health():
 def index():
     if "127.0.0.1:5000" in FRONTEND_ORIGIN or "localhost:5000" in FRONTEND_ORIGIN:
         return render_template('index.html')
+    return redirect(FRONTEND_ORIGIN, code=302)
+
+@app.route("/documentation")
+def documentation():
+    if "127.0.0.1:5000" in FRONTEND_ORIGIN or "localhost:5000" in FRONTEND_ORIGIN:
+        return render_template('documentation.html')
+    return redirect(FRONTEND_ORIGIN, code=302)
+
+@app.route("/about")
+def about():
+    if "127.0.0.1:5000" in FRONTEND_ORIGIN or "localhost:5000" in FRONTEND_ORIGIN:
+        return render_template('about.html')
     return redirect(FRONTEND_ORIGIN, code=302)
 
 
@@ -306,8 +357,10 @@ def api_recommend():
 
     desired_courses = []
     is_valid = True
+    is_minor_query = False
+    minor_type_map = {}
     try:
-        desired_courses, is_valid, reject_reason = get_candidate_courses(
+        desired_courses, is_valid, reject_reason, is_minor_query, minor_type_map = get_candidate_courses(
             query=interest,
             student_history=automated_history,
             top_k=60,                
@@ -350,7 +403,8 @@ def api_recommend():
         desired_courses=desired_courses,
         manual_course_history=manual_course_history or automated_history,
         w_rrf=w_rrf,
-        w_ps=w_ps
+        w_ps=w_ps,
+        prefer_minor_division = is_minor_query
     )
 
     # --- 5. COMPILING DATA OUTPUT ARRAYS ---
@@ -363,6 +417,12 @@ def api_recommend():
     t_s_c    = output.get("t_s_c", [])
     rejected = output.get("rejected", [])
 
+    if is_minor_query:
+        eligible = _apply_minor_type_override(eligible, minor_type_map)
+        i_a_r    = _apply_minor_type_override(i_a_r, minor_type_map)
+        t_s_c    = _apply_minor_type_override(t_s_c, minor_type_map)
+        rejected = _apply_minor_type_override(rejected, minor_type_map)
+
     return jsonify({
         "eligible":           eligible,
         "i_a_r":              i_a_r,
@@ -374,7 +434,8 @@ def api_recommend():
         "query_fallback":     query_fallback,
         "need_manual_history": False,
         "is_valid": True,
-        "reject_reason": ""
+        "reject_reason": "",
+        "is_minor_mode": is_minor_query,
     })
 
 @app.route("/api/favourites-info", methods=["POST", "OPTIONS"])
@@ -422,6 +483,7 @@ def api_favourites_info():
             manual_course_history=history,
             w_rrf=0.0,
             w_ps=0.0,
+            prefer_minor_division = False
         )
     except Exception as e:
         traceback.print_exc()
