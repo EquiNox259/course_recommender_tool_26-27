@@ -163,21 +163,7 @@
       </div>
     </div>
 
-    <!-- Recommendation Strategy -->
-    <div class="filter-container" style="padding:16px;margin-bottom:20px;background:var(--bg-card);border-radius:8px;border:1px solid var(--border-color);margin-top:16px;">
-      <div style="font-weight:600;margin-bottom:12px;color:inherit;">Recommendation Strategy:</div>
-      <div style="display:flex;flex-direction:column;gap:12px;">
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;">
-          <input type="radio" name="weight_preset" value="semantic" style="cursor:pointer;transform:scale(1.1);" checked>
-          <span><strong>More Interest-Based</strong> (100% Semantic Content Matching)</span>
-        </label>
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;">
-          <input type="radio" name="weight_preset" value="people" style="cursor:pointer;transform:scale(1.1);">
-          <span><strong>More Safe Route</strong> (100% Alignment with courses taken by seniors)</span>
-        </label>
-      </div>
-    </div>
-  </div><!-- /section-profile -->
+    </div><!-- /section-profile -->
 
   <!-- ─────────────── MANUAL HISTORY CARD ──────────────── -->
   <div id="section-manual-history" class="card fade-up" style="display:none">
@@ -447,12 +433,6 @@ async function doVerifyOtp() {
   }
 }
 
-/* ── Weight preset helper ────────────────────────────────────── */
-function getWeights() {
-  const preset = (document.querySelector('input[name="weight_preset"]:checked') || {}).value || 'semantic';
-  if (preset === 'people')  return { w_rrf: 0.0, w_ps: 1.0 };
-  return { w_rrf: 1.0, w_ps: 0.0 };
-}
 
 /* ── STEP 3a: Generate recommendations ──────────────────────── */
 async function doRecommend() {
@@ -466,8 +446,7 @@ async function doRecommend() {
     return;
   }
 
-  const { w_rrf, w_ps } = getWeights();
-  _pendingRecommendArgs = { degree, year, department, interest, w_rrf, w_ps, manual_history: '' };
+  _pendingRecommendArgs = { degree, year, department, interest, manual_history: '' };
 
   const btn = document.getElementById('submit-btn');
   setLoading(btn, true);
@@ -478,6 +457,7 @@ async function doRecommend() {
       setLoading(btn, false);
       return;
     }
+    
     renderResults(data);
     const _anchor = document.getElementById('fallback-alert').style.display !== 'none'
       ? document.getElementById('fallback-alert')
@@ -498,6 +478,7 @@ async function doRecommendWithManualHistory() {
   const body = { ..._pendingRecommendArgs, manual_history: manual };
   try {
     const data = await api('/api/recommend', body);
+    
     renderResults(data);
     const _anchor = document.getElementById('fallback-alert').style.display !== 'none'
     ? document.getElementById('fallback-alert')
@@ -555,7 +536,7 @@ async function doSignOut() {
   document.getElementById('feedback-section').style.display = 'none';
   document.getElementById('tabs-container').innerHTML  = '';
   document.getElementById('results-grid').innerHTML    = '';
-  document.querySelector('input[name="weight_preset"][value="semantic"]').checked = true;
+  
 
   showOnly('section-send-otp');
 }
@@ -572,14 +553,22 @@ function renderResults(data) {
   document.getElementById('fallback-alert').style.display = query_fallback ? '' : 'none';
   if (is_valid === false) {
     const grid = document.getElementById("results-grid");
+    let title = "No courses match your query";
+    let sub = reject_reason || "Try asking about subjects, departments, minors, grading, careers, or academic interests.";
+    
+    // If it is a garbage query reject reason
+    if (reject_reason && (reject_reason.toLowerCase().includes("meaningless") || reject_reason.toLowerCase().includes("joke") || reject_reason.toLowerCase().includes("academic"))) {
+      title = reject_reason;
+      sub = "Try asking about subjects, departments, minors, grading, careers, or academic interests.";
+    }
 
     grid.innerHTML = `
         <div class="empty-result" style="display:block;">
             <div class="empty-title">
-                ${reject_reason || "This doesn't look like a course recommendation query."}
+                ${title}
             </div>
             <div class="empty-sub">
-                Try asking about subjects, departments, minors, grading, careers, or academic interests.
+                ${sub}
             </div>
         </div>
     `;

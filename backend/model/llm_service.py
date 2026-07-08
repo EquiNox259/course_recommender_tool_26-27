@@ -10,6 +10,7 @@ class Constraints(BaseModel):
     exclude_courses: list[str] = Field(default_factory=list, description="Specific course codes that should not be recommended, e.g., ['CS 747']")
     minor: list[str] = Field(default_factory=list, description="Minor basket(s) the user wants recommendations from")
     easy_grading: bool = Field(default=False, description="True if the user explicitly asks for easy grading, GPA booster, etc.")
+    popular: bool = Field(default=False, description="True if the user explicitly asks for popular courses using the keywords 'popular' or 'popularity'")
 
 class QueryOptimization(BaseModel):
     is_valid: bool = Field(description="True if query contains genuine academic intent, False otherwise")
@@ -59,8 +60,9 @@ class LLMService:
             "specified in the original search query. "
             "Select at most 20 of the most relevant courses. "
             "Return a clean JSON object containing an array under the key 'valid_course_codes'."
-            "For ML related queries, unless explicity stated, do not recomend courses that are the application of ML in a very specific highly unrelated field" \
-            "like Geophysics, energy etc. "
+            "For ML related queries, unless explicity stated, do not recomend courses that are the application of ML in a very specific highly unrelated field " \
+            "like Geophysics, energy etc. " \
+            "Prioritize direct semantic matches first. If the number of direct semantic matches is short (e.g., fewer than 6-8 courses), be more lenient and include neighboring fields, broader applications, or related courses to ensure the student receives a sufficient list of options. However, if there are plenty of direct semantic matches already available, remain strict and filter out adjacent or less direct courses to avoid cluttering the list."
         )
         
         response = self.client.models.generate_content(
@@ -151,8 +153,9 @@ class LLMService:
             "- exclude_departments: Departments whose courses should not be recommended.\n"
             "- exclude_courses: Specific course codes that should not be recommended.\n"
             "- minor: Minor basket(s) the user wants recommendations from.\n"
-            "- easy_grading: Set to true only if the user explicitly asks for easy grading, high CPI, GPA booster, light workload, easy courses, scoring courses, or similar.\n\n"
-              "This includes requests for:"
+            "- easy_grading: Set to true only if the user explicitly asks for easy grading, high CPI, GPA booster, light workload, easy courses, scoring courses, or similar.\n"
+            "- popular: Set to true only if the user explicitly uses the keyword 'popular' or 'popularity' to ask for popular or highly taken courses.\n\n"
+              "This includes requests for 'easy_grading':"
             "- easy grading\n"
             "- generous grading\n"
             "- high AA percentage\n"
@@ -164,8 +167,8 @@ class LLMService:
             "- courses that are easy to get good grades in\n"
             "- courses with high grades\n"
             "- courses with lenient grading\n"
-            "Infer this intent semantically even if the exact wording differs.\n"
-            "Otherwise return false.\n"
+            "Infer easy_grading intent semantically even if the exact wording differs.\n"
+            "Otherwise return false for easy_grading.\n"
            
             "STEP 6: MINOR QUERY TYPE CLASSIFICATION\n"
             "If the query mentions a minor program, set minor_query_type to:\n"
@@ -326,7 +329,8 @@ class LLMService:
             "    \"exclude_departments\": [],\n"
             "    \"exclude_courses\": [],\n"
             "    \"minor\": [],\n"
-            "    \"easy_grading\": false\n"
+            "    \"easy_grading\": false,\n"
+            "    \"popular\": false\n"
             "  }\n"
             "}\n\n"
 
@@ -344,7 +348,8 @@ class LLMService:
             "    \"exclude_departments\": [\"EE\", \"ME\"],\n"
             "    \"exclude_courses\": [\"CS 747\"],\n"
             "    \"minor\": [],\n"
-            "    \"easy_grading\": true\n"
+            "    \"easy_grading\": true,\n"
+            "    \"popular\": false\n"
             "  }\n"
             "}\n\n"
            
@@ -361,7 +366,8 @@ class LLMService:
             "    \"exclude_departments\": [],\n"
             "    \"exclude_courses\": [],\n"
             "    \"minor\": [\"CS\"],\n"
-            "    \"easy_grading\": false\n"
+            "    \"easy_grading\": false,\n"
+            "    \"popular\": false\n"
             "  },\n"
             "  \"minor_query_type\": \"simple\"\n"
             "}\n\n"
@@ -379,7 +385,8 @@ class LLMService:
             "    \"exclude_departments\": [],\n"
             "    \"exclude_courses\": [],\n"
             "    \"minor\": [\"CS\"],\n"
-            "    \"easy_grading\": true\n"
+            "    \"easy_grading\": true,\n"
+            "    \"popular\": false\n"
             "  },\n"
             "  \"minor_query_type\": \"stacked\"\n"
             "}"
@@ -398,7 +405,8 @@ class LLMService:
             "    \"exclude_departments\": [],\n"
             "    \"exclude_courses\": [],\n"
             "    \"minor\": [],\n"
-            "    \"easy_grading\": false\n"
+            "    \"easy_grading\": false,\n"
+            "    \"popular\": false\n"
             "  }\n"
             "}"
         )
@@ -429,18 +437,22 @@ class LLMService:
                     
             if "constraints" not in result or not isinstance(result["constraints"], dict):
                 result["constraints"] = {
+                    "include_departments":[], 
                     "exclude_departments": [],
                     "exclude_courses": [],
                     "minor": [],
-                    "easy_grading": False
+                    "easy_grading": False,
+                    "popular": False
                 }
             else:
                 c_dict = result["constraints"]
-                for k in ["exclude_departments", "exclude_courses", "minor"]:
+                for k in ["exclude_departments", "exclude_courses", "minor", "include_departments"]:
                     if k not in c_dict or not isinstance(c_dict[k], list):
                         c_dict[k] = []
                 if "easy_grading" not in c_dict:
                     c_dict["easy_grading"] = False
+                if "popular" not in c_dict:
+                    c_dict["popular"] = False
 
             if "minor_query_type" not in result or result["minor_query_type"] not in ("simple", "stacked"):
                 result["minor_query_type"] = "simple"
@@ -457,11 +469,12 @@ class LLMService:
                 "secondary": [],
                 "expanded": [],
                 "constraints": {
+                    "include_departments":[], 
                     "exclude_departments": [],
-                    "include_departments": [],
                     "exclude_courses": [],
                     "minor": [],
-                    "easy_grading": False
+                    "easy_grading": False,
+                    "popular": False
                 },
                 "minor_query_type": "simple"
             }

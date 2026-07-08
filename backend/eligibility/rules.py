@@ -218,55 +218,15 @@ GRADE_WEIGHT = 0.30
 def apply_grade_boost(courses, w_ps):
     """
     Boost recommendation scores based on historical AA+AB percentage.
-
-    Only applies if easy_grading=True.
+    In the query-driven weights model, this is a no-op since grading
+    filters and combined scores are calculated early in candidate generation.
     """
-
     if not courses:
         return courses
-    # If the query didn't request easy grading, do nothing
-    if not courses[0].get("easy_grading", False):
-        if w_ps == 1:
-            courses = [course for course in courses if course["raw_ts"] != 0]
-        for course in courses:
-            print(f"Course: {course['code']}, raw_ts: {course['raw_ts']}")
-        courses.sort(key=lambda x: x["raw_ts"], reverse=True)
-
-        return courses
-    
-    filtered_courses = []
-    for course in courses:
-        grade_stats = grade_stats_db.get(str(course.get("code", "")).replace(" ", "").upper())
-        if not grade_stats:
-            # Keep neutral courses with no grade stats
-            filtered_courses.append(course)
-            continue
-        scores = []
-        # Collect AA+AB scores from every year/division
-        for _, entries in grade_stats.items():
-            for entry in entries:
-                scores.append(entry["score_aa_ab"])
-        if not scores:
-            # Keep neutral courses with empty grade stats
-            filtered_courses.append(course)
-            continue
-        avg_grade_score = sum(scores) / len(scores)
-        # Boost the existing recommendation 
-        
-        # Hard cutoff: filter out courses in the bottom 30% of grading (below 30.36%)
-        if avg_grade_score < 0.303629:
-            continue
-
-        if course["raw_ts"] == 0:
-            course["raw_ts"] = avg_grade_score
-        else:
-            course["raw_ts"] = GRADE_WEIGHT * avg_grade_score + (1-GRADE_WEIGHT)*course["raw_ts"]
-
-        filtered_courses.append(course)
-
-    # Resort after boosting
-    filtered_courses.sort(key=lambda x: x["raw_ts"], reverse=True)
-    return filtered_courses
+    if w_ps == 1.0:
+        courses = [course for course in courses if course.get("raw_ts", 0) != 0]
+    courses.sort(key=lambda x: x.get("raw_ts", 0), reverse=True)
+    return courses
 
 def _build_year_restriction_msg(restrictions, department, Degree):
     """

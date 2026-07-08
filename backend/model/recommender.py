@@ -579,18 +579,19 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
                     "exclude_departments": [],
                     "exclude_courses": [],
                     "minor": [],
-                    "easy_grading": False
+                    "easy_grading": False,
+                    "popular": False
                 }
             }
         
         print(f"[PRE-PROCESSING] LLM Optimized Query: '{processed_query}'")
 
-        # NEW: Garbage-query short circuit
+        # Garbage-query short circuit
         if not processed_query.get("is_valid", True):
             print(
                 f"[QUERY REJECTED] {processed_query.get('reject_reason', 'Invalid query')}"
             )
-            return [], False,  processed_query.get("reject_reason", "Invalid query"), False, {}
+            return [], False, processed_query.get("reject_reason", "Invalid query"), False, {}
     
         semantic_query = processed_query.get("combined", [])
         primary_keywords = processed_query.get("primary", [])
@@ -603,10 +604,11 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
         exclude_courses = constraints.get("exclude_courses", [])
         exclude_departments = constraints.get("exclude_departments", [])
         easy_grading = constraints.get("easy_grading", False)
+        popular = constraints.get("popular", False)
 
         print(f"[PRE-PROCESSING] LLM Optimized Query: '{processed_query}'")
     except Exception as e:
-        print(f"[WARNING] LLM query optimization failed: {e}. Falling back to baseline baseline query.")
+        print(f"[WARNING] LLM query optimization failed: {e}. Falling back to baseline query.")
         processed_query = {
             "is_valid": True,
             "combined": [clean_query],
@@ -614,11 +616,12 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
             "secondary": [],
             "expanded": [],
             "constraints": {
-            "include_departments": [],
-            "exclude_departments": [],
-            "exclude_courses": [],
-            "minor": [],
-            "easy_grading": False
+                "include_departments": [],
+                "exclude_departments": [],
+                "exclude_courses": [],
+                "minor": [],
+                "easy_grading": False,
+                "popular": False
             }
         }
         is_valid = processed_query["is_valid"]
@@ -628,15 +631,17 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
         expanded_keywords = processed_query["expanded"]
         constraints = processed_query["constraints"]
         minor = constraints.get("minor", [])
+        easy_grading = constraints.get("easy_grading", False)
+        popular = constraints.get("popular", False)
     
     candidate_pool = build_candidate_pool(
         student_history=student_history,
         include_departments=include_departments,
         exclude_departments=exclude_departments,
         exclude_courses=exclude_courses,
-        minor = minor,
-        degree = degree,
-        department = department
+        minor=minor,
+        degree=degree,
+        department=department
     )
 
     is_minor_query = bool(minor)
@@ -655,72 +660,6 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
     if student_history is None:
         student_history = []
     
-    if not primary_keywords:
-
-        dept_pop = ps_matrix_data["sophomore_popularity"].get(student_dept, {})
-        # Build lookup once
-        course_lookup = (
-        candidate_pool
-        .assign(
-            _code=lambda x: x["Course Code"]
-            .astype(str)
-            .str.strip()
-            .str.upper()
-        )
-        .drop_duplicates("_code")
-        .set_index("_code")
-        .to_dict("index")
-        )
-        candidates_enriched = []                
-        for code, row in course_lookup.items():
-            course_dept = str(row["Department"]).strip().upper()
-            ps_score = calculate_people_score(
-                student_history,
-                code,
-                student_dept,
-                year=year
-            )
-            ps_score *= w_ps
-
-            candidates_enriched.append({
-                "code": code,
-                "name": str(row["Course Name"]),
-                "raw_rrf": 0.0,
-                "raw_ps": ps_score,
-                "norm_rrf": 0.0,
-                "norm_ps": ps_score,
-                "easy_grading": easy_grading,
-                "raw_ts": ps_score,
-                "minor_remark": _flatten_minor_remark(
-                parse_minor_remark(requested_minor_remarks.get(code, ""), student_history, department))
-            })
-
-            if easy_grading:
-                from eligibility.rules import grade_stats_db
-                filtered_candidates = []
-                for c in candidates_enriched:
-                    clean_code = c["code"].strip().upper()
-                    grade_stats = grade_stats_db.get(clean_code)
-                    if not grade_stats:
-                        filtered_candidates.append(c)
-                        continue
-                    scores = []
-                    for _, entries in grade_stats.items():
-                        for entry in entries:
-                            scores.append(entry["score_aa_ab"])
-                    if not scores:
-                        filtered_candidates.append(c)
-                        continue
-                    avg_grade_score = sum(scores) / len(scores)
-                    if avg_grade_score < 0.303629:
-                        continue
-                    filtered_candidates.append(c)
-                candidates_enriched = filtered_candidates
-
-        candidates_enriched = sorted(candidates_enriched, key=lambda x: x["raw_ts"], reverse=True)
-        print("[INFO] Candidate enrichment complete. Total candidates:", len(candidates_enriched))
-        return candidates_enriched, True, "", is_minor_query, requested_minor_types
-
     try:
         description_lookup = (
             df_courses
@@ -728,32 +667,67 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
             .to_dict()
         )
 
+        # 1. Generate the initial candidate list (RRF of semantic & keyword search)
         if primary_keywords:
-            # Convert the array of structured phrases back into a unified contextual string for the semantic models
             semantic_query_text = " ".join(
                 processed_query["combined"] +
                 processed_query["expanded"]
             )
             
-            # Update the rankings call to use text for semantic search, and pass arrays directly to keyword search
-            semantic_list = get_semantic_rankings(semantic_query_text, student_history, candidate_pool, top_k=50)
+            semantic_list = get_semantic_rankings(semantic_query_text, student_history, candidate_pool, top_k=100)
             keyword_list = get_keyword_rankings(
                 processed_query["primary"],
                 processed_query["secondary"],
                 student_history,
                 candidate_pool,
-                top_k=50
+                top_k=100
             )
-            all_fused_candidates = compute_rrf(semantic_list, keyword_list, k=60)
-
-            if not all_fused_candidates:
-                return [], True, "", is_minor_query, requested_minor_types
+            all_fused_candidates = compute_rrf(semantic_list, keyword_list, k=60)[:100]
         else:
             all_fused_candidates = []
 
+        # Dynamic weights assignment
+        if not primary_keywords:
+            if easy_grading and popular:
+                w_rrf = 0.00
+                w_ps = 0.50
+                w_grade = 0.50
+            elif popular:
+                w_rrf = 0.00
+                w_ps = 1.00
+                w_grade = 0.00
+            elif easy_grading:
+                w_rrf = 0.00
+                w_ps = 0.00
+                w_grade = 1.00
+            else:
+                # Default empty search: 100% peer history (same as baseline)
+                w_rrf = 0.00
+                w_ps = 1.00
+                w_grade = 0.00
+        else:
+            if easy_grading and popular:
+                w_rrf = 0.60
+                w_ps = 0.20
+                w_grade = 0.20
+            elif popular:
+                w_rrf = 0.70
+                w_ps = 0.30
+                w_grade = 0.00
+            elif easy_grading:
+                w_rrf = 0.70
+                w_ps = 0.00
+                w_grade = 0.30
+            else:
+                w_rrf = 1.00
+                w_ps = 0.00
+                w_grade = 0.00
+
+        # Build initial candidate pool
         candidates_enriched = []
-        rrf_vals = []
-        ps_vals = []
+        seen_codes = set()
+        
+        # Helper to get course details
         course_lookup = (
             df_courses
             .assign(
@@ -767,59 +741,107 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
             .set_index("_code")
             .to_dict("index")
         )
-        for code, rrf_score in all_fused_candidates:
-            clean_code = str(code).strip().upper()
-            ps_score = calculate_people_score(student_history, clean_code, student_dept)
-            
-            rrf_vals.append(rrf_score if clean_query else 0.0)
-            ps_vals.append(ps_score)
-            
-            row = df_courses[df_courses["Course Code"].astype(str).str.strip().str.upper() == clean_code].iloc[0]
-            candidates_enriched.append({
-                "code": clean_code,
-                "name": str(row["Course Name"]),
-                "description": description_lookup.get(clean_code, ""),
-                "raw_rrf": rrf_score if clean_query else 0.0,
-                "raw_ps": ps_score,
-            })
 
-        # Filter (remove duplicates, completed, LLM constraints, and completely restricted courses)
+        if primary_keywords:
+            for code, rrf_score in all_fused_candidates:
+                clean_code = str(code).strip().upper()
+                if clean_code in seen_codes:
+                    continue
+                seen_codes.add(clean_code)
+                
+                ps_score = calculate_people_score(student_history, clean_code, student_dept, year) if (w_ps > 0.0 or not primary_keywords) else 0.0
+                
+                row = course_lookup.get(clean_code)
+                if row:
+                    candidates_enriched.append({
+                        "code": clean_code,
+                        "name": str(row["Course Name"]),
+                        "description": description_lookup.get(clean_code, ""),
+                        "raw_rrf": rrf_score,
+                        "raw_ps": ps_score,
+                    })
+
+            # 2. Enrich with top popular courses if w_ps > 0 (popular is active)
+            if w_ps > 0.0:
+                exclusions = core_course_codes.union(set(str(c).strip().upper() for c in student_history if c))
+                df_electives = df_courses[~df_courses["Course Code"].astype(str).str.strip().str.upper().isin(exclusions)]
+                
+                ps_vals_2 = {}
+                for code in df_electives["Course Code"].unique():
+                    clean_code = str(code).strip().upper()
+                    # Check if it is in candidate_pool
+                    if clean_code in candidate_pool["Course Code"].astype(str).str.strip().str.upper().values:
+                        ps_vals_2[clean_code] = calculate_people_score(student_history, clean_code, student_dept, year)
+                    
+                top_50_ps = sorted(ps_vals_2.items(), key=lambda item: item[1], reverse=True)[:50]
+
+                master_pool = {c["code"]: c for c in candidates_enriched}
+                text_fused_dict = {str(code).strip().upper(): score for code, score in all_fused_candidates}
+
+                for code, calculated_ps in top_50_ps:
+                    clean_code = str(code).strip().upper()
+                    if clean_code in master_pool:
+                        master_pool[clean_code]["raw_ps"] = calculated_ps
+                    else:
+                        row = course_lookup.get(clean_code)
+                        if row:
+                            calculated_rrf = text_fused_dict.get(clean_code, 0.0)
+                            master_pool[clean_code] = {
+                                "code": clean_code,
+                                "name": str(row["Course Name"]),
+                                "description": description_lookup.get(clean_code, ""),
+                                "raw_rrf": calculated_rrf,
+                                "raw_ps": calculated_ps
+                            }
+                candidates_enriched = list(master_pool.values())
+        else:
+            # If no primary keywords (e.g. "cminds minor courses"), populate from candidate_pool directly (all of them)
+            for code in candidate_pool["Course Code"].unique():
+                clean_code = str(code).strip().upper()
+                row = course_lookup.get(clean_code)
+                if row:
+                    ps_score = calculate_people_score(student_history, clean_code, student_dept, year) if (w_ps > 0.0 or not primary_keywords) else 0.0
+                    candidates_enriched.append({
+                        "code": clean_code,
+                        "name": str(row["Course Name"]),
+                        "description": description_lookup.get(clean_code, ""),
+                        "raw_rrf": 0.0,
+                        "raw_ps": ps_score
+                    })
+
+        # 3. Apply standard filters (remove completed, restricted, and LLM constraints)
         from eligibility.rules import check_restriction
         filtered_candidates = []
         seen = set()
         history_set = {str(ch).strip().upper() for ch in student_history if ch}
-        
-        # Extract constraint rules
-        constraints = processed_query.get("constraints", {}) if isinstance(processed_query, dict) else {}
         exclude_depts = set(d.strip().upper() for d in constraints.get("exclude_departments", []) if d)
         exclude_codes = set(str(c).strip().upper() for c in constraints.get("exclude_courses", []) if c)
         exclude_codes_clean = {c.replace(" ", "") for c in exclude_codes}
+
         for c in candidates_enriched:
             clean_code = c["code"].strip().upper()
             clean_code_nospace = clean_code.replace(" ", "")
             
-            # 1. Remove duplicates
+            # Remove duplicates
             if clean_code in seen:
                 continue
             seen.add(clean_code)
             
-            # 2. Remove already completed courses
+            # Remove completed
             if clean_code in history_set:
                 continue
                 
-            # 3. Apply LLM constraints (Exclude departments and specific courses)
+            # Exclude departments and courses
             match_dept = re.match(r'^([A-Z]+)', clean_code)
             if match_dept:
                 dept_prefix = match_dept.group(1)
                 if dept_prefix in exclude_depts:
                     continue
-                    
             if clean_code in exclude_codes or clean_code_nospace in exclude_codes_clean:
                 continue
                 
-            # 4. Remove restricted courses (excluding "Restricted by year")
+            # Restricted courses check
             if degree and year and department:
-                # A course is candidates-eligible if at least one division pathway (regular or minor) is valid/open
                 r_status_reg = check_restriction(degree, year, department, clean_code, is_minor=False)
                 r_status_min = check_restriction(degree, year, department, clean_code, is_minor=True)
                 
@@ -832,94 +854,93 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
             filtered_candidates.append(c)
         candidates_enriched = filtered_candidates
 
-        # Truncate to top 50 candidates
-        candidates_enriched = candidates_enriched[:50]
+        # 4. Integrate grading statistics early & filter
+        from eligibility.rules import grade_stats_db
+        grade_filter_ran = False
+        grade_killed = 0
+        initial_pool_len = len(candidates_enriched)
 
-        text_fused_dict = {str(code).strip().upper(): score for code, score in all_fused_candidates}     
-
-        if w_ps > 0.0:    
-            exclusions = core_course_codes.union(set(str(c).strip().upper() for c in student_history if c))
-            df_electives = df_courses[~df_courses["Course Code"].astype(str).str.strip().str.upper().isin(exclusions)]
+        for c in candidates_enriched:
+            clean_code = c["code"].strip().upper()
+            clean_code_nospace = clean_code.replace(" ", "")
+            # Look up grading stats (fix space-mismatch bug)
+            grade_stats = grade_stats_db.get(clean_code_nospace)
             
-            ps_vals_2 = {}
-            for code in df_electives["Course Code"].unique():
-                clean_code = str(code).strip().upper()
-                ps_vals_2[clean_code] = calculate_people_score(student_history, clean_code, student_dept, year)
+            if not grade_stats:
+                c["avg_grade_score"] = 0.303629  # default neutral
+                continue
                 
-            top_50_ps = sorted(ps_vals_2.items(), key=lambda item: item[1], reverse=True)[:50]
-            master_pool = {c["code"]: c for c in candidates_enriched}
+            scores = []
+            for _, entries in grade_stats.items():
+                for entry in entries:
+                    scores.append(entry["score_aa_ab"])
+            if not scores:
+                c["avg_grade_score"] = 0.303629  # default neutral
+            else:
+                c["avg_grade_score"] = sum(scores) / len(scores)
 
-            for code, calculated_ps in top_50_ps:
-                clean_code = str(code).strip().upper() 
-                
-                if clean_code in master_pool:
-                    master_pool[clean_code]["raw_ps"] = calculated_ps
-                    # Sync score into tracker array for proper Min-Max bounds calculation
-                    ps_vals.append(calculated_ps)
+        if easy_grading:
+            grade_filter_ran = True
+            filtered_candidates = []
+            for c in candidates_enriched:
+                if c["avg_grade_score"] < 0.303629:
+                    continue
+                filtered_candidates.append(c)
+            candidates_enriched = filtered_candidates
+            grade_killed = initial_pool_len - len(candidates_enriched)
+
+        # 5. Integrate popularity statistics early & filter
+        pop_filter_ran = False
+        pop_killed = 0
+        post_grade_len = len(candidates_enriched)
+
+        if popular:
+            pop_filter_ran = True
+            
+            # Determine threshold dynamically based on year and department
+            if year == "2025":
+                dept_pop = ps_matrix_data.get("sophomore_popularity", {}).get(student_dept, {})
+                non_zero_pops = [v for v in dept_pop.values() if v > 0]
+                threshold = np.percentile(non_zero_pops, 30) if non_zero_pops else 1.0
+            else:
+                ext_pop = ps_matrix_data.get("external_popularity", {})
+                non_zero_pops = [v for v in ext_pop.values() if v > 0]
+                threshold = np.percentile(non_zero_pops, 30) if non_zero_pops else 1.0
+
+            filtered_candidates = []
+            for c in candidates_enriched:
+                clean_code = c["code"].strip().upper()
+                if year == "2025":
+                    pop_score = ps_matrix_data.get("sophomore_popularity", {}).get(student_dept, {}).get(clean_code, 0)
                 else:
-                    row = df_courses[df_courses["Course Code"].astype(str).str.strip().str.upper() == clean_code].iloc[0]
-                    
-                    if clean_code in text_fused_dict:
-                        calculated_rrf = text_fused_dict[clean_code]
-                    elif clean_query:
-                        single_semantic = [
-                            item for item in get_semantic_rankings(
-                                semantic_query_text,
-                                student_history,
-                                candidate_pool,
-                                top_k=50
-                            )
-                            if str(item).strip().upper() == clean_code
-                        ]
-                        single_keyword = [item for item in get_keyword_rankings(primary_keywords, secondary_keywords, student_history, candidate_pool, top_k=150) if str(item).strip().upper() == clean_code]
-                        fused_single = compute_rrf(single_semantic, single_keyword, k=60)
-                        calculated_rrf = fused_single[0][1] if fused_single else 0.0
-                        text_fused_dict[clean_code] = calculated_rrf
-                    else:
-                        calculated_rrf = 0.0
-                    
-                    rrf_vals.append(calculated_rrf)
-                    ps_vals.append(calculated_ps)
-                    
-                    master_pool[clean_code] = {
-                        "code": clean_code,
-                        "name": str(row["Course Name"]),
-                        "description": description_lookup.get(clean_code, ""),
-                        "raw_rrf": calculated_rrf,
-                        "raw_ps": calculated_ps
-                    }
+                    pop_score = ps_matrix_data.get("external_popularity", {}).get(clean_code, 0)
+                
+                if pop_score < threshold:
+                    continue
+                filtered_candidates.append(c)
+            candidates_enriched = filtered_candidates
+            pop_killed = post_grade_len - len(candidates_enriched)
 
-            candidates_enriched = list(master_pool.values())
-            print("[INFO] Candidate enrichment complete. Total candidates:", len(candidates_enriched))
+        # Handle empty candidate pool with dynamic feedback
+        if len(candidates_enriched) == 0:
+            if grade_killed > 0 and pop_killed > 0:
+                reject_reason = "No courses matching your interest satisfy both easy grading and popularity constraints."
+            elif grade_killed > 0:
+                reject_reason = "No courses matching your interest satisfy the easy grading constraint."
+            elif pop_killed > 0:
+                reject_reason = "No courses matching your interest satisfy the popularity constraint."
+            else:
+                reject_reason = "No courses found matching your query. Try a different search interest."
+            return [], False, reject_reason, is_minor_query, requested_minor_types
 
-            if easy_grading:
-                from eligibility.rules import grade_stats_db
-                filtered_candidates = []
-                for c in candidates_enriched:
-                    clean_code = c["code"].strip().upper()
-                    grade_stats = grade_stats_db.get(clean_code)
-                    if not grade_stats:
-                        filtered_candidates.append(c)
-                        continue
-                    scores = []
-                    for _, entries in grade_stats.items():
-                        for entry in entries:
-                            scores.append(entry["score_aa_ab"])
-                    if not scores:
-                        filtered_candidates.append(c)
-                        continue
-                    avg_grade_score = sum(scores) / len(scores)
-                    if avg_grade_score < 0.303629:
-                        continue
-                    filtered_candidates.append(c)
-                candidates_enriched = filtered_candidates
-
-     
+        # 6. Normalize and Rank
         valid_rrf_vals = [c["raw_rrf"] for c in candidates_enriched if c["raw_rrf"] > 0.0]
         valid_ps_vals = [c["raw_ps"] for c in candidates_enriched if c["raw_ps"] > 0.0]
+        valid_grade_vals = [c["avg_grade_score"] for c in candidates_enriched if c["avg_grade_score"] > 0.0]
 
         max_rrf, min_rrf = (max(valid_rrf_vals), min(valid_rrf_vals)) if valid_rrf_vals else (1.0, 0.0)
         max_ps, min_ps = (max(valid_ps_vals), min(valid_ps_vals)) if valid_ps_vals else (1.0, 0.0)
+        max_grade, min_grade = (max(valid_grade_vals), min(valid_grade_vals)) if valid_grade_vals else (1.0, 0.0)
 
         for c in candidates_enriched:
             if c["raw_rrf"] == 0.0:
@@ -931,61 +952,94 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
                 norm_ps = 0.0
             else:
                 norm_ps = (c["raw_ps"] - min_ps) / (max_ps - min_ps) if max_ps != min_ps else 0.0
+
+            if c["avg_grade_score"] == 0.0:
+                norm_grade = 0.0
+            else:
+                norm_grade = (c["avg_grade_score"] - min_grade) / (max_grade - min_grade) if max_grade != min_grade else 1.0
             
-            c["norm_rrf"] = norm_rrf if w_rrf > 0.0 else 0.0
-            c["norm_ps"] = norm_ps if w_ps > 0.0 else 0.0
-            c["combined_score"] = (w_rrf * c["norm_rrf"]) + (w_ps * c["norm_ps"])
-          #We take the top 30 courses and give to the LLM, these coures were sorted by their scores  
+            c["norm_rrf"] = norm_rrf
+            c["norm_ps"] = norm_ps
+            c["norm_grade"] = norm_grade
+            
+            # Early weighted combined score
+            c["combined_score"] = (w_rrf * norm_rrf) + (w_ps * norm_ps) + (w_grade * norm_grade)
+
         candidates_enriched = sorted(candidates_enriched, key=lambda x: x["combined_score"], reverse=True)
         llm_input_pool = candidates_enriched[:30]
 
     except Exception as e:
         print(f"\n[CRITICAL LOCAL PIPELINE EXCEPTION]: {e}")
+        import traceback
         traceback.print_exc()
         return [], True, "", is_minor_query, requested_minor_types
   
     try:
         if clean_query:
-            
+            # If there are no primary keywords, we bypass the LLM filter and return all candidates directly
+            if not primary_keywords:
+                fallback_output = []
+                for c in candidates_enriched:
+                    code = c["code"]
+                    fallback_output.append({
+                        "code": code,
+                        "name": c["name"],
+                        "description": c["description"],
+                        "raw_rrf": c["raw_rrf"],
+                        "raw_ps": c["raw_ps"],
+                        "norm_rrf": c["norm_rrf"],  
+                        "norm_ps": c["norm_ps"], 
+                        "raw_ts" : c["combined_score"],
+                        "easy_grading": easy_grading,
+                        "popular": popular,
+                        "minor_remark": _flatten_minor_remark(
+                        parse_minor_remark(requested_minor_remarks.get(code, ""), student_history, department))
+                    })
+                return fallback_output, True, "", is_minor_query, requested_minor_types
+
             cleaned_json_string = llm.filter_courses(query, processed_query, llm_input_pool)
             parsed_data = json.loads(cleaned_json_string)
             valid_codes = set(str(c).strip().upper() for c in parsed_data.get("valid_course_codes", []))
-        else:
-            valid_codes = set(c["code"] for c in llm_input_pool)
-    
-
-        final_output = []
-        for c in llm_input_pool:
-            if c["code"] in valid_codes:
-                final_output.append({
-                    "code": c["code"],
-                    "name": c["name"],
-                    "raw_rrf": c["raw_rrf"],
-                    "raw_ps": c["raw_ps"],
-                    "norm_rrf": c["norm_rrf"],  
-                    "norm_ps": c["norm_ps"], 
-                    "raw_ts" : c["combined_score"],
-                    "easy_grading": easy_grading,
-                    "minor_remark": _flatten_minor_remark(
-                    parse_minor_remark(requested_minor_remarks.get(code, ""), student_history, department))
-                })
-                if len(final_output) == top_k:
-                    break
-        return final_output, True, "", is_minor_query, requested_minor_types
+            
+            final_output = []
+            for c in llm_input_pool:
+                code = c["code"]
+                if code in valid_codes:
+                    final_output.append({
+                        "code": code,
+                        "name": c["name"],
+                        "description": c["description"],
+                        "raw_rrf": c["raw_rrf"],
+                        "raw_ps": c["raw_ps"],
+                        "norm_rrf": c["norm_rrf"],
+                        "norm_ps": c["norm_ps"], 
+                        "raw_ts" : c["combined_score"],
+                        "easy_grading": easy_grading,
+                        "popular": popular,
+                        "minor_remark": _flatten_minor_remark(
+                        parse_minor_remark(requested_minor_remarks.get(code, ""), student_history, department))
+                    })
+                    if len(final_output) == top_k:
+                        break
+            return final_output, True, "", is_minor_query, requested_minor_types
 
     except Exception as e:
         print(f"\n[WARNING - GEMINI FILTER FAILED]: {e}. Falling back to pre-filtered rank pool.")
+        
         fallback_output = []
-        for c in llm_input_pool:
+        for c in llm_input_pool[:top_k]:
+            code = c["code"]
             fallback_output.append({
-                "code": c["code"],
+                "code": code,
                 "name": c["name"],
+                "description": c["description"],
                 "raw_rrf": c["raw_rrf"],
                 "raw_ps": c["raw_ps"],
                 "norm_rrf": c["norm_rrf"],  
                 "norm_ps": c["norm_ps"], 
                 "raw_ts" : c["combined_score"],
                 "easy_grading": easy_grading,
+                "popular": popular,
                 "minor_remark": _flatten_minor_remark(
                 parse_minor_remark(requested_minor_remarks.get(code, ""), student_history, department))
             })

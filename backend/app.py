@@ -325,29 +325,52 @@ def api_recommend():
     if not degree or not year or not department:
         return jsonify({"error": "Please the select Department."}), 400
 
-    w_ps_raw  = data.get("w_ps")
-    w_rrf_raw = data.get("w_rrf")
-    w_ps  = float(w_ps_raw)  if w_ps_raw  is not None else 0.0
-    w_rrf = float(w_rrf_raw) if w_rrf_raw is not None else 1.0
-
-    print(f"\n[CHECKPOINT 1 - APP.PY] Incoming weights extracted from UI:")
-    print(f" -> w_ps (Peer History Weight): {w_ps}")
-    print(f" -> w_rrf (Semantic Weight):  {w_rrf}")
-
     # --- 2. AUTOMATED BACKGROUND LOOKUP ---
     automated_history = fetch_automatic_student_history(student_id) or []
     print(f"[AUTOMATION] Resolved history for {student_id}: {automated_history}")
 
     query_fallback   = False
+    _processed = None
 
     try:
         if interest:
             _llm = LLMService()
             _processed = _llm.rephrase_and_extract_intent(interest)
-        else:
-            _processed = None
     except Exception:
         _processed = None
+
+    # Derive weights dynamically based on parsed intent
+    w_ps = 0.0
+    w_rrf = 1.0
+    if _processed:
+        constraints = _processed.get("constraints", {})
+        easy_grading = constraints.get("easy_grading", False)
+        popular = constraints.get("popular", False)
+        primary_keywords = _processed.get("primary", [])
+        
+        if not primary_keywords:
+            if easy_grading and popular:
+                w_rrf = 0.00
+                w_ps = 0.50
+            elif popular:
+                w_rrf = 0.00
+                w_ps = 1.00
+            elif easy_grading:
+                w_rrf = 0.00
+                w_ps = 0.00
+            else:
+                w_rrf = 0.00
+                w_ps = 1.00
+        else:
+            if easy_grading and popular:
+                w_rrf = 0.60
+                w_ps = 0.20
+            elif popular:
+                w_rrf = 0.70
+                w_ps = 0.30
+            elif easy_grading:
+                w_rrf = 0.70
+                w_ps = 0.00
 
     # Check if the user left the text field blank
     if not interest:
