@@ -1024,24 +1024,24 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
             return final_output, True, "", is_minor_query, requested_minor_types
         else:
         # No query text at all -- nothing to filter by, return the ranked pool directly
-        fallback_output = []
-        for c in candidates_enriched:
-            code = c["code"]
-            fallback_output.append({
-                "code": code,
-                "name": c["name"],
-                "description": c["description"],
-                "raw_rrf": c["raw_rrf"],
-                "raw_ps": c["raw_ps"],
-                "norm_rrf": c["norm_rrf"],
-                "norm_ps": c["norm_ps"],
-                "raw_ts": c["combined_score"],
-                "easy_grading": easy_grading,
-                "popular": popular,
-                "minor_remark": _flatten_minor_remark(
-                    parse_minor_remark(requested_minor_remarks.get(code, ""), student_history, department))
-            })
-        return fallback_output, True, "", is_minor_query, requested_minor_types
+            fallback_output = []
+            for c in candidates_enriched:
+                code = c["code"]
+                fallback_output.append({
+                    "code": code,
+                    "name": c["name"],
+                    "description": c["description"],
+                    "raw_rrf": c["raw_rrf"],
+                    "raw_ps": c["raw_ps"],
+                    "norm_rrf": c["norm_rrf"],
+                    "norm_ps": c["norm_ps"],
+                    "raw_ts": c["combined_score"],
+                    "easy_grading": easy_grading,
+                    "popular": popular,
+                    "minor_remark": _flatten_minor_remark(
+                        parse_minor_remark(requested_minor_remarks.get(code, ""), student_history, department))
+                })
+            return fallback_output, True, "", is_minor_query, requested_minor_types
 
     except Exception as e:
         print(f"\n[WARNING - GEMINI FILTER FAILED]: {e}. Falling back to pre-filtered rank pool.")
