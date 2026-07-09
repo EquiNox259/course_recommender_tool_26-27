@@ -603,8 +603,8 @@ def check_clash(course_code, core_slot_to_courses):
     return core_slot_to_courses.get(slot_num, [])
     
 def norm_code(x):
-    return str(x).replace(" ", "").upper().strip()
-
+    s = str(x).replace(" ", "").upper().strip()
+    return re.sub(r'-\d{4}$', '', s)
 
 def get_core_courses_for_bucket(degree, department, batch_year):
     """
