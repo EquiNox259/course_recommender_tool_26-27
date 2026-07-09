@@ -178,6 +178,12 @@ def _apply_minor_type_override(course_list, minor_type_map):
 
     return filtered
 
+def derive_degree(student_id: str) -> str:
+    sid = str(student_id).strip().lower()
+    if len(sid) >= 3 and sid[:2].isdigit():
+        return {'b': 'B.Tech.', 'm': 'M.Tech.', 'd': 'Ph.D.'}.get(sid[2], '')
+    return ''
+
 def send_otp(student_id):
     otp = str(random.randint(100000, 999999))
     to_email = resolve_student_email(student_id)
@@ -227,21 +233,18 @@ def api_send_otp():
     student_id = str(data.get("student_id") or "").strip().lower()
     try:
         resolved_email = resolve_student_email(student_id)   # always validate roll number
+        if derive_degree(student_id) != 'B.Tech.':
+           return jsonify({"error": "This tool currently supports B.Tech. students only."}), 403
 
         if DEV_BYPASS_OTP:
             # Skip email entirely — mark session as verified immediately
             
             # Return same shape as verify-otp so the frontend can pre-fill fields
             clean_sid      = student_id.strip().lower()
-            default_degree = ""
+            default_degree = derive_degree(student_id)
             default_year   = ""
             if len(clean_sid) >= 3 and clean_sid[:2].isdigit():
                 default_year = "20" + clean_sid[:2]
-                deg_char = clean_sid[2]
-                if   deg_char == 'b': default_degree = "B.Tech."
-                elif deg_char == 'm': default_degree = "M.Tech."
-                elif deg_char == 'p': default_degree = "Ph.D."
-                elif deg_char == 'd': default_degree = "Dual Degree (B.Tech. + M.Tech.)"
 
             return jsonify({
                 "status":         "ok",
@@ -290,16 +293,11 @@ def api_verify_otp():
 
     # Auto-detect degree and year from student_id prefix so the frontend
     # can pre-fill the form fields without the student having to select them.
-    default_degree = ""
+    default_degree = derve_degree(student_id)
     default_year   = ""
     clean_sid = str(student_id).strip().lower()
     if len(clean_sid) >= 3 and clean_sid[:2].isdigit():
         default_year = "20" + clean_sid[:2]
-        deg_char = clean_sid[2]
-        if   deg_char == 'b': default_degree = "B.Tech."
-        elif deg_char == 'm': default_degree = "M.Tech."
-        elif deg_char == 'p': default_degree = "Ph.D."
-        elif deg_char == 'd': default_degree = "Dual Degree (B.Tech. + M.Tech.)"
 
     return jsonify({
         "status":         "ok",
