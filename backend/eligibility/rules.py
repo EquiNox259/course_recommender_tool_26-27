@@ -223,8 +223,6 @@ def apply_grade_boost(courses, w_ps):
     """
     if not courses:
         return courses
-    if w_ps == 1.0:
-        courses = [course for course in courses if course.get("raw_ts", 0) != 0]
     courses.sort(key=lambda x: x.get("raw_ts", 0), reverse=True)
     return courses
 
@@ -369,8 +367,12 @@ def check_restriction(Degree,year,department,course_code, data=data_modified, is
             return 'Valid'
             
         branch_allowed = False
-        for r in restrictions:
-            if r[1] in (department, 'ALL') and r[2] in (Degree, 'ALL') and r[3] == 'Allowed':
+        max_yip = 5 if Degree == 'Dual Degree (B.Tech. + M.Tech.)' else 4
+        current_cal_year    = datetime.now().year
+        academic_year_start = current_cal_year if SEMESTER == 'Autumn' else current_cal_year - 1
+        for yip in range(1, max_yip + 1):
+            batch_yr = academic_year_start - yip + 1
+            if evaluate_rules(Degree, str(batch_yr), department, restrictions) == 'Allowed':
                 branch_allowed = True
                 break
                 
