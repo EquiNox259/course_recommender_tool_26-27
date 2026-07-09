@@ -245,33 +245,45 @@ def _build_year_restriction_msg(restrictions, department, Degree):
     current_cal_year    = datetime.now().year
     academic_year_start = current_cal_year if SEMESTER == 'Autumn' else current_cal_year - 1
 
-    # Collect every batch year that has an Allowed rule matching this dept/degree
-    allowed_batch_years = set()
-    for r in restrictions:
-        if r[3] != 'Allowed':
-            continue
-        if r[1] in (department, 'ALL') and r[2] in (Degree, 'ALL') and r[0] != 'ALL':
-            try:
-                allowed_batch_years.add(int(r[0]))
-            except (ValueError, TypeError):
-                pass
+    def get_specificity(rule):
+        score = 0
+        if rule[0] != 'ALL': score += 1
+        if rule[1] != 'ALL': score += 1
+        if rule[2] != 'ALL': score += 1
+        return score
 
-    if not allowed_batch_years:
-        return 'Restricted'
+    def test_single_year(Degree, year, department, restrictions):
+        matching_rules = []
+        for r in restrictions:
+            if r[0] in (year, 'ALL') and r[1] in (department, 'ALL') and r[2] in (Degree, 'ALL'):
+                matching_rules.append(r)
+        
+        if not matching_rules:
+            has_allowed_rule = any(r[3] == 'Allowed' for r in restrictions)
+            return 'Deny' if has_allowed_rule else 'Allowed'
+        
+        max_spec = max(get_specificity(r) for r in matching_rules)
+        best_rules = [r for r in matching_rules if get_specificity(r) == max_spec]
+        actions = [r[3] for r in best_rules]
+        if 'Deny' in actions:
+            return 'Deny'
+        return 'Allowed'
 
-    # Convert each batch year → year-in-program ordinal, filter implausible values
     max_yip = 5 if Degree == 'Dual Degree (B.Tech. + M.Tech.)' else 4
     year_labels = []
-    for batch_yr in allowed_batch_years:
-        yip = academic_year_start - batch_yr + 1
-        if 1 <= yip <= max_yip:
+    
+    # Test each possible year in program (1 to max_yip) to see if it is Allowed
+    for yip in range(1, max_yip + 1):
+        batch_yr = academic_year_start - yip + 1
+        status = test_single_year(Degree, str(batch_yr), department, restrictions)
+        if status == 'Allowed':
             year_labels.append((_ordinal(yip), yip))
 
-    year_labels.sort(key=lambda x: x[1])   # ascending: 1st, 2nd, …
+    year_labels.sort(key=lambda x: x[1])
     labels = [y[0] for y in year_labels]
 
     if not labels:
-        return 'Restricted by year'
+        return 'Restricted'
     if len(labels) == 1:
         return f"Available for {labels[0]} year students only"
     if len(labels) == 2:

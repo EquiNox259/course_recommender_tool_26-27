@@ -14,8 +14,13 @@ import time
 
 
 MODEL_PATH = os.path.join(MODEL_ASSETS_DIR, "course_encoder_new")
-FAISS_INDEX_PATH = os.path.join(MODEL_DATA_DIR, "course_index_new.faiss")
-COURSE_META_PATH = os.path.join(MODEL_DATA_DIR, "courses_metadata_new.csv")
+
+if SEMESTER.lower() == 'autumn':
+    FAISS_INDEX_PATH = os.path.join(MODEL_DATA_DIR, "course_index_autumn.faiss")
+    COURSE_META_PATH = os.path.join(MODEL_DATA_DIR, "courses_metadata_autumn.csv")
+else:
+    FAISS_INDEX_PATH = os.path.join(MODEL_DATA_DIR, "course_index_new.faiss")
+    COURSE_META_PATH = os.path.join(MODEL_DATA_DIR, "courses_metadata_new.csv")
 
 # Load the people score matrix asset globally when the server boots up
 PEOPLE_SCORE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "people_score_matrix.pkl")
