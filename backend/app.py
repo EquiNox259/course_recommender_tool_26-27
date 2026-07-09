@@ -166,14 +166,30 @@ def _apply_minor_type_override(course_list, minor_type_map):
         if not matching:
             continue  # drop — mandated division not offered this semester
 
-        chosen = dict(matching[0])
-        chosen["is_minor"] = wants_minor
-
-        c["divisions"]   = [chosen]
-        c["default_idx"] = 0
+        # Keep the FULL matching side so the frontend renders a
+        # dropdown of only-minor or only-non-minor divisions.
+        c["divisions"]   = [dict(d) for d in matching]
+        c["default_idx"] = next(
+            (i for i, d in enumerate(matching) if not d.get("clashes_with")), 0
+        )
+        c["slot"]        = matching[c["default_idx"]].get("slot", c.get("slot"))
+        c["instructor"]  = matching[c["default_idx"]].get("instructor", c.get("instructor"))
         c["has_minor"]   = wants_minor
         c["minor_only"]  = wants_minor
         c["minor_type"]  = minor_type
+
+        # Same differentiation for grading statistics:
+        # Minor-type → only 'M' entries; Elective-type → S1/S2/Main only.
+        gstats = c.get("grade_stats")
+        if gstats:
+            fg = {}
+            for yr, entries in gstats.items():
+                kept = [e for e in entries
+                        if (str(e.get("division", "")).strip() == "M") == wants_minor]
+                if kept:
+                    fg[yr] = kept
+            c["grade_stats"] = fg or None
+
         filtered.append(c)
 
     return filtered
