@@ -309,7 +309,7 @@ def api_verify_otp():
 
     # Auto-detect degree and year from student_id prefix so the frontend
     # can pre-fill the form fields without the student having to select them.
-    default_degree = derve_degree(student_id)
+    default_degree = derive_degree(student_id)
     default_year   = ""
     clean_sid = str(student_id).strip().lower()
     if len(clean_sid) >= 3 and clean_sid[:2].isdigit():
