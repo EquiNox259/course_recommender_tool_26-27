@@ -95,23 +95,14 @@
           <select id="degree" required>
             <option value="">—</option>
             <option>B.Tech.</option>
-            <option>M.Tech.</option>
-            <option>Ph.D.</option>
-            <option>M.Sc.</option>
             <option>Dual Degree (B.Tech. + M.Tech.)</option>
             <option>B.S.</option>
-            <option>B.Des.</option>
           </select>
           <label for="degree">Degree</label>
         </div>
         <div class="field">
-          <select id="year" required>
-            <option value="">—</option>
-            <option>2026</option><option>2025</option><option>2024</option>
-            <option>2023</option><option>2022</option><option>2021</option>
-            <option>2020</option><option>2019</option><option>2018</option>
-            <option>2017</option><option>2016</option>
-          </select>
+          <input id="year" type="text" readonly tabindex="-1"
+                 style="pointer-events:none; background:transparent;">
           <label for="year">Batch Year</label>
         </div>
       </div>
@@ -380,11 +371,9 @@ try {
             sel.classList.toggle('has-value', !!sel.value);
         }
         if (data.default_year) {
-            const sel = document.getElementById('year');
-            for (let opt of sel.options) {
-                if (opt.value === data.default_year) { sel.value = data.default_year; break; }
-            }
-            sel.classList.toggle('has-value', !!sel.value);
+          const yr = document.getElementById('year');
+          yr.value = data.default_year;
+          yr.classList.add('has-value');
         }
         document.getElementById('profile-id-label').textContent = 'Student Profile: ' + data.student_id;
         showOnly('section-profile');
@@ -420,9 +409,9 @@ async function doVerifyOtp() {
       sel.classList.toggle('has-value', !!sel.value);
     }
     if (data.default_year) {
-      const sel = document.getElementById('year');
-      for (let opt of sel.options) { if (opt.value === data.default_year) { sel.value = data.default_year; break; } }
-      sel.classList.toggle('has-value', !!sel.value);
+      const yr = document.getElementById('year');
+      yr.value = data.default_year;
+      yr.classList.add('has-value');
     }
     document.getElementById('profile-id-label').textContent = 'Student Profile: ' + data.student_id;
     showOnly('section-profile');
@@ -1244,23 +1233,27 @@ document.addEventListener('keydown', function(e) {
 /* ── Session restore on load ─────────────────────────────────── */
 function restoreSession() {
   if (!_authToken) return;
+
   const sid = sessionStorage.getItem('dav_sid') || '';
-  if (!sid) {  // token without sid — stale/partial state, treat as logged out
+  const ts  = Number(sessionStorage.getItem('dav_token_ts') || 0);
+
+  const stale =
+       !sid                                       
+    || sid.length < 3 || !/^\d\d/.test(sid)        
+    || sid[2] !== 'b'                              
+    || !ts || Date.now() - ts > AUTH_LIFETIME_MS;
+
+  if (stale) {
     _authToken = null;
-    sessionStorage.removeItem('dav_token');
+    ['dav_token', 'dav_sid', 'dav_token_ts'].forEach(k => sessionStorage.removeItem(k));
     return;
   }
-  // Same prefix inference the backend does in verify-otp
-  let degree = '', year = '';
-  if (sid.length >= 3 && /^\d\d/.test(sid)) {
-    year = '20' + sid.slice(0, 2);
-    degree = { b: 'B.Tech.', m: 'M.Tech.', p: 'Ph.D.',
-               d: 'Dual Degree (B.Tech. + M.Tech.)' }[sid[2]] || '';
-  }
-  const degSel = document.getElementById('degree');
-  if (degree) { degSel.value = degree; degSel.classList.toggle('has-value', true); }
-  const yrSel = document.getElementById('year');
-  if (year)   { yrSel.value = year; yrSel.classList.toggle('has-value', true); }
+
+  // Batch Year: derived from roll prefix, read-only input
+  const yr = document.getElementById('year');
+  yr.value = '20' + sid.slice(0, 2);
+  yr.classList.add('has-value');
+
   document.getElementById('profile-id-label').textContent = 'Student Profile: ' + sid;
   showOnly('section-profile');
 }
