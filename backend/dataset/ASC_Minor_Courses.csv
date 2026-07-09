@@ -1,0 +1,498 @@
+Degree,Branch,Specialization,Type,Course Code,Remarks
+B.Tech.,Aerospace Engineering,N/A,Minor,AE 153,AE 153 is compulsory
+B.Tech.,Aerospace Engineering,N/A,Minor,AE 223,AE 153 is compulsory
+B.Tech.,Aerospace Engineering,N/A,Minor,AE 227,AE 153 is compulsory
+B.Tech.,Aerospace Engineering,N/A,Minor,AE 308,AE 153 is compulsory
+B.Tech.,Aerospace Engineering,N/A,Minor,AE 339,AE 153 is compulsory
+B.Tech.,Aerospace Engineering,N/A,Minor,AE 341,AE 153 is compulsory
+B.Tech.,Aerospace Engineering,N/A,Minor,AE 344,AE 153 is compulsory
+B.Tech.,Biosciences and Bioengineering,N/A,Minor,BB 400,
+B.Tech.,Biosciences and Bioengineering,N/A,Minor,BB 405,
+B.Tech.,Biosciences and Bioengineering,N/A,Minor,BB 411,
+B.Tech.,Biosciences and Bioengineering,N/A,Minor,BB 427,
+B.Tech.,Biosciences and Bioengineering,N/A,Minor,BB 603,
+B.Tech.,Biosciences and Bioengineering,N/A,Minor,BB 610,
+B.Tech.,Biosciences and Bioengineering,N/A,Minor,BB 612,
+B.Tech.,Biosciences and Bioengineering,N/A,Minor,BB 616,
+B.Tech.,Biosciences and Bioengineering,N/A,Minor,BB 618,
+B.Tech.,Biosciences and Bioengineering,N/A,Minor,BB 655,
+B.Tech.,Biosciences and Bioengineering,N/A,Minor,BB 625,
+B.Tech.,Biosciences and Bioengineering,N/A,Minor,BB 600,
+B.Tech.,Biosciences and Bioengineering,N/A,Minor,BB 633,
+B.Tech.,Biosciences and Bioengineering,N/A,Minor,BB 638,
+B.Tech.,Biosciences and Bioengineering,N/A,Minor,BB 681,
+B.Tech.,Biosciences and Bioengineering,N/A,Minor,BB 670,
+B.Tech.,Biosciences and Bioengineering,N/A,Minor,BB 663,
+B.Tech.,Biosciences and Bioengineering,N/A,Minor,BB 521,
+B.Tech.,Biosciences and Bioengineering,N/A,Minor,BB 553,
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,IE 506,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,IE 502,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,IE 501,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,IE 621,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,IE 622,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,IE 618,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,IE 614,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,IE 613,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,IE 616,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,IE 615,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,IE 611,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,IE 609,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,IE 605,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,IE 601,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,IE 663,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,IE 643,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,IE 692,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,IE 683,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,IE 684,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,IE 708,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,IE 702,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,IE 704,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,IE 716,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,IE 712,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,IE 804,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,SC 403,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,SC 640,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,SC 643,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,SC 646,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,SC 631,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,SC 634,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,SC 635,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,SC 639,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,SC 629,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,SC 612,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,SC 652,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,SC 607,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CS 717,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CS 709,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CS 794,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CS 791,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CS 781,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CS 775,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CS 772,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CS 763,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CS 768,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CS 767,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CS 769,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CS 753,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CS 754,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CS 740,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CS 749,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CS 748,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CS 747,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CS 730,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CS 736,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CS 728,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CS 729,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CS 726,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CS 460,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CS 449,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CS 405,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CS 317,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CS 689,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CS 677,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CS 663,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CS 632,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CS 631,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CS 635,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CS 626,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CS6002,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CS6001,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CS6106,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CS6103,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,EE 763,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,EE 779,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,EE 782,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,EE 736,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,EE 737,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,EE 734,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,EE 746,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,EE 635,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,EE 659,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,EE 601,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,EE 610,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,EE 622,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,EE 679,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,EE 678,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,EE 325,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,EE6106,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,SI 427,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,SI 424,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,SI 422,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,SI 423,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,SI 417,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,SI 416,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,SI 404,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,SI 402,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,SI 536,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,SI 509,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,SI 505,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,SI 503,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,SI 528,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,SI 526,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,SI 514,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,SI 515,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CL 712,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CL 603,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CL 602,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CL 625,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CL 650,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CL 672,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CL 688,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,CL 686,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,GNR650,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,GNR602,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,GNR638,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,ET 623,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,ET 610,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,ET 605,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,ME 402,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,ME 793,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,ME 794,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,ME 781,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,ME 604,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,AE 669,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,PS 626,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,PS 643,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,DH 302,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,DH 602,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,IC 102,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,BB 621,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,DS 605,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,DS 606,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,DS 603,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,DS 604,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,DS 607,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,DS 608,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,DS 601,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Elective,DS 602,Non-CS must complete 3 courses from the Minor Electives group for a minimum total of 18 credits. CS students must complete 4 to 5 elective courses from this group.
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Minor Soft Core 1,DS 203,"DS 203 is a hard requirement for all non-CS ( Minor Soft Core 1 courses other than DS 203 cannot be taken). CS students with CS 251, 335, or 699 are exempted from DS 203. CS students must complete one additional course from the CMInDS Electives group"
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Minor Soft Core 1,CS 335,"DS 203 is a hard requirement for all non-CS ( Minor Soft Core 1 courses other than DS 203 cannot be taken). CS students with CS 251, 335, or 699 are exempted from DS 203. CS students must complete one additional course from the CMInDS Electives group"
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Minor Soft Core 1,CS 699,"DS 203 is a hard requirement for all non-CS ( Minor Soft Core 1 courses other than DS 203 cannot be taken). CS students with CS 251, 335, or 699 are exempted from DS 203. CS students must complete one additional course from the CMInDS Electives group"
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Minor Soft Core 1,CS 251,"DS 203 is a hard requirement for all non-CS ( Minor Soft Core 1 courses other than DS 203 cannot be taken). CS students with CS 251, 335, or 699 are exempted from DS 203. CS students must complete one additional course from the CMInDS Electives group"
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Minor Soft Core 2,DS 303,"DS 303 must be preferred. Only if unable to register for DS 303, one of the other five courses in Soft Core 2 may be taken. If CS 419 is taken towards CS Minor, it cannot be counted towards DS Minor."
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Minor Soft Core 2,CS 725,"DS 303 must be preferred. Only if unable to register for DS 303, one of the other five courses in Soft Core 2 may be taken. If CS 419 is taken towards CS Minor, it cannot be counted towards DS Minor."
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Minor Soft Core 2,CS 419,"DS 303 must be preferred. Only if unable to register for DS 303, one of the other five courses in Soft Core 2 may be taken. If CS 419 is taken towards CS Minor, it cannot be counted towards DS Minor."
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Minor Soft Core 2,CS 337,"DS 303 must be preferred. Only if unable to register for DS 303, one of the other five courses in Soft Core 2 may be taken. If CS 419 is taken towards CS Minor, it cannot be counted towards DS Minor."
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Minor Soft Core 2,EE 769,"DS 303 must be preferred. Only if unable to register for DS 303, one of the other five courses in Soft Core 2 may be taken. If CS 419 is taken towards CS Minor, it cannot be counted towards DS Minor."
+B.Tech.,Centre for Machine Intelligence and Data Science,N/A,Minor Soft Core 2,IE 506,"DS 303 must be preferred. Only if unable to register for DS 303, one of the other five courses in Soft Core 2 may be taken. If CS 419 is taken towards CS Minor, it cannot be counted towards DS Minor."
+B.Tech.,Centre for Systems and Control,N/A,Minor Core,SC 602,Any 2 Minor Core courses can be chosen
+B.Tech.,Centre for Systems and Control,N/A,Minor Core,SC 607,Any 2 Minor Core courses can be chosen
+B.Tech.,Centre for Systems and Control,N/A,Minor Core,SC 625,Any 2 Minor Core courses can be chosen
+B.Tech.,Centre for Systems and Control,N/A,Minor Core,SC 639,Any 2 Minor Core courses can be chosen
+B.Tech.,Centre for Systems and Control,N/A,Minor Core,SC 645,Any 2 Minor Core courses can be chosen
+B.Tech.,Centre for Systems and Control,N/A,Minor Core,SC 655,Any 2 Minor Core courses can be chosen
+B.Tech.,Centre for Systems and Control,N/A,Elective,SC 593,Any 3 Electives can be chosen
+B.Tech.,Centre for Systems and Control,N/A,Elective,SC 650,Any 3 Electives can be chosen
+B.Tech.,Centre for Systems and Control,N/A,Elective,SC 651,Any 3 Electives can be chosen
+B.Tech.,Centre for Systems and Control,N/A,Elective,SC 654,Any 3 Electives can be chosen
+B.Tech.,Centre for Systems and Control,N/A,Elective,SC 658,Any 3 Electives can be chosen
+B.Tech.,Centre for Systems and Control,N/A,Elective,SC 662,Any 3 Electives can be chosen
+B.Tech.,Centre for Systems and Control,N/A,Elective,SC 664,Any 3 Electives can be chosen
+B.Tech.,Centre for Systems and Control,N/A,Elective,SC 691,Any 3 Electives can be chosen
+B.Tech.,Centre for Systems and Control,N/A,Elective,SC 594,Any 3 Electives can be chosen
+B.Tech.,Centre for Systems and Control,N/A,Elective,SC 617,Any 3 Electives can be chosen
+B.Tech.,Centre for Systems and Control,N/A,Elective,SC 627,Any 3 Electives can be chosen
+B.Tech.,Centre for Systems and Control,N/A,Elective,SC 641,Any 3 Electives can be chosen
+B.Tech.,Centre for Systems and Control,N/A,Elective,SC 646,Any 3 Electives can be chosen
+B.Tech.,Centre for Systems and Control,N/A,Elective,SC 899,Any 3 Electives can be chosen
+B.Tech.,Centre of Studies in Resources Engineering,N/A,Minor,GNR401,Completion OF GNR 401 and/or 402 is prerequisite to take other GNR courses except for GNR410 & GNR412
+B.Tech.,Centre of Studies in Resources Engineering,N/A,Minor,GNR402,Completion OF GNR 401 and/or 402 is prerequisite to take other GNR courses except for GNR410 & GNR412
+B.Tech.,Centre of Studies in Resources Engineering,N/A,Minor,GNR412,Completion OF GNR 401 and/or 402 is prerequisite to take other GNR courses except for GNR410 & GNR412
+B.Tech.,Centre of Studies in Resources Engineering,N/A,Minor,GNR410,Completion OF GNR 401 and/or 402 is prerequisite to take other GNR courses except for GNR410 & GNR412
+B.Tech.,Centre of Studies in Resources Engineering,N/A,Minor,GNR408,Completion OF GNR 401 and/or 402 is prerequisite to take other GNR courses except for GNR410 & GNR412
+B.Tech.,Centre of Studies in Resources Engineering,N/A,Minor,GNR406,Completion OF GNR 401 and/or 402 is prerequisite to take other GNR courses except for GNR410 & GNR412
+B.Tech.,Centre of Studies in Resources Engineering,N/A,Minor,GNR407,Completion OF GNR 401 and/or 402 is prerequisite to take other GNR courses except for GNR410 & GNR412
+B.Tech.,Centre of Studies in Resources Engineering,N/A,Minor,GNR409,Completion OF GNR 401 and/or 402 is prerequisite to take other GNR courses except for GNR410 & GNR412
+B.Tech.,Centre of Studies in Resources Engineering,N/A,Minor,GNR411,Completion OF GNR 401 and/or 402 is prerequisite to take other GNR courses except for GNR410 & GNR412
+B.Tech.,Computer Science and Engineering,N/A,Minor,DS 303,"At least 4 M tagged courses required, if a student has done DS303 M then CS419 M will be disallowed"
+B.Tech.,Computer Science and Engineering,N/A,Minor,CS 419,"At least 4 M tagged courses required, if a student has done DS303 M then CS419 M will be disallowed"
+B.Tech.,Computer Science and Engineering,N/A,Minor,CS 416,"At least 4 M tagged courses required, if a student has done DS303 M then CS419 M will be disallowed"
+B.Tech.,Computer Science and Engineering,N/A,Minor,CS 409,"At least 4 M tagged courses required, if a student has done DS303 M then CS419 M will be disallowed"
+B.Tech.,Computer Science and Engineering,N/A,Minor,CS 408,"At least 4 M tagged courses required, if a student has done DS303 M then CS419 M will be disallowed"
+B.Tech.,Computer Science and Engineering,N/A,Minor,CS 347,"At least 4 M tagged courses required, if a student has done DS303 M then CS419 M will be disallowed"
+B.Tech.,Computer Science and Engineering,N/A,Minor,CS 310,"At least 4 M tagged courses required, if a student has done DS303 M then CS419 M will be disallowed"
+B.Tech.,Computer Science and Engineering,N/A,Minor,CS 317,"At least 4 M tagged courses required, if a student has done DS303 M then CS419 M will be disallowed"
+B.Tech.,Computer Science and Engineering,N/A,Minor,CS 224,"At least 4 M tagged courses required, if a student has done DS303 M then CS419 M will be disallowed"
+B.Tech.,Computer Science and Engineering,N/A,Minor,CS 228,"At least 4 M tagged courses required, if a student has done DS303 M then CS419 M will be disallowed"
+B.Tech.,Computer Science and Engineering,N/A,Minor,CS 213,"At least 4 M tagged courses required, if a student has done DS303 M then CS419 M will be disallowed"
+B.Tech.,Computer Science and Engineering,N/A,Minor,CS 218,"At least 4 M tagged courses required, if a student has done DS303 M then CS419 M will be disallowed"
+B.Tech.,Computer Science and Engineering,N/A,Minor,CS 207,"At least 4 M tagged courses required, if a student has done DS303 M then CS419 M will be disallowed"
+B.Tech.,Computer Science and Engineering,N/A,Elective,CS 485,"Only 1 Elective is allowed for minor tag, Must be 4XX and above course, this includes the R&D and BTP (CS485, CS490)"
+B.Tech.,Computer Science and Engineering,N/A,Elective,CS 490,"Only 1 Elective is allowed for minor tag, Must be 4XX and above course, this includes the R&D and BTP (CS485, CS490)"
+B.Tech.,Computer Science and Engineering,N/A,Elective,CS 492,"Only 1 Elective is allowed for minor tag, Must be 4XX and above course, this includes the R&D and BTP (CS485, CS490)"
+B.Tech.,Computer Science and Engineering,N/A,Elective,CS 6007,"Only 1 Elective is allowed for minor tag, Must be 4XX and above course, this includes the R&D and BTP (CS485, CS490)"
+B.Tech.,Computer Science and Engineering,N/A,Elective,CS 602,"Only 1 Elective is allowed for minor tag, Must be 4XX and above course, this includes the R&D and BTP (CS485, CS490)"
+B.Tech.,Computer Science and Engineering,N/A,Elective,CS 405,"Only 1 Elective is allowed for minor tag, Must be 4XX and above course, this includes the R&D and BTP (CS485, CS490)"
+B.Tech.,Computer Science and Engineering,N/A,Elective,CS 635,"Only 1 Elective is allowed for minor tag, Must be 4XX and above course, this includes the R&D and BTP (CS485, CS490)"
+B.Tech.,Computer Science and Engineering,N/A,Elective,CS 663,"Only 1 Elective is allowed for minor tag, Must be 4XX and above course, this includes the R&D and BTP (CS485, CS490)"
+B.Tech.,Computer Science and Engineering,N/A,Elective,CS 735,"Only 1 Elective is allowed for minor tag, Must be 4XX and above course, this includes the R&D and BTP (CS485, CS490)"
+B.Tech.,Computer Science and Engineering,N/A,Elective,CS 747,"Only 1 Elective is allowed for minor tag, Must be 4XX and above course, this includes the R&D and BTP (CS485, CS490)"
+B.Tech.,Computer Science and Engineering,N/A,Elective,CS 771,"Only 1 Elective is allowed for minor tag, Must be 4XX and above course, this includes the R&D and BTP (CS485, CS490)"
+B.Tech.,Computer Science and Engineering,N/A,Elective,CS 782,"Only 1 Elective is allowed for minor tag, Must be 4XX and above course, this includes the R&D and BTP (CS485, CS490)"
+B.Tech.,Computer Science and Engineering,N/A,Elective,CS 791,"Only 1 Elective is allowed for minor tag, Must be 4XX and above course, this includes the R&D and BTP (CS485, CS490)"
+B.Tech.,Computer Science and Engineering,N/A,Elective,CS 6002,"Only 1 Elective is allowed for minor tag, Must be 4XX and above course, this includes the R&D and BTP (CS485, CS490)"
+B.Tech.,Computer Science and Engineering,N/A,Elective,CS 6102,"Only 1 Elective is allowed for minor tag, Must be 4XX and above course, this includes the R&D and BTP (CS485, CS490)"
+B.Tech.,Computer Science and Engineering,N/A,Elective,CS 6103,"Only 1 Elective is allowed for minor tag, Must be 4XX and above course, this includes the R&D and BTP (CS485, CS490)"
+B.Tech.,Computer Science and Engineering,N/A,Elective,CS 681,"Only 1 Elective is allowed for minor tag, Must be 4XX and above course, this includes the R&D and BTP (CS485, CS490)"
+B.Tech.,Computer Science and Engineering,N/A,Elective,CS 728,"Only 1 Elective is allowed for minor tag, Must be 4XX and above course, this includes the R&D and BTP (CS485, CS490)"
+B.Tech.,Computer Science and Engineering,N/A,Elective,CS 736,"Only 1 Elective is allowed for minor tag, Must be 4XX and above course, this includes the R&D and BTP (CS485, CS490)"
+B.Tech.,Computer Science and Engineering,N/A,Elective,CS 738,"Only 1 Elective is allowed for minor tag, Must be 4XX and above course, this includes the R&D and BTP (CS485, CS490)"
+B.Tech.,Computer Science and Engineering,N/A,Elective,CS 748,"Only 1 Elective is allowed for minor tag, Must be 4XX and above course, this includes the R&D and BTP (CS485, CS490)"
+B.Tech.,Computer Science and Engineering,N/A,Elective,CS 752,"Only 1 Elective is allowed for minor tag, Must be 4XX and above course, this includes the R&D and BTP (CS485, CS490)"
+B.Tech.,Computer Science and Engineering,N/A,Elective,CS 758,"Only 1 Elective is allowed for minor tag, Must be 4XX and above course, this includes the R&D and BTP (CS485, CS490)"
+B.Tech.,Computer Science and Engineering,N/A,Elective,CS 762,"Only 1 Elective is allowed for minor tag, Must be 4XX and above course, this includes the R&D and BTP (CS485, CS490)"
+B.Tech.,Computer Science and Engineering,N/A,Elective,CS 774,"Only 1 Elective is allowed for minor tag, Must be 4XX and above course, this includes the R&D and BTP (CS485, CS490)"
+B.Tech.,Computer Science and Engineering,N/A,Elective,CS 784,"Only 1 Elective is allowed for minor tag, Must be 4XX and above course, this includes the R&D and BTP (CS485, CS490)"
+B.Tech.,Computer Science and Engineering,N/A,Elective,CS 785,"Only 1 Elective is allowed for minor tag, Must be 4XX and above course, this includes the R&D and BTP (CS485, CS490)"
+B.Tech.,Computer Science and Engineering,N/A,Elective,CS 794,"Only 1 Elective is allowed for minor tag, Must be 4XX and above course, this includes the R&D and BTP (CS485, CS490)"
+B.Tech.,Desai Sethi School of Entrepreneurship,N/A,Elective,ENT 601,Min 24 Credits and Max 30 Credits from ENT Courses
+B.Tech.,Desai Sethi School of Entrepreneurship,N/A,Elective,ENT 602,"Google-Form based Instructor Approval, after ASC Pre-registration. Min 24 Credits and Max 30 Credits from ENT Courses."
+B.Tech.,Desai Sethi School of Entrepreneurship,N/A,Elective,ENT 603,Min 24 Credits and Max 30 Credits from ENT Courses
+B.Tech.,Desai Sethi School of Entrepreneurship,N/A,Elective,ENT 605,Min 24 Credits and Max 30 Credits from ENT Courses
+B.Tech.,Desai Sethi School of Entrepreneurship,N/A,Elective,ENT 606,"Google-Form based Instructor Approval, after ASC Pre-registration. Min 24 Credits and Max 30 Credits from ENT Courses."
+B.Tech.,Desai Sethi School of Entrepreneurship,N/A,Elective,ENT 607,Min 24 Credits and Max 30 Credits from ENT Courses
+B.Tech.,Desai Sethi School of Entrepreneurship,N/A,Elective,ENT 608,Min 24 Credits and Max 30 Credits from ENT Courses
+B.Tech.,Desai Sethi School of Entrepreneurship,N/A,Elective,ENT 609,Min 24 Credits and Max 30 Credits from ENT Courses
+B.Tech.,Desai Sethi School of Entrepreneurship,N/A,Elective,ENT 611,Min 24 Credits and Max 30 Credits from ENT Courses
+B.Tech.,Desai Sethi School of Entrepreneurship,N/A,Elective,ENT 612,"Google-Form based Instructor Approval, after ASC Pre-registration. Min 24 Credits and Max 30 Credits from ENT Courses."
+B.Tech.,Desai Sethi School of Entrepreneurship,N/A,Elective,ENT 613,Min 24 Credits and Max 30 Credits from ENT Courses
+B.Tech.,Desai Sethi School of Entrepreneurship,N/A,Elective,ENT 614,Min 24 Credits and Max 30 Credits from ENT Courses
+B.Tech.,Desai Sethi School of Entrepreneurship,N/A,Elective,ENT 615,"Google-Form based Instructor Approval, after ASC Pre-registration. Min 24 Credits and Max 30 Credits from ENT Courses."
+B.Tech.,Desai Sethi School of Entrepreneurship,N/A,Elective,ENT 617,Min 24 Credits and Max 30 Credits from ENT Courses
+B.Tech.,Desai Sethi School of Entrepreneurship,N/A,Elective,ENT 618,Min 24 Credits and Max 30 Credits from ENT Courses
+B.Tech.,Desai Sethi School of Entrepreneurship,N/A,Elective,ENT 620,Min 24 Credits and Max 30 Credits from ENT Courses
+B.Tech.,Desai Sethi School of Entrepreneurship,N/A,Elective,ENT 622,Min 24 Credits and Max 30 Credits from ENT Courses
+B.Tech.,Desai Sethi School of Entrepreneurship,N/A,Elective,ENT 623,"Google-Form based Instructor Approval, after ASC Pre-registration. Min 24 Credits and Max 30 Credits from ENT Courses."
+B.Tech.,Desai Sethi School of Entrepreneurship,N/A,Elective,ENT 624,Min 24 Credits and Max 30 Credits from ENT Courses
+B.Tech.,Desai Sethi School of Entrepreneurship,N/A,Elective,ENT 625,"Google-Form based Instructor Approval, after ASC Pre-registration. Min 24 Credits and Max 30 Credits from ENT Courses."
+B.Tech.,Desai Sethi School of Entrepreneurship,N/A,Elective,ENT 606,Min 24 Credits and Max 30 Credits from ENT Courses
+B.Tech.,Desai Sethi School of Entrepreneurship,N/A,Elective,ENT 701,Min 24 Credits and Max 30 Credits from ENT Courses
+B.Tech.,Desai Sethi School of Entrepreneurship,N/A,Elective,ENT 702,Min 24 Credits and Max 30 Credits from ENT Courses
+B.Tech.,Desai Sethi School of Entrepreneurship,N/A,Minor Basket,HS 454,Max 6 credits from the ENT Minor Basket
+B.Tech.,Desai Sethi School of Entrepreneurship,N/A,Minor Basket,HS 448,Max 6 credits from the ENT Minor Basket
+B.Tech.,Desai Sethi School of Entrepreneurship,N/A,Minor Basket,ME 676,Max 6 credits from the ENT Minor Basket
+B.Tech.,Desai Sethi School of Entrepreneurship,N/A,Minor Basket,HS 490,Max 6 credits from the ENT Minor Basket
+B.Tech.,Desai Sethi School of Entrepreneurship,N/A,Minor Basket,HS 207,Max 6 credits from the ENT Minor Basket
+B.Tech.,Desai Sethi School of Entrepreneurship,N/A,Minor Basket,IE 501,Max 6 credits from the ENT Minor Basket
+B.Tech.,Desai Sethi School of Entrepreneurship,N/A,Minor Basket,MG 614,Max 6 credits from the ENT Minor Basket
+B.Tech.,Desai Sethi School of Entrepreneurship,N/A,Minor Basket,MG 402,Max 6 credits from the ENT Minor Basket
+B.Tech.,Desai Sethi School of Entrepreneurship,N/A,Minor Basket,MG 406,Max 6 credits from the ENT Minor Basket
+B.Tech.,Desai Sethi School of Entrepreneurship,N/A,Minor Basket,MG 401,Max 6 credits from the ENT Minor Basket
+B.Tech.,Desai Sethi School of Entrepreneurship,N/A,Minor Basket,MM 417,Max 6 credits from the ENT Minor Basket
+B.Tech.,Electrical Engineering,N/A,Minor,EE 309,
+B.Tech.,Electrical Engineering,N/A,Minor,EE 321,
+B.Tech.,Electrical Engineering,N/A,Minor,EE 325,
+B.Tech.,Electrical Engineering,N/A,Minor,EE 341,
+B.Tech.,Electrical Engineering,N/A,Minor,EE 114,
+B.Tech.,Electrical Engineering,N/A,Minor,EE 238,
+B.Tech.,Electrical Engineering,N/A,Minor,EE 207,
+B.Tech.,Electrical Engineering,N/A,Minor,EE 204,
+B.Tech.,Electrical Engineering,N/A,Minor,EE 229,
+B.Tech.,Electrical Engineering,N/A,Minor,EE 221,
+B.Tech.,Electrical Engineering,N/A,Minor,EE 224,
+B.Tech.,Mathematics,N/A,Minor,MA 403,
+B.Tech.,Mathematics,N/A,Minor,MA 406,
+B.Tech.,Mathematics,N/A,Minor,MA 412,
+B.Tech.,Mathematics,N/A,Minor,MA 419,
+B.Tech.,Mathematics,N/A,Minor,MA5106,
+B.Tech.,Mechanical Engineering,N/A,Minor,ME 338,Minimum 30 credits are required
+B.Tech.,Mechanical Engineering,N/A,Minor,ME 219,Minimum 30 credits are required
+B.Tech.,Mechanical Engineering,N/A,Minor,ME 223,Minimum 30 credits are required
+B.Tech.,Mechanical Engineering,N/A,Minor,ME 209,Minimum 30 credits are required
+B.Tech.,Mechanical Engineering,N/A,Minor,ME 230,Minimum 30 credits are required
+B.Tech.,Mechanical Engineering,N/A,Minor,ME 444,Minimum 30 credits are required
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Minor Core,MM 201,Minor Core Course is compulsory
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 1,MM 222,Any two Elective 1 courses are compulsory.
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 1,MM 218,Any two Elective 1 courses are compulsory.
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 1,MM 324,Any two Elective 1 courses are compulsory.
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 1,MM 329,Any two Elective 1 courses are compulsory.
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 1,MM 331,Any two Elective 1 courses are compulsory.
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 1,MM 333,Any two Elective 1 courses are compulsory.
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 408,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 409,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 474,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 477,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 6002,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 626,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 717,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 735,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 801,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 684,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 755,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 729,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 734,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 656,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 685,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 718,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 668,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 642,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 749,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 719,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 722,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 641,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 409,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 654,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 638,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 652,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 746,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 754,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 618,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 650,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 474,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 732,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 733,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 691,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 730,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 756,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 695,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 712,Any two courses MM 3xx level onwards
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,Elective 2,MM 713,Any two courses MM 3xx level onwards
+B.Tech.,Physics,N/A,Minor,PH 253,Compulsory
+B.Tech.,Physics,N/A,Minor,PH 252,Compulsory
+B.Tech.,Physics,N/A,Minor,PH 251,Compulsory
+B.Tech.,Physics,N/A,Elective,PH 353,Any 2 electives can be taken
+B.Tech.,Physics,N/A,Elective,PH 352,Any 2 electives can be taken
+B.Tech.,Physics,N/A,Elective,PH 500,Any 2 electives can be taken
+B.Tech.,Physics,N/A,Elective,PH 505,Any 2 electives can be taken
+B.Tech.,Physics,N/A,Elective,PH 517,Any 2 electives can be taken
+B.Tech.,Physics,N/A,Elective,PH 562,Any 2 electives can be taken
+B.Tech.,Physics,N/A,Elective,PH 561,Any 2 electives can be taken
+B.Tech.,Physics,N/A,Elective,PH 564,Any 2 electives can be taken
+B.Tech.,Physics,N/A,Elective,PH 563,Any 2 electives can be taken
+B.Tech.,Physics,N/A,Elective,PH 566,Any 2 electives can be taken
+B.Tech.,Physics,N/A,Elective,PH 565,Any 2 electives can be taken
+B.Tech.,Physics,N/A,Elective,PH 567,Any 2 electives can be taken
+B.Tech.,Physics,N/A,Elective,PH 569,Any 2 electives can be taken
+B.Tech.,Physics,N/A,Elective,PH 572,Any 2 electives can be taken
+B.Tech.,Physics,N/A,Elective,PH 575,Any 2 electives can be taken
+B.Tech.,Physics,N/A,Elective,PH 574,Any 2 electives can be taken
+B.Tech.,Physics,N/A,Elective,PH 576,Any 2 electives can be taken
+B.Tech.,Physics,N/A,Elective,PH 578,Any 2 electives can be taken
+B.Tech.,Physics,N/A,Elective,PH 580,Any 2 electives can be taken
+B.Tech.,Physics,N/A,Elective,PH 530,Any 2 electives can be taken
+B.Tech.,Physics,N/A,Elective,PH 534,Any 2 electives can be taken
+B.Tech.,Physics,N/A,Elective,PH 540,Any 2 electives can be taken
+B.Tech.,Physics,N/A,Elective,PH 544,Any 2 electives can be taken
+B.Tech.,Physics,N/A,Elective,PH 546,Any 2 electives can be taken
+B.Tech.,Physics,N/A,Elective,PH 549,Any 2 electives can be taken
+B.Tech.,Physics,N/A,Elective,PH 550,Any 2 electives can be taken
+B.Tech.,Physics,N/A,Elective,PH 556,Any 2 electives can be taken
+B.Tech.,Physics,N/A,Elective,PH 819,Any 2 electives can be taken
+B.Tech.,Physics,N/A,Elective,PH 813,Any 2 electives can be taken
+B.Tech.,Physics,N/A,Elective,PH 815,Any 2 electives can be taken
+B.Tech.,Physics,N/A,Elective,PH 818,Any 2 electives can be taken
+B.Tech.,Physics,N/A,Elective,PH 821,Any 2 electives can be taken
+B.Tech.,Physics,N/A,Elective,PH 601,Any 2 electives can be taken
+B.Tech.,Physics,N/A,Elective,PH 544,Any 2 electives can be taken
+B.Tech.,Physics,N/A,Elective,PH 557,Any 2 electives can be taken
+B.Tech.,Physics,N/A,Elective,PH 817,Any 2 electives can be taken
+B.Tech.,Shailesh J. Mehta School of Management,N/A,Minor,MG 406,Any 2 electives can be taken
+B.Tech.,Shailesh J. Mehta School of Management,N/A,Minor,MG 403,Any 2 electives can be taken
+B.Tech.,Shailesh J. Mehta School of Management,N/A,Minor,MG 405,Any 2 electives can be taken
+B.Tech.,Shailesh J. Mehta School of Management,N/A,Minor,MG 401,Any 2 electives can be taken
+B.Tech.,Shailesh J. Mehta School of Management,N/A,Minor,MG 402,Any 2 electives can be taken
+B.Tech.,Shailesh J. Mehta School of Management,N/A,Minor,MG 407,Any 2 electives can be taken
+B.Tech.,Statistics,N/A,Minor,SI 404,Any 2 electives can be taken
+B.Tech.,Statistics,N/A,Minor,SI 422,Any 2 electives can be taken
+B.Tech.,Statistics,N/A,Minor,SI 424,Any 2 electives can be taken
+B.Tech.,Statistics,N/A,Minor,SI 427,Any 2 electives can be taken
+B.Tech.,Statistics,N/A,Minor,SI 527,Any 2 electives can be taken
+B.S.,Chemistry,N/A,Minor Basket 2,CH 507,2 Courses from Minor Basket 2 have to be taken
+B.S.,Chemistry,N/A,Minor Basket 2,CH 521,2 Courses from Minor Basket 2 have to be taken
+B.S.,Chemistry,N/A,Minor Basket 2,CH 518,2 Courses from Minor Basket 2 have to be taken
+B.S.,Chemistry,N/A,Minor Basket 2,CH 552,2 Courses from Minor Basket 2 have to be taken
+B.S.,Chemistry,N/A,Minor Basket 2,CH 560,2 Courses from Minor Basket 2 have to be taken
+B.S.,Chemistry,N/A,Minor Basket 2,CH 547,2 Courses from Minor Basket 2 have to be taken
+B.S.,Chemistry,N/A,Minor Basket 2,CH 540,2 Courses from Minor Basket 2 have to be taken
+B.S.,Chemistry,N/A,Minor Basket 2,CH 578,2 Courses from Minor Basket 2 have to be taken
+B.S.,Chemistry,N/A,Minor Basket 2,CH 588,2 Courses from Minor Basket 2 have to be taken
+B.S.,Chemistry,N/A,Minor Basket 2,CH 584,2 Courses from Minor Basket 2 have to be taken
+B.S.,Chemistry,N/A,Minor Basket 2,CH 401,2 Courses from Minor Basket 2 have to be taken
+B.S.,Chemistry,N/A,Minor Basket 2,CH 405,2 Courses from Minor Basket 2 have to be taken
+B.S.,Chemistry,N/A,Minor Basket 2,CH 406,2 Courses from Minor Basket 2 have to be taken
+B.S.,Chemistry,N/A,Minor Basket 2,CH 404,2 Courses from Minor Basket 2 have to be taken
+B.S.,Chemistry,N/A,Minor Basket 2,CH 438,2 Courses from Minor Basket 2 have to be taken
+B.S.,Chemistry,N/A,Minor Basket 2,CH 442,2 Courses from Minor Basket 2 have to be taken
+B.S.,Chemistry,N/A,Minor Basket 2,CH 408,2 Courses from Minor Basket 2 have to be taken
+B.S.,Chemistry,N/A,Minor Basket 2,CH 425,2 Courses from Minor Basket 2 have to be taken
+B.S.,Chemistry,N/A,Minor Basket 2,CH 311,2 Courses from Minor Basket 2 have to be taken
+B.S.,Chemistry,N/A,Minor Basket 2,CH 309,2 Courses from Minor Basket 2 have to be taken
+B.S.,Chemistry,N/A,Minor Basket 2,CH 302,2 Courses from Minor Basket 2 have to be taken
+B.S.,Chemistry,N/A,Minor Basket 2,CH 301,2 Courses from Minor Basket 2 have to be taken
+B.S.,Chemistry,N/A,Minor Basket 2,CH 306,2 Courses from Minor Basket 2 have to be taken
+B.S.,Chemistry,N/A,Minor Basket 2,CH 304,2 Courses from Minor Basket 2 have to be taken
+B.S.,Chemistry,N/A,Minor Basket 2,CH 305,2 Courses from Minor Basket 2 have to be taken
+B.S.,Chemistry,N/A,Minor Basket 1,CH 202,3 Courses from Minor Basket 1 have to be taken
+B.S.,Chemistry,N/A,Minor Basket 1,CH 216,3 Courses from Minor Basket 1 have to be taken
+B.S.,Chemistry,N/A,Minor Basket 1,CH 209,3 Courses from Minor Basket 1 have to be taken
+B.S.,Chemistry,N/A,Minor Basket 1,CH 225,3 Courses from Minor Basket 1 have to be taken
+B.S.,Economics,N/A,Minor,DH 304,
+B.S.,Economics,N/A,Minor,EC 700,
+B.S.,Economics,N/A,Minor,EC4106,
+B.S.,Economics,N/A,Minor,EC 610,
+B.S.,Economics,N/A,Minor,EC 606,
+B.S.,Economics,N/A,Minor,EC 310,
+B.S.,Economics,N/A,Minor,EC 457,
+B.S.,Economics,N/A,Minor,EC 452,
+B.S.,Economics,N/A,Minor,EC 440,
+B.S.,Economics,N/A,Minor,EC 439,
+B.S.,Economics,N/A,Minor,EC 487,
+B.S.,Economics,N/A,Minor,EC 426,
+B.S.,Economics,N/A,Minor,EC 417,
+B.S.,Economics,N/A,Minor,EC 416,
+B.S.,Economics,N/A,Minor,EC 411,
+B.Tech.,Robotics,N/A,Elective,AE 305,
+B.Tech.,Robotics,N/A,Elective,AE 667,
+B.Tech.,Robotics,N/A,Elective,EE 309,"Either EE 309 or ME 311 can be taken, but not both"
+B.Tech.,Robotics,N/A,Elective,ME 311,"Either EE 309 or ME 311 can be taken, but not both"
+B.Tech.,Robotics,N/A,Elective,ME 402,
+B.Tech.,Robotics,N/A,Elective,ME 604,
+B.Tech.,Robotics,N/A,Elective,ME 6102,
+B.Tech.,Robotics,N/A,Elective,ME 6114,
+B.Tech.,Robotics,N/A,Elective,ME 748,
+B.Tech.,Robotics,N/A,Elective,SC 634,
+B.Tech.,Robotics,N/A,Elective,SC 635,
+B.Tech.,Robotics,N/A,Elective,AE 308,"Only 1 out of AE 308, EE 302 and ME 779 can be taken"
+B.Tech.,Robotics,N/A,Elective,AE 410,
+B.Tech.,Robotics,N/A,Elective,AE 666,
+B.Tech.,Robotics,N/A,Elective,AE 690,
+B.Tech.,Robotics,N/A,Elective,AE 700,
+B.Tech.,Robotics,N/A,Elective,AE 712,
+B.Tech.,Robotics,N/A,Elective,CS 747,
+B.Tech.,Robotics,N/A,Elective,EE 302,"Only 1 out of AE 308, EE 302 and ME 779 can be taken"
+B.Tech.,Robotics,N/A,Elective,EE 622,
+B.Tech.,Robotics,N/A,Elective,ME 639,
+B.Tech.,Robotics,N/A,Elective,ME 779,"Only 1 out of AE 308, EE 302 and ME 779 can be taken"
+B.Tech.,Robotics,N/A,Elective,SC 618,
+B.Tech.,Robotics,N/A,Elective,SC 624,
+B.Tech.,Robotics,N/A,Elective,SC 627,
+B.Tech.,Robotics,N/A,Elective,SC 633,
+B.Tech.,Robotics,N/A,Elective,SC 649,
+B.Tech.,Robotics,N/A,Elective,SC 651,
+B.Tech.,Robotics,N/A,Elective,CS 663,
+B.Tech.,Robotics,N/A,Elective,CS 684,"Either CS 684 or EE 712 can be taken, but not both"
+B.Tech.,Robotics,N/A,Elective,CS 763,
+B.Tech.,Robotics,N/A,Elective,EE 610,
+B.Tech.,Robotics,N/A,Elective,EE 617,
+B.Tech.,Robotics,N/A,Elective,EE 657,
+B.Tech.,Robotics,N/A,Elective,EE 6104,
+B.Tech.,Robotics,N/A,Elective,EE 712,"Either CS 684 or EE 712 can be taken, but not both"
+B.Tech.,Industrial Engineering and Operations Research,N/A,Elective Basket 1,IE 501,At least 2 courses have to be taken from this basket
+B.Tech.,Industrial Engineering and Operations Research,N/A,Elective Basket 1,IE 503,At least 2 courses have to be taken from this basket
+B.Tech.,Industrial Engineering and Operations Research,N/A,Elective Basket 1,IE 621,At least 2 courses have to be taken from this basket
+B.Tech.,Industrial Engineering and Operations Research,N/A,Elective Basket 1,IE 630,At least 2 courses have to be taken from this basket
+B.Tech.,Industrial Engineering and Operations Research,N/A,Elective Basket 1,IE 401,At least 2 courses have to be taken from this basket
+B.Tech.,Industrial Engineering and Operations Research,N/A,Elective Basket 2,IE 604,At most 3 courses can be taken from this basket
+B.Tech.,Industrial Engineering and Operations Research,N/A,Elective Basket 2,IE 607,At most 3 courses can be taken from this basket
+B.Tech.,Industrial Engineering and Operations Research,N/A,Elective Basket 2,IE 616,At most 3 courses can be taken from this basket
+B.Tech.,Industrial Engineering and Operations Research,N/A,Elective Basket 2,IE 619,At most 3 courses can be taken from this basket
+B.Tech.,Industrial Engineering and Operations Research,N/A,Elective Basket 2,IE 620,At most 3 courses can be taken from this basket
+B.Tech.,Industrial Engineering and Operations Research,N/A,Elective Basket 2,IE 642,At most 3 courses can be taken from this basket
+B.Tech.,Industrial Engineering and Operations Research,N/A,Elective Basket 2,IE 643,At most 3 courses can be taken from this basket
+B.Tech.,Industrial Engineering and Operations Research,N/A,Elective Basket 2,IE 663,At most 3 courses can be taken from this basket
+B.Tech.,Industrial Engineering and Operations Research,N/A,Elective Basket 2,IE 705,At most 3 courses can be taken from this basket
+B.Tech.,Industrial Engineering and Operations Research,N/A,Elective Basket 2,IE 708,At most 3 courses can be taken from this basket
+B.Tech.,Industrial Engineering and Operations Research,N/A,Elective Basket 2,IE 711,At most 3 courses can be taken from this basket
+B.Tech.,Industrial Engineering and Operations Research,N/A,Elective Basket 2,IE 718,At most 3 courses can be taken from this basket
+B.Tech.,Industrial Engineering and Operations Research,N/A,Elective Basket 2,IE 724,At most 3 courses can be taken from this basket
+B.Tech.,Industrial Engineering and Operations Research,N/A,Elective Basket 2,IE 802,At most 3 courses can be taken from this basket
