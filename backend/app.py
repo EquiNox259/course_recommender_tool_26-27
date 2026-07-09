@@ -234,7 +234,7 @@ def api_send_otp():
     try:
         resolved_email = resolve_student_email(student_id)   # always validate roll number
         if derive_degree(student_id) != 'B.Tech.':
-           return jsonify({"error": "This tool currently supports B.Tech. students only."}), 403
+           return jsonify({"error": "This tool currently supports Undergraduate students only."}), 403
 
         if DEV_BYPASS_OTP:
             # Skip email entirely — mark session as verified immediately
