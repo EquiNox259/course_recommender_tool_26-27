@@ -61,7 +61,7 @@ for _, row in df.iterrows():
         "slot_num":    extract_slot_num(row.get('Slot', '')),
         "instructor":  str(row.get('Instructor',  'N/A')).strip(),
         "description": str(row.get('Description', '')),
-        "credits":     int(str(row.get('Credits', '') or '').strip() or 6),
+        "credits":     int(float(str(row.get('Credits', '') or '').strip() or 6)),
         "division":    div,
         "is_minor":    (div == 'M'),
         "label":       ("Minor"   if div == 'M'
