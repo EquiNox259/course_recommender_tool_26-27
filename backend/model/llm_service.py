@@ -66,7 +66,7 @@ class LLMService:
         )
         
         response = self.client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-3.1-flash-lite",
             contents=[
                 f"Candidate Courses:\n{course_string}", 
                 f"Student Original Query: {original_query}",
@@ -355,7 +355,7 @@ class LLMService:
            
             "Example Output (For minor — simple):\n"
             "{\n"
-            "  \"is_valid\": false,\n"
+            "  \"is_valid\": true,\n"
             "  \"reject_reason\": \"\",\n"
             "  \"combined\": [],\n"
             "  \"primary\": [],\n"
@@ -413,7 +413,7 @@ class LLMService:
 
         try:
             response = self.client.models.generate_content(
-                model="gemini-2.5-flash",
+                model="gemini-3.1-flash-lite",
                 contents=raw_query,
                 config=types.GenerateContentConfig(
                     system_instruction=system_prompt,
