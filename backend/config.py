@@ -32,7 +32,7 @@ SMTP_USER     = os.environ["SMTP_USER"]
 SMTP_PASS     = os.environ["SMTP_PASS"]
 FLASK_SECRET  = os.environ["FLASK_SECRET"]
 OTP_EXPIRY_SEC = int(os.environ.get("OTP_EXPIRY_SEC", 600))                    # 10 minutes
-DEV_BYPASS_OTP  = os.environ.get("DEV_BYPASS_OTP", "false").lower() == "true"
+DEV_BYPASS_OTP  = False
 
 # Feedback Google Sheet
 _gsheets_json = os.environ.get("GSHEETS_SERVICE_ACCOUNT_JSON")
