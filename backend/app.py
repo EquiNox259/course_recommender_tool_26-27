@@ -160,38 +160,21 @@ def _apply_minor_type_override(course_list, minor_type_map):
         if not divisions:
             continue  # drop
 
-        wants_minor = "minor" in minor_type.lower()
-        matching = [d for d in divisions if d.get("is_minor") == wants_minor]
-
-        if not matching:
-            continue  # drop — mandated division not offered this semester
-
-        # Keep the FULL matching side so the frontend renders a
-        # dropdown of only-minor or only-non-minor divisions.
-        c["divisions"]   = [dict(d) for d in matching]
-        c["default_idx"] = next(
-            (i for i, d in enumerate(matching) if not d.get("clashes_with")), 0
+        # Default to the Minor-tagged division if this course has one;
+        # otherwise fall back to the first non-clashing division.
+        minor_idx = next((i for i, d in enumerate(divisions) if d.get("is_minor")), None)
+        default_idx = minor_idx if minor_idx is not None else next(
+            (i for i, d in enumerate(divisions) if not d.get("clashes_with")), 0
         )
-        c["slot"]        = matching[c["default_idx"]].get("slot", c.get("slot"))
-        c["instructor"]  = matching[c["default_idx"]].get("instructor", c.get("instructor"))
-        c["has_minor"]   = wants_minor
-        c["minor_only"]  = wants_minor
+
+        c["default_idx"] = default_idx
+        c["slot"]        = divisions[default_idx].get("slot", c.get("slot"))
+        c["instructor"]  = divisions[default_idx].get("instructor", c.get("instructor"))
+        c["has_minor"]   = any(d.get("is_minor") for d in divisions)
+        c["minor_only"]  = divisions[default_idx].get("is_minor", False)
         c["minor_type"]  = minor_type
-
-        # Same differentiation for grading statistics:
-        # Minor-type → only 'M' entries; Elective-type → S1/S2/Main only.
-        gstats = c.get("grade_stats")
-        if gstats:
-            fg = {}
-            for yr, entries in gstats.items():
-                kept = [e for e in entries
-                        if (str(e.get("division", "")).strip() == "M") == wants_minor]
-                if kept:
-                    fg[yr] = kept
-            c["grade_stats"] = fg or None
-
         filtered.append(c)
-
+        
     return filtered
 
 def derive_degree(student_id: str) -> str:
