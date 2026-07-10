@@ -153,6 +153,77 @@ def record_violation(student_id):
     threading.Thread(target=_sync_violation_to_sheet, args=(sid, count, banned), daemon=True).start()
     return count, banned
 
+_local_usage = {}
+_usage_lock = threading.Lock()
+_usage_sheet = None
+
+def _load_usage_from_sheet():
+    global _usage_sheet
+    if _usage_sheet is None:
+        # Local fallback file for offline/dev testing
+        local_path = os.path.join(DATASET_DIR, "usage_local.json")
+        if os.path.exists(local_path):
+            try:
+                with open(local_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                with _usage_lock:
+                    for sid, val in data.items():
+                        _local_usage[sid.lower()] = int(val)
+                print(f"[SUCCESS] Loaded {len(_local_usage)} usage records from local JSON file.")
+            except Exception as e:
+                print(f"[ERROR] Failed to load local usage file: {e}")
+        return
+    try:
+        records = _usage_sheet.get_all_records()
+        with _usage_lock:
+            for r in records:
+                sid = str(r.get("Student ID", "")).strip().lower()
+                if sid:
+                    _local_usage[sid] = int(r.get("Query Count", 0))
+        print(f"[SUCCESS] Loaded {len(_local_usage)} usage records from Google Sheet.")
+    except Exception as e:
+        print(f"[ERROR] Failed to load usage from Google Sheet: {e}")
+
+def _sync_usage_to_sheet(student_id, count):
+    global _usage_sheet
+    if _usage_sheet is None:
+        # Local fallback file for offline/dev testing
+        local_path = os.path.join(DATASET_DIR, "usage_local.json")
+        try:
+            with _usage_lock:
+                data = {}
+                if os.path.exists(local_path):
+                    with open(local_path, 'r', encoding='utf-8') as f:
+                        content = f.read().strip()
+                        if content:
+                            data = json.loads(content)
+                data[student_id] = count
+                with open(local_path, 'w', encoding='utf-8') as f:
+                    json.dump(data, f, indent=2)
+            print(f"[SUCCESS] Synced query count for {student_id} to local JSON file.")
+        except Exception as e:
+            print(f"[ERROR] Failed to sync query count for {student_id} to local JSON: {e}")
+        return
+    try:
+        cell = _usage_sheet.find(student_id, in_column=1)
+        if cell:
+            _usage_sheet.update_cell(cell.row, 2, count)
+        else:
+            _usage_sheet.append_row([student_id, count])
+        print(f"[SUCCESS] Synced query count for {student_id} to Google Sheet.")
+    except Exception as e:
+        print(f"[ERROR] Failed to sync usage for {student_id} to sheet: {e}")
+
+def record_query_use(student_id):
+    sid = str(student_id).strip().lower()
+    with _usage_lock:
+        count = _local_usage.get(sid, 0) + 1
+        _local_usage[sid] = count
+    
+    # Sync in a daemon thread so it runs in background without blocking query response
+    threading.Thread(target=_sync_usage_to_sheet, args=(sid, count), daemon=True).start()
+    return count
+
 try:
     _gc = gspread.service_account(filename=GSHEETS_CREDENTIALS_PATH)
     _sh = _gc.open(GSHEETS_SPREADSHEET_NAME)
@@ -166,13 +237,24 @@ try:
         _violations_sheet = _sh.add_worksheet(title="Violations", rows="1000", cols="3")
         _violations_sheet.append_row(["Student ID", "Violation Count", "Banned"])
         print(f"[SUCCESS] Created Violations worksheet.")
+
+    try:
+        _usage_sheet = _sh.worksheet("Usage")
+        print(f"[SUCCESS] Connected to Usage worksheet.")
+    except gspread.exceptions.WorksheetNotFound:
+        _usage_sheet = _sh.add_worksheet(title="Usage", rows="1000", cols="2")
+        _usage_sheet.append_row(["Student ID", "Query Count"])
+        print(f"[SUCCESS] Created Usage worksheet.")
         
     _load_violations_from_sheet()
+    _load_usage_from_sheet()
 except Exception as e:
     print(f"[WARNING] Failed to connect to Google Sheets: {e}")
     _feedback_sheet = None
     _violations_sheet = None
+    _usage_sheet = None
     _load_violations_from_sheet()
+    _load_usage_from_sheet()
 
 
 try:
@@ -449,6 +531,9 @@ def api_recommend():
 
     if not degree or not year or not department:
         return jsonify({"error": "Please the select Department."}), 400
+
+    # Log usage count for active student
+    record_query_use(student_id)
 
     # --- 2. AUTOMATED BACKGROUND LOOKUP ---
     automated_history = fetch_automatic_student_history(student_id) or []
