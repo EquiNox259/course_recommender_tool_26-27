@@ -32,3 +32,6 @@ output_pipeline_logger.py
 
 # Google Sheet JSON
 gsheets_service_account.json
+
+# Local Violations Database
+backend/dataset/violations_local.json

@@ -44,6 +44,20 @@
     <p class="hero-sub">Enter your profile to get personalised course recommendations</p>
   </div>
 
+  <!-- ─────────────── ACCOUNT BANNED CARD ─────────────────── -->
+  <div id="section-banned" class="card fade-up" style="display:none">
+    <div class="card-head" style="border-bottom: 2px solid var(--danger-color, #dc3545);">
+      <span class="sec-label" style="color: var(--danger-color, #dc3545);">Access Suspended</span>
+    </div>
+    <div class="divider-dash"></div>
+    <div id="banned-reason" class="entry-reason reason-no" style="margin: 15px 0; font-size: 1.1rem; line-height: 1.6; color: var(--danger-color, #dc3545);">
+      🚫 Your account has been suspended due to repeated policy violations.
+    </div>
+    <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 15px;">
+      If you believe this is a mistake, please contact the DAV Team administrators to appeal your suspension.
+    </p>
+  </div>
+
   <!-- ─────────────── STEP 1: Send OTP ─────────────────── -->
   <div id="section-send-otp" class="card fade-up">
     <div class="card-head">
@@ -315,6 +329,14 @@ async function api(path, body) {
     showOnly('section-send-otp');
     throw new Error(data.error || 'Please verify again');
   }
+  if (res.status === 403) {
+    const reasonEl = document.getElementById('banned-reason');
+    if (reasonEl) {
+      reasonEl.textContent = data.error || '🚫 Your account has been suspended due to repeated policy violations.';
+    }
+    showOnly('section-banned');
+    throw new Error(data.error || 'Account suspended');
+  }
   if (!res.ok) throw new Error(data.error || 'Request failed');
   return data;
 }
@@ -331,7 +353,7 @@ function showToast(msg, type='success') {
 
 /* ── Section visibility ─────────────────────────────────────── */
 function showOnly(id) {
-  ['section-send-otp','section-verify-otp','section-profile','section-manual-history','section-results']
+  ['section-send-otp','section-verify-otp','section-profile','section-manual-history','section-results','section-banned']
     .forEach(s => {
       const el = document.getElementById(s);
       if (el) el.style.display = (s === id) ? '' : 'none';
@@ -537,6 +559,10 @@ async function doSignOut() {
 function renderResults(data) {
   const { eligible, i_a_r, t_s_c, rejected,
           query_fallback, is_minor_mode, is_valid, reject_reason } = data;
+
+  if (data.violation_warning) {
+    showToast("⚠️ Warning: You have submitted multiple invalid queries. Your account will be suspended if you submit another.", "error");
+  }
 
   /* fallback alert */
   document.getElementById('fallback-alert').style.display = query_fallback ? '' : 'none';

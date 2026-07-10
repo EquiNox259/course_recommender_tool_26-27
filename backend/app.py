@@ -65,13 +65,115 @@ except Exception as e:
     print(f"[WARNING] Failed to pre-load student database: {e}")
     student_db = None
 
+import threading
+
+_local_violations = {}
+_violations_lock = threading.Lock()
+_violations_sheet = None
+
+from config import DATASET_DIR
+import json
+
+def _load_violations_from_sheet():
+    global _violations_sheet
+    if _violations_sheet is None:
+        # Local fallback file for offline/dev testing
+        local_path = os.path.join(DATASET_DIR, "violations_local.json")
+        if os.path.exists(local_path):
+            try:
+                with open(local_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                with _violations_lock:
+                    for sid, val in data.items():
+                        _local_violations[sid.lower()] = {
+                            "count": int(val.get("count", 0)),
+                            "banned": bool(val.get("banned", False))
+                        }
+                print(f"[SUCCESS] Loaded {len(_local_violations)} violation records from local JSON file.")
+            except Exception as e:
+                print(f"[ERROR] Failed to load local violations file: {e}")
+        return
+    try:
+        records = _violations_sheet.get_all_records()
+        with _violations_lock:
+            for r in records:
+                sid = str(r.get("Student ID", "")).strip().lower()
+                if sid:
+                    _local_violations[sid] = {
+                        "count": int(r.get("Violation Count", 0)),
+                        "banned": str(r.get("Banned", "")).strip().lower() == "true"
+                    }
+        print(f"[SUCCESS] Loaded {len(_local_violations)} violation records from Google Sheet.")
+    except Exception as e:
+        print(f"[ERROR] Failed to load violations from Google Sheet: {e}")
+
+def _sync_violation_to_sheet(student_id, count, banned):
+    global _violations_sheet
+    if _violations_sheet is None:
+        # Local fallback file for offline/dev testing
+        local_path = os.path.join(DATASET_DIR, "violations_local.json")
+        try:
+            with _violations_lock:
+                data = {}
+                if os.path.exists(local_path):
+                    with open(local_path, 'r', encoding='utf-8') as f:
+                        content = f.read().strip()
+                        if content:
+                            data = json.loads(content)
+                data[student_id] = {"count": count, "banned": banned}
+                with open(local_path, 'w', encoding='utf-8') as f:
+                    json.dump(data, f, indent=2)
+            print(f"[SUCCESS] Synced violation status for {student_id} to local JSON file.")
+        except Exception as e:
+            print(f"[ERROR] Failed to sync violation for {student_id} to local JSON: {e}")
+        return
+    try:
+        cell = _violations_sheet.find(student_id, in_column=1)
+        if cell:
+            _violations_sheet.update_cell(cell.row, 2, count)
+            _violations_sheet.update_cell(cell.row, 3, "true" if banned else "false")
+        else:
+            _violations_sheet.append_row([student_id, count, "true" if banned else "false"])
+        print(f"[SUCCESS] Synced violation status for {student_id} to Google Sheet.")
+    except Exception as e:
+        print(f"[ERROR] Failed to sync violation for {student_id} to sheet: {e}")
+
+def record_violation(student_id):
+    sid = str(student_id).strip().lower()
+    with _violations_lock:
+        rec = _local_violations.get(sid, {"count": 0, "banned": False})
+        rec["count"] += 1
+        if rec["count"] >= 4:
+            rec["banned"] = True
+        _local_violations[sid] = rec
+        count = rec["count"]
+        banned = rec["banned"]
+    
+    # Sync in a daemon thread so it runs in background without blocking query response
+    threading.Thread(target=_sync_violation_to_sheet, args=(sid, count, banned), daemon=True).start()
+    return count, banned
+
 try:
     _gc = gspread.service_account(filename=GSHEETS_CREDENTIALS_PATH)
-    _feedback_sheet = _gc.open(GSHEETS_SPREADSHEET_NAME).sheet1
+    _sh = _gc.open(GSHEETS_SPREADSHEET_NAME)
+    _feedback_sheet = _sh.sheet1
     print(f"[SUCCESS] Connected to feedback Google Sheet.")
+    
+    try:
+        _violations_sheet = _sh.worksheet("Violations")
+        print(f"[SUCCESS] Connected to Violations worksheet.")
+    except gspread.exceptions.WorksheetNotFound:
+        _violations_sheet = _sh.add_worksheet(title="Violations", rows="1000", cols="3")
+        _violations_sheet.append_row(["Student ID", "Violation Count", "Banned"])
+        print(f"[SUCCESS] Created Violations worksheet.")
+        
+    _load_violations_from_sheet()
 except Exception as e:
-    print(f"[WARNING] Failed to connect to feedback Google Sheet: {e}")
+    print(f"[WARNING] Failed to connect to Google Sheets: {e}")
     _feedback_sheet = None
+    _violations_sheet = None
+    _load_violations_from_sheet()
+
 
 try:
     _email_df = pd.read_csv(STUDENT_DATA_PATH, dtype=str)
@@ -230,6 +332,15 @@ def api_send_otp():
         return jsonify({}), 200
     data       = request.get_json() or {}
     student_id = str(data.get("student_id") or "").strip().lower()
+    
+    # Check if student is suspended
+    is_banned = False
+    with _violations_lock:
+        if student_id in _local_violations and _local_violations[student_id].get("banned"):
+            is_banned = True
+    if is_banned:
+        return jsonify({"error": "Access Denied: Your account has been suspended due to repeated policy violations."}), 403
+
     try:
         resolved_email = resolve_student_email(student_id)   # always validate roll number
         if derive_degree(student_id) != 'B.Tech.':
@@ -290,6 +401,14 @@ def api_verify_otp():
 
     student_id = payload["sid"]
 
+    # Check if student is suspended
+    is_banned = False
+    with _violations_lock:
+        if student_id in _local_violations and _local_violations[student_id].get("banned"):
+            is_banned = True
+    if is_banned:
+        return jsonify({"error": "Access Denied: Your account has been suspended due to repeated policy violations."}), 403
+
     # Auto-detect degree and year from student_id prefix so the frontend
     # can pre-fill the form fields without the student having to select them.
     default_degree = derive_degree(student_id)
@@ -314,6 +433,15 @@ def api_recommend():
     # --- 1. EXTRACT FROM INPUTS AND SLIDER PARAMETERS FIRST ---
     data       = request.get_json() or {}
     student_id = request.student_id
+    
+    # Check if student is suspended
+    is_banned = False
+    with _violations_lock:
+        if student_id in _local_violations and _local_violations[student_id].get("banned"):
+            is_banned = True
+    if is_banned:
+        return jsonify({"error": "Access Denied: Your account has been suspended due to repeated policy violations.", "is_banned": True}), 403
+
     degree     = data.get("degree", "")
     year       = data.get("year", "")
     department = data.get("department", "")
@@ -394,6 +522,7 @@ def api_recommend():
     except Exception as api_err:
         print(f"[OFFLINE FALLBACK] Token exhaustion detected. Trace: {api_err}")
     if is_valid == False:
+        count, banned = record_violation(student_id)
         return jsonify({
             "eligible":           [],
             "i_a_r":              [],
@@ -405,7 +534,10 @@ def api_recommend():
             "query_fallback":     query_fallback,
             "need_manual_history": False,
             "is_valid" : False,
-            "reject_reason": reject_reason
+            "reject_reason": reject_reason,
+            "violation_warning": True if count == 3 else False,
+            "violation_count": count,
+            "is_banned": banned
         })
 
     # --- Manual history (second phase) ---
