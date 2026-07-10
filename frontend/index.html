@@ -54,7 +54,7 @@
     <div class="field field-full">
       <input type="text" id="student_id_otp" placeholder=" " autocomplete="off"
              pattern="[0-9]{2}[bBdD][0-9]{4}" title="Format: 24b1001">
-      <label for="student_id_otp">Student ID</label>
+      <label for="student_id_otp">Roll Number</label>
     </div>
     <button class="btn-primary" id="send-otp-btn" onclick="doSendOtp()">
       <span class="btn-label">Send OTP &rarr;</span>
@@ -862,7 +862,6 @@ function buildEntry(c, section, isMinorMode, isLast) {
   else                             cls += 'entry-no';
   if (isLast) cls += ' entry-last';
   el.className = cls;
-  el.onclick = () => toggleEntry(el);
 
   /* data attributes */
   el.dataset.divisions   = JSON.stringify(c.divisions || []);
@@ -877,7 +876,7 @@ function buildEntry(c, section, isMinorMode, isLast) {
     el.dataset.credits = c.credits || 6;
     const defDiv = (c.divisions || [])[c.default_idx || 0] || {};
     el.dataset.slotNum  = defDiv.slot_num || 'N/A';
-    el.dataset.isMinor  = c.minor_only ? 'true' : 'false';
+    el.dataset.isMinor  = defDiv.is_minor ? 'true' : 'false';
   }
 
   const defDivObj = (c.divisions || [])[c.default_idx || 0] || {};
@@ -885,7 +884,7 @@ function buildEntry(c, section, isMinorMode, isLast) {
 
   /* ── minor label ── */
   const minorLabelHtml = (isMinorMode && c.minor_type)
-    ? `<span class="entry-minor-label">${esc(c.minor_type)}</span>`
+    ? `<span class="entry-minor-label" data-fixed="1">${esc(c.minor_type)}</span>`
     : (c.has_minor
         ? `<span class="entry-minor-label" ${!defIsMinor ? 'style="display:none"' : ''}>  Minor</span>`
         : '');
@@ -901,7 +900,7 @@ function buildEntry(c, section, isMinorMode, isLast) {
       ${minorLabelHtml}
       <span class="entry-actions" style="margin-left:auto;display:inline-flex;align-items:center;gap:6px;flex-shrink:0;">
         <button data-fav-code="${esc(c.code)}" class="fav-star-btn" style="background:none;border:none;cursor:pointer;font-size:20px;padding:4px;line-height:1;${starColor}outline:none;" onclick="event.stopPropagation(); toggleFavourite(this, '${esc(c.code)}', '${esc(c.name)}')">${starIcon}</button>
-        <span class="entry-chevron">&#9662;</span>
+        <span class="entry-chevron" onclick="event.stopPropagation(); toggleEntry(this.closest('.entry'))">&#9662;</span>
       </span>
     </div>`;
 
@@ -935,7 +934,7 @@ function buildEntry(c, section, isMinorMode, isLast) {
 
   /* ── minor-only registration note ── */
   if (c.has_minor) {
-    html += `<div class="minor-msg" ${!c.minor_only ? 'style="display:none"' : ''}>
+      html += `<div class="minor-msg" ${!defIsMinor ? 'style="display:none"' : ''}>
       &#9432;&nbsp;Minor electives are registered in a <strong>separate process before</strong>
       the regular registration window, and are allotted strictly on the basis of <strong>CPI</strong>
     </div>`;
@@ -950,6 +949,13 @@ function buildEntry(c, section, isMinorMode, isLast) {
             </div>
         `;
     }
+  }
+
+  /* ── high-demand course notice ── */
+  if (c.high_demand) {
+    html += `<div class="minor-msg">
+      &#9432;&nbsp;This is a <strong>High-Demand</strong> course. It has to be taken during <strong>pre-registration</strong>.
+    </div>`;
   }
 
   /* ── eligibility reason ── */
@@ -1097,7 +1103,8 @@ function switchDivision(sel) {
   entry.querySelector('.div-instructor').textContent = cleanInstructor(d.instructor || 'N/A');
 
   var minorLabel = entry.querySelector('.entry-minor-label');
-  if (minorLabel) minorLabel.style.display = d.is_minor ? 'inline' : 'none';
+  if (minorLabel && !minorLabel.dataset.fixed)
+    minorLabel.style.display = d.is_minor ? 'inline' : 'none';
 
   var clashMsg = entry.querySelector('.entry-clash-msg');
   var cw = d.clashes_with || [];
