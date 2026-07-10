@@ -284,6 +284,7 @@ const getApiBase = () => {
   return 'https://course-recommender-dav-team-703981894282.asia-south1.run.app';
 };
 const API_BASE = getApiBase();
+const AUTH_LIFETIME_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 /* ── Pending recommend args (for manual-history retry) ───────── */
 let _pendingRecommendArgs = null;
@@ -384,6 +385,7 @@ try {
       _authToken = data.token;
       sessionStorage.setItem('dav_token', _authToken);
       sessionStorage.setItem('dav_sid', data.student_id);
+      sessionStorage.setItem('dav_token_ts', Date.now().toString());
         // Dev bypass — treat exactly like a successful OTP verification
         if (data.default_degree) {
             const sel = document.getElementById('degree');
@@ -424,6 +426,7 @@ async function doVerifyOtp() {
     _authToken = data.token;
     sessionStorage.setItem('dav_token', _authToken);
     sessionStorage.setItem('dav_sid', data.student_id);
+    sessionStorage.setItem('dav_token_ts', Date.now().toString());
     // Pre-fill degree/year from student_id
     if (data.default_degree) {
       const sel = document.getElementById('degree');
