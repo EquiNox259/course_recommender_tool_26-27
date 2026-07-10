@@ -17,6 +17,7 @@ CORE_COURSES_PATH = os.path.join(DATASET_DIR, "ASC_Core_Courses.csv")
 MINOR_COURSES_PATH = os.path.join(DATASET_DIR, "ASC_Minor_Courses.csv")
 HIGH_DEMAND_COURSES_PATH = os.path.join(DATASET_DIR, "high_demand_courses_2026-27.csv")
 HIGH_DEMAND_CRITERIA_PATH = os.path.join(DATASET_DIR, "high_demand_criteria_2026-27.csv")
+PREREG_MINOR_PATH = os.path.join(DATASET_DIR, "ASC_Prereg_Minor_2026-27")
 SEMESTER = 'Autumn'
 GRADES_2024_PATH = os.path.join(DATASET_DIR, "Grades2024Autumn.csv")
 GRADES_2025_PATH = os.path.join(DATASET_DIR, "Grades2025Autumn.csv")
