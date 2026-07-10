@@ -2,7 +2,7 @@ import ast
 import numpy as np
 import re, os
 import pandas as pd
-from config import RUNNING_COURSES_PATH, RUNNING_COURSES_PATH_ALT, PREREQ_PATH, COURSES_HISTORY_PATH, CORE_COURSES_PATH, HIGH_DEMAND_COURSES_PATH, HIGH_DEMAND_CRITERIA_PATH, SEMESTER, GRADES_2024_PATH, GRADES_2025_PATH
+from config import RUNNING_COURSES_PATH, RUNNING_COURSES_PATH_ALT, PREREQ_PATH, COURSES_HISTORY_PATH, CORE_COURSES_PATH, HIGH_DEMAND_COURSES_PATH, HIGH_DEMAND_CRITERIA_PATH, PREREG_MINOR_PATH, SEMESTER, GRADES_2024_PATH, GRADES_2025_PATH
 from collections import defaultdict
 from datetime import datetime
 
@@ -742,6 +742,20 @@ if _cn_col:
         if _code and _name and _name.lower() not in ('nan', ''):
             _course_name_map.setdefault(_code, _name)
 
+# Courses listed on the External ASC minor pre-registration page WITHOUT the "Course has Pre-requisites/Equivalent" note 
+# External ASC does not enforce prereqs for these in minor pre-registration, so neither do we.
+try:
+    _df_prereg = pd.read_csv(PREREG_MINOR_PATH)
+    PREREG_PREREQ_EXEMPT = {
+        str(r['Course Code']).replace(' ', '').upper().strip()
+        for _, r in _df_prereg.iterrows()
+        if str(r['Prereq_Note']).strip().lower() == 'no'
+    }
+    print(f"[SUCCESS] Minor pre-reg prereq exemptions loaded: {len(PREREG_PREREQ_EXEMPT)} courses.")
+except Exception as e:
+    print(f"[WARNING] Failed to load minor pre-reg exemptions: {e}")
+    PREREG_PREREQ_EXEMPT = set()
+
 try:
     from config import MINOR_COURSES_PATH as _MINOR_PATH, RUNNING_COURSES_PATH as _META_PATH
     _df_meta_raw = pd.read_csv(_META_PATH)
@@ -1201,62 +1215,91 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
             continue
 
         # 4. Check prerequisite
-        p_status, p_remark, p_minor_prereq = check_prereq(
-            course_code=course_code,
-            course_hist=course_hist,
-            degree = Degree
-        )
+        if prefer_minor_division and course_code in PREREG_PREREQ_EXEMPT: # External ASC Exemption
+            p_status, p_remark, p_minor_prereq = 'Valid', '', None
 
-        if p_status != 'Valid':
-            meta = course_meta.get(course_code, {})
+        else:
+            p_status, p_remark, p_minor_prereq = check_prereq(
+                course_code=course_code,
+                course_hist=course_hist,
+                degree = Degree
+            )
 
-            if p_status == 'Instructor approval required' or p_status == 'Instructor approval is conditional':
-                divs_with_clash = [{
-                    **d,
-                    'clashes_with': (
-                        core_slot_to_courses.get(d.get('slot_num'), [])
-                        if d.get('slot_num') and d.get('slot_num') not in ('N/A', 'L', 'X')
-                        else []
-                    )
-                } for d in divs]
+            if p_status != 'Valid':
+                meta = course_meta.get(course_code, {})
 
-                if prefer_minor_division:
-                    non_m = [d for d in divs_with_clash if d['is_minor']] or divs_with_clash
+                if p_status == 'Instructor approval required' or p_status == 'Instructor approval is conditional':
+                    divs_with_clash = [{
+                        **d,
+                        'clashes_with': (
+                            core_slot_to_courses.get(d.get('slot_num'), [])
+                            if d.get('slot_num') and d.get('slot_num') not in ('N/A', 'L', 'X')
+                            else []
+                        )
+                    } for d in divs]
+
+                    if prefer_minor_division:
+                        non_m = [d for d in divs_with_clash if d['is_minor']] or divs_with_clash
+                    else:
+                        non_m = [d for d in divs_with_clash if not d['is_minor']] or divs_with_clash
+                    all_clash = all(bool(d['clashes_with']) for d in non_m)
+
+                    if all_clash:
+                        default_div = next((d for d in non_m if not d['clashes_with']), non_m[0])
+                        default_idx = next(i for i, d in enumerate(divs_with_clash) if d is default_div)
+                        t_s_c_courses.append({
+                            "code": course_code,
+                            "name": course_name,
+                            "divisions": divs_with_clash,
+                            "has_minor": has_minor,
+                            "minor_only": minor_only,
+                            "slot": meta.get("slot", "N/A"),
+                            "instructor": meta.get("instructor", "N/A"),
+                            "description": meta.get("description", ""),
+                            "default_idx": default_idx,
+                            "equiv": equiv_map.get(course_code.replace(' ', ''), {'regular': [], 'minor': []}),
+                            "score": course.get("score", 0),
+                            "clashing_with": default_div['clashes_with'],
+                            "raw_rrf": course.get("raw_rrf"),
+                            "raw_ps": course.get("raw_ps"),
+                            "norm_rrf": course.get("norm_rrf"),
+                            "norm_ps": course.get("norm_ps"),
+                            "final_score": course.get("raw_ts"),
+                            "grade_stats": grade_stats_db.get(course_code, None),
+                            "minor_remark": course.get("minor_remark"),
+                            "high_demand": course["high_demand"],
+                        })
+                    else:
+                        reason = (p_remark if p_remark
+                                    else p_status if p_status == 'Instructor approval required'
+                                    else p_status + '. Contact them for more info.' if p_status == 'Instructor approval is conditional'
+                                    else '')
+                        i_a_r_courses.append({
+                            "code": course_code,
+                            "name": course_name,
+                            "divisions": divs,
+                            "has_minor": has_minor,
+                            "minor_only": minor_only,
+                            "slot": meta.get("slot", "N/A"),
+                            "instructor": meta.get("instructor", "N/A"),
+                            "description": meta.get("description", ""),
+                            "equiv": equiv_map.get(course_code.replace(' ', ''), {'regular': [], 'minor': []}),
+                            "score": course.get("score", 0),
+                            "reason": reason,
+                            "remark": p_remark,
+                            "minor_prereq": p_minor_prereq,
+                            "raw_rrf": course.get("raw_rrf"),
+                            "raw_ps": course.get("raw_ps"),
+                            "norm_rrf": course.get("norm_rrf"),
+                            "norm_ps": course.get("norm_ps"),
+                            "final_score": course.get("raw_ts"),
+                            "grade_stats": grade_stats_db.get(course_code, None),
+                            "minor_remark": course.get("minor_remark"),
+                            "high_demand": course["high_demand"],
+                        })
+
                 else:
-                    non_m = [d for d in divs_with_clash if not d['is_minor']] or divs_with_clash
-                all_clash = all(bool(d['clashes_with']) for d in non_m)
-
-                if all_clash:
-                    default_div = next((d for d in non_m if not d['clashes_with']), non_m[0])
-                    default_idx = next(i for i, d in enumerate(divs_with_clash) if d is default_div)
-                    t_s_c_courses.append({
-                        "code": course_code,
-                        "name": course_name,
-                        "divisions": divs_with_clash,
-                        "has_minor": has_minor,
-                        "minor_only": minor_only,
-                        "slot": meta.get("slot", "N/A"),
-                        "instructor": meta.get("instructor", "N/A"),
-                        "description": meta.get("description", ""),
-                        "default_idx": default_idx,
-                        "equiv": equiv_map.get(course_code.replace(' ', ''), {'regular': [], 'minor': []}),
-                        "score": course.get("score", 0),
-                        "clashing_with": default_div['clashes_with'],
-                        "raw_rrf": course.get("raw_rrf"),
-                        "raw_ps": course.get("raw_ps"),
-                        "norm_rrf": course.get("norm_rrf"),
-                        "norm_ps": course.get("norm_ps"),
-                        "final_score": course.get("raw_ts"),
-                        "grade_stats": grade_stats_db.get(course_code, None),
-                        "minor_remark": course.get("minor_remark"),
-                        "high_demand": course["high_demand"],
-                    })
-                else:
-                    reason = (p_remark if p_remark
-                                else p_status if p_status == 'Instructor approval required'
-                                else p_status + '. Contact them for more info.' if p_status == 'Instructor approval is conditional'
-                                else '')
-                    i_a_r_courses.append({
+                    rejected_courses.append({
                         "code": course_code,
                         "name": course_name,
                         "divisions": divs,
@@ -1267,7 +1310,7 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
                         "description": meta.get("description", ""),
                         "equiv": equiv_map.get(course_code.replace(' ', ''), {'regular': [], 'minor': []}),
                         "score": course.get("score", 0),
-                        "reason": reason,
+                        "reason": p_status,
                         "remark": p_remark,
                         "minor_prereq": p_minor_prereq,
                         "raw_rrf": course.get("raw_rrf"),
@@ -1279,32 +1322,7 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
                         "minor_remark": course.get("minor_remark"),
                         "high_demand": course["high_demand"],
                     })
-
-            else:
-                rejected_courses.append({
-                    "code": course_code,
-                    "name": course_name,
-                    "divisions": divs,
-                    "has_minor": has_minor,
-                    "minor_only": minor_only,
-                    "slot": meta.get("slot", "N/A"),
-                    "instructor": meta.get("instructor", "N/A"),
-                    "description": meta.get("description", ""),
-                    "equiv": equiv_map.get(course_code.replace(' ', ''), {'regular': [], 'minor': []}),
-                    "score": course.get("score", 0),
-                    "reason": p_status,
-                    "remark": p_remark,
-                    "minor_prereq": p_minor_prereq,
-                    "raw_rrf": course.get("raw_rrf"),
-                    "raw_ps": course.get("raw_ps"),
-                    "norm_rrf": course.get("norm_rrf"),
-                    "norm_ps": course.get("norm_ps"),
-                    "final_score": course.get("raw_ts"),
-                    "grade_stats": grade_stats_db.get(course_code, None),
-                    "minor_remark": course.get("minor_remark"),
-                    "high_demand": course["high_demand"],
-                })
-            continue
+                continue
 
 
         # 5. Check slot clash , per division, if applicable
