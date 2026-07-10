@@ -1,8 +1,8 @@
 import ast
 import numpy as np
-import re
+import re, os
 import pandas as pd
-from config import RUNNING_COURSES_PATH, RUNNING_COURSES_PATH_ALT, PREREQ_PATH, COURSES_HISTORY_PATH, CORE_COURSES_PATH, SEMESTER, GRADES_2024_PATH, GRADES_2025_PATH
+from config import RUNNING_COURSES_PATH, RUNNING_COURSES_PATH_ALT, PREREQ_PATH, COURSES_HISTORY_PATH, CORE_COURSES_PATH, HIGH_DEMAND_COURSES_PATH, HIGH_DEMAND_CRITERIA_PATH, SEMESTER, GRADES_2024_PATH, GRADES_2025_PATH
 from collections import defaultdict
 from datetime import datetime
 
@@ -473,7 +473,7 @@ def check_prereq(course_code,course_hist,degree = None, data=df_prereq):
         missing = [c for c in extra_prereqs
                    if c not in course_hist and c.rstrip('M') not in course_hist]
         if missing:
-            extra_status = f'Prerequisite not met. You need to complete {" AND ".join(missing)}.'
+            extra_status = f'Prerequisite not met. You need to complete {" AND ".join(missing)}. Contact Department Office for more info.'
 
     if remark_has_approval and approval not in ('Required', 'Conditional'):
         approval = 'Required'
@@ -506,7 +506,7 @@ def check_prereq(course_code,course_hist,degree = None, data=df_prereq):
           else:
             return extra_status or 'Valid', remark, minor_prereq
         else:
-          return f'Prerequisite not met. You need to complete {prereq}.', remark, minor_prereq
+          return f'Prerequisite not met. You need to complete {prereq}. Contact Department Office for more info.', remark, minor_prereq
     # some boolean expression (i.e. AND , OR)
     else:
       pre_course = re.findall(pattern, prereq)
@@ -522,13 +522,13 @@ def check_prereq(course_code,course_hist,degree = None, data=df_prereq):
                 return 'Instructor approval is conditional', remark, minor_prereq
             else:
                 return extra_status or 'Valid', remark, minor_prereq
-        return f'Prerequisite not met. You need to complete {prereq}.', remark, minor_prereq
+        return f'Prerequisite not met. You need to complete {prereq}. Contact Department Office for more info.', remark, minor_prereq
 
       # if prereq only contain AND
       elif 'OR' not in l and 'AND' in l:
         for i in pre_course:
           if i not in course_hist:
-            return f'Prerequisite not met. You need to complete {prereq}.', remark, minor_prereq
+            return f'Prerequisite not met. You need to complete {prereq}. Contact Department Office for more info.', remark, minor_prereq
         if approval == 'Required':
             return 'Instructor approval required', remark, minor_prereq
         elif approval == 'Conditional':
@@ -619,6 +619,56 @@ def check_clash(course_code, core_slot_to_courses):
 def norm_code(x):
     s = str(x).replace(" ", "").upper().strip()
     return re.sub(r'-\d{4}$', '', s)
+
+# ── High-Demand courses ──────────────────────────────────
+high_demand_codes = set()
+if os.path.exists(HIGH_DEMAND_COURSES_PATH):
+    _df_hd_courses = pd.read_csv(HIGH_DEMAND_COURSES_PATH)
+    high_demand_codes = set(_df_hd_courses["Course Code"].apply(norm_code))
+else:
+    print(f"[WARNING] {HIGH_DEMAND_COURSES_PATH} not found -- no courses will be tagged high-demand.")
+
+high_demand_criteria = {}
+if os.path.exists(HIGH_DEMAND_CRITERIA_PATH):
+    _df_hd_criteria = pd.read_csv(HIGH_DEMAND_CRITERIA_PATH)
+    _df_hd_criteria["_code_norm"] = _df_hd_criteria["Course Code"].apply(norm_code)
+    for code, group in _df_hd_criteria.groupby("_code_norm"):
+        high_demand_criteria[code] = group[
+            ["Batch Year", "Department", "Program", "Acad Category", "Lower CPI", "Upper CPI"]
+        ].fillna("").to_dict("records")
+else:
+    print(f"[WARNING] {HIGH_DEMAND_CRITERIA_PATH} not found -- Path 4 will tag "
+          f"courses as high-demand but won't enforce any Batch/Department/CPI "
+          f"criteria until this file exists.")
+
+
+def check_high_demand(course_code, degree, year, department):
+    """
+    Batch Year / Department / Degree eligibility for
+    High-Demand courses, sourced from the Pre-Registration Criteria page.
+
+    Returns:
+        None    -- not a high-demand course.
+        'Valid' -- eligible under at least one criteria row (or no data on file).
+        <str>   -- a rejection reason, same convention as check_restriction/check_prereq.
+    """
+    code = norm_code(course_code)
+    if code not in high_demand_codes:
+        return None
+
+    rows = high_demand_criteria.get(code, [])
+    if not rows:
+        return 'Valid'
+
+    for row in rows:
+        batch_ok = row["Batch Year"] == "ALL" or str(year) in str(row["Batch Year"])
+        dept_ok  = not row["Department"] or department in row["Department"]
+        prog_ok  = not row["Program"] or degree in row["Program"]
+        if batch_ok and dept_ok and prog_ok:
+            return 'Valid'
+
+    return 'Not eligible for this High-Demand course under the current Pre-Registration Criteria.'
+
 
 def get_core_courses_for_bucket(degree, department, batch_year):
     """
@@ -1108,14 +1158,23 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
         has_minor  = any(d['is_minor'] for d in divs)
         minor_only = all(d['is_minor'] for d in divs) and bool(divs)
 
-        # 3. Check restriction
         if norm_code(course_code) in course_hist_norm:
             continue
 
+        course["high_demand"] = norm_code(course_code) in high_demand_codes
+
+        # 3. Check restriction -- for High-Demand courses, the Pre-Registration
+        # Criteria takes precedence over the regular course-metadata
+        # Restriction column whenever the two disagree.
         r_status = 'Valid' if any(vd[1] == 'Valid' for vd in valid_divs) else valid_divs[0][1]
-        
+
+        if course["high_demand"]:
+            hd_status = check_high_demand(course_code, Degree, year, department)
+            if hd_status is not None:
+                r_status = hd_status
+
         if r_status != 'Valid':
-            if 'year students' in r_status or r_status == 'Restricted':
+            if 'year students' in r_status or r_status == 'Restricted' or course["high_demand"]:
                 meta = course_meta.get(course_code, {})
                 print(course_code, "GOING TO REJECTED")
                 rejected_courses.append({
@@ -1124,6 +1183,7 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
                     "divisions":  divs,
                     "has_minor":  has_minor,
                     "minor_only": minor_only,
+                    "high_demand": course["high_demand"],
                     "slot": meta.get("slot", "N/A"),
                     "instructor": meta.get("instructor", "N/A"),
                     "description": meta.get("description", ""),
@@ -1139,6 +1199,7 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
                     "minor_remark": course.get("minor_remark")
                 })
             continue
+
         # 4. Check prerequisite
         p_status, p_remark, p_minor_prereq = check_prereq(
             course_code=course_code,
@@ -1187,7 +1248,8 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
                         "norm_ps": course.get("norm_ps"),
                         "final_score": course.get("raw_ts"),
                         "grade_stats": grade_stats_db.get(course_code, None),
-                        "minor_remark": course.get("minor_remark")
+                        "minor_remark": course.get("minor_remark"),
+                        "high_demand": course["high_demand"],
                     })
                 else:
                     reason = (p_remark if p_remark
@@ -1214,7 +1276,8 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
                         "norm_ps": course.get("norm_ps"),
                         "final_score": course.get("raw_ts"),
                         "grade_stats": grade_stats_db.get(course_code, None),
-                        "minor_remark": course.get("minor_remark")
+                        "minor_remark": course.get("minor_remark"),
+                        "high_demand": course["high_demand"],
                     })
 
             else:
@@ -1238,7 +1301,8 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
                     "norm_ps": course.get("norm_ps"),
                     "final_score": course.get("raw_ts"),
                     "grade_stats": grade_stats_db.get(course_code, None),
-                    "minor_remark": course.get("minor_remark")
+                    "minor_remark": course.get("minor_remark"),
+                    "high_demand": course["high_demand"],
                 })
             continue
 
@@ -1276,7 +1340,8 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
                 "norm_rrf": course.get("norm_rrf"),
                 "norm_ps": course.get("norm_ps"),
                 "final_score": course.get("raw_ts"),
-                "grade_stats": grade_stats_db.get(course_code, None)
+                "grade_stats": grade_stats_db.get(course_code, None),
+                "high_demand": course["high_demand"],
             }
         
         if all_clash:
@@ -1306,7 +1371,8 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
     "norm_ps": course.get("norm_ps"),
     "final_score": course.get("raw_ts"),
     "grade_stats": grade_stats_db.get(course_code, None),
-    "minor_remark": course.get("minor_remark")
+    "minor_remark": course.get("minor_remark"),
+    "high_demand": course["high_demand"],
 })
     print("Eligible list:")
     print([c["code"] for c in eligible_courses])
