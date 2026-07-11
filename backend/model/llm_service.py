@@ -27,17 +27,17 @@ class ValidCourses(BaseModel):
 
 class LLMService:
     def __init__(self):
-        api_key = os.getenv("GEMINI_API_KEY")        
-        if not api_key:
-   
-            api_key = "AIzaSyCVVo74-qZs-1wjsl5ckHMUQpkAbE1izP0"
-            ###api_key = "AQ.Ab8RN6IKdyxwOq-0OWxsN_2GpHavltBqwUTkNe_vlrj9HKcw2w"
-            
-        if not api_key:
-            self.client = None
-        else:
-            # Pass the key explicitly into the Client constructor
+        api_key = os.getenv("GEMINI_API_KEY")
+        if api_key:
+            # Local dev: AI Studio key from .env
             self.client = genai.Client(api_key=api_key)
+        else:
+            # Production: Agent Platform (Vertex) via the runtime service account
+            self.client = genai.Client(
+                vertexai=True,
+                project=os.environ.get("GOOGLE_CLOUD_PROJECT", "project-36fcd4f8-2381-4cd1-9f2"),
+                location=os.environ.get("GOOGLE_CLOUD_LOCATION", "global"),
+            )
 
     def filter_courses(self, original_query: str, search_intent: dict, candidate_courses: list) -> str:
         """
