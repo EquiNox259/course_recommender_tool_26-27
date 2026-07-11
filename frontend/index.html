@@ -165,6 +165,10 @@
           <li>Department + Exclusion → "AI courses from CS excluding EE"</li>
           <li>Everything Together → "Easy grading CS minor courses on Computer Security excluding XY 123"</li>
         </ul>
+        <p style="margin: 10px 0 0 0;"><strong>Favourites:</strong> Tap the star on any course card to save it.
+          Your recommendations are checked for time-slot clashes against your <em>favourite</em> courses too,
+          not just your core courses. Open <strong>Favourites</strong> in the top bar anytime to review
+          their eligibility and clashes.</p>
       </div>
     </div>
 
@@ -1005,11 +1009,15 @@ function buildEntry(c, section, isMinorMode, isLast) {
   }
 
   if ((c.norm_ps || 0) > 0) {
+    const _batch = parseInt(document.getElementById('year').value, 10);
+    const _now   = new Date();
+    const _acadYear = _now.getMonth() >= 6 ? _now.getFullYear() : _now.getFullYear() - 1;
+    const _psLabel  = (_acadYear - _batch === 1) ? 'Popularity Score' : 'Co-enrollment Score';
     scores.push(
-      `<span><strong>People Score</strong>: ${((c.norm_ps || 0) * 100).toFixed(1)}% &nbsp</span>`
+      `<span><strong>${_psLabel}</strong>: ${((c.norm_ps || 0) * 100).toFixed(1)}% &nbsp</span>`
     );
   }
-
+  
   if ((c.final_score || 0) > 0) {
     scores.push(
       `<span><strong>Final Score</strong>: ${((c.final_score || 0) * 100).toFixed(1)}%</span>`
