@@ -87,7 +87,7 @@
         </p>
         <ul>
           <li>
-            <strong>People's Score (PS)</strong>: captures collective intelligence
+            <strong>Popularity/Co-enrollment Score (PS)</strong>: captures collective intelligence
             by analysing enrollment overlap across the student body. It answers:
             <em>"What courses did students with a similar history tend to take?"</em>
           </li>
@@ -160,12 +160,26 @@
       </h2>
 
       <!-- 2.1 PS -->
-      <h3 class="doc-subsection-title" id="ps">2.1 People's Score (PS)</h3>
+      <h3 class="doc-subsection-title" id="ps">2.1 Popularity/Co-enrollment Score (PS)</h3>
       <div class="doc-body">
         <p>
-          The People's Score measures co-enrollment similarity between two courses,
-          based on seniors' inputs. For a course <em>h</em> in the
-          student's history and a candidate course <em>c</em>:
+          This score goes by two names, because it works slightly differently depending on
+          your year of study:
+        </p>
+        <ul>
+          <li>
+            <strong>Popularity Score (Only for Sophies):</strong> since you have mostly
+            completed common first-year courses so far, comparing your history against the
+            entire student body would not say much. Instead, the score looks only at seniors
+            from your own department.
+          </li>
+          <li>
+            <strong>Co-enrollment Score:</strong> your full course history is
+            compared against the enrollment records of all students across all courses.
+          </li>
+        </ul>
+        <p>
+          For a course <em>h</em> in the student's history and a candidate course <em>c</em>:
         </p>
       </div>
       <div class="formula-block">
@@ -365,13 +379,19 @@
           The results page displays course entries grouped into the four
           eligibility sections. Each entry can be expanded to show the full
           course description. A division dropdown (where applicable) updates the
-          displayed slot, instructor, and eligibility status in real time.
-
+          displayed slot, instructor, and eligibility status in real time. </p>
+        <p>
           Expanding any entry reveals year-wise
           <strong>grading statistics</strong> in the form of pie charts of grade distributions with
           %AP, %AA, and %(AA+AB), along with the full course description. Only the statistics
-          corresponding to the selected division type are shown.
-
+          corresponding to the selected division type are shown. </p>
+          <p>
+          Any course can also be starred as a 
+          <strong>favourite</strong>. Favourites are remembered on your device and can be reviewed anytime 
+          from the Favourites tab, and every new set of recommendations is checked for time-slot clashes against your
+          favourite courses as well, not just your core courses. The favourite-specific eligibility engine results
+          can be viewed in the favourites section exclusively. </p>
+          <p>
           All course-related information has been taken from the <strong>Internal ASC Portal</strong>.
         </p>
       </div>
@@ -389,7 +409,7 @@
         </li>
         <li>
           <strong>ii.</strong> Every recommended course is validated against department restrictions,
-          prerequisite expressions, and time-slot constraints before display.
+          prerequisite expressions, and time-slot constraints before display. This is also valid for courses marked as "Favourite".
         </li>
         <li>
           <strong>iii.</strong> Division-level navigation allows students to check time-slot clash,
