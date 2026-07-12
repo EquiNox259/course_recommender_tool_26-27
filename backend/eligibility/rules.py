@@ -35,18 +35,106 @@ df.rename(columns=rename_map, inplace=True)
 
 # Build slot-number lookup from running courses: course_code -> set of slot numbers
 # (a course may appear in multiple divisions with different slots)
-def extract_slot_num(slot_str):
-    """Returns the slot number (e.g. '4', '11', 'L') from a raw Slot cell."""
+_SLOT_TOKEN_RE = re.compile(r'-(L[1-6X]|X[123ABE]|XE|[0-9]{1,2}[A-C]?)-')
+
+def extract_slot_labels(slot_str):
     if pd.isna(slot_str) or not str(slot_str).strip():
-        return None
-    first = str(slot_str).strip().split('\n')[0].strip()
-    return first if first else None
+        return frozenset()
+    labels = set()
+    lines = str(slot_str).strip().split('\n')
+    head = lines[0].strip().replace(' ', '').upper()
+    if head in SLOT_MEETINGS or head in SLOT_COMPOSITE:   # '11', '6B', 'X'… but not bare 'L'
+        labels.add(head)
+    for ln in lines[1:]:
+        m = _SLOT_TOKEN_RE.search(ln)
+        if m:
+            labels.add(m.group(1).upper())
+    return frozenset(labels)
+
+def extract_slot_num(slot_str):
+    labels = extract_slot_labels(slot_str)
+    return next(iter(sorted(labels)), None)
+
+# ── Slot timetable model ──────────────
+''' Change the hard-coded dict as per the semester-wise time-table released by the Academic Office.'''
+_DAY = {'MON': 0, 'TUE': 1, 'WED': 2, 'THU': 3, 'FRI': 4}
+def _mt(day, start, end):
+    return (_DAY[day], start, end)          # minutes since midnight
+
+SLOT_MEETINGS = {
+    # Monday
+    'XE': [_mt('MON', 480, 565)],
+    '1A': [_mt('MON', 570, 625)], '2A': [_mt('MON', 635, 690)], '3A': [_mt('MON', 695, 750)],
+    '8A': [_mt('MON', 840, 925)], '9A': [_mt('MON', 930, 1015)],
+    'L1': [_mt('MON', 840, 1015)], '12A': [_mt('MON', 1025, 1080)],
+    # Tuesday
+    '4A': [_mt('TUE', 480, 565)],
+    '1B': [_mt('TUE', 570, 625)], '2B': [_mt('TUE', 635, 690)], '3B': [_mt('TUE', 695, 750)],
+    '10A': [_mt('TUE', 840, 925)], '11A': [_mt('TUE', 930, 1015)],
+    'L2': [_mt('TUE', 840, 1015)], '12B': [_mt('TUE', 1025, 1080)],
+    # Wednesday
+    '5A': [_mt('WED', 480, 565)],
+    '6A': [_mt('WED', 570, 655)], '7A': [_mt('WED', 665, 750)], 'L5': [_mt('WED', 570, 750)],
+    'X1': [_mt('WED', 840, 895)], 'X2': [_mt('WED', 900, 955)], 'X3': [_mt('WED', 960, 1015)],
+    'LX': [_mt('WED', 840, 1015)], 'XA': [_mt('WED', 1025, 1080)],
+    # Thursday
+    '4B': [_mt('THU', 480, 565)],
+    '1C': [_mt('THU', 570, 625)], '2C': [_mt('THU', 635, 690)], '3C': [_mt('THU', 695, 750)],
+    '8B': [_mt('THU', 840, 925)], '9B': [_mt('THU', 930, 1015)],
+    'L3': [_mt('THU', 840, 1015)], '12C': [_mt('THU', 1025, 1080)],
+    # Friday
+    '5B': [_mt('FRI', 480, 565)],
+    '6B': [_mt('FRI', 570, 655)], '7B': [_mt('FRI', 665, 750)], 'L6': [_mt('FRI', 570, 750)],
+    '10B': [_mt('FRI', 840, 925)], '11B': [_mt('FRI', 930, 1015)],
+    'L4': [_mt('FRI', 840, 1015)], 'XB': [_mt('FRI', 1025, 1080)],
+}
+
+# A bare number means all its lettered sessions across the week
+SLOT_COMPOSITE = {
+    '1': ['1A','1B','1C'], '2': ['2A','2B','2C'], '3': ['3A','3B','3C'],
+    '4': ['4A','4B'],  '5': ['5A','5B'],  '6': ['6A','6B'],  '7': ['7A','7B'],
+    '8': ['8A','8B'],  '9': ['9A','9B'], '10': ['10A','10B'], '11': ['11A','11B'],
+    '12': ['12A','12B','12C'], 'X': ['X1','X2','X3'],
+}
+
+def _slot_meetings(label):
+    if not label:
+        return []
+    lab = str(label).replace(' ', '').upper()
+    if lab in SLOT_MEETINGS:
+        return SLOT_MEETINGS[lab]
+    if lab in SLOT_COMPOSITE:
+        return [m for sub in SLOT_COMPOSITE[lab] for m in SLOT_MEETINGS[sub]]
+    return []   # unknown label ('N/A', bare 'L', free text) → cannot assert a clash
+
+from functools import lru_cache
+@lru_cache(maxsize=None)
+def slots_clash(a, b):
+    """True iff any meeting of slot-label a overlaps any meeting of slot-label b."""
+    for d1, s1, e1 in _slot_meetings(a):
+        for d2, s2, e2 in _slot_meetings(b):
+            if d1 == d2 and s1 < e2 and s2 < e1:
+                return True
+    return False
+
+def clashing_core(slot_labels, core_slot_to_courses):
+    """All core courses whose slots overlap any of the given label(s) in time."""
+    if not slot_labels:
+        return []
+    if isinstance(slot_labels, str):
+        slot_labels = (slot_labels,)
+    out = []
+    for lab in slot_labels:
+        for core_slot, courses in core_slot_to_courses.items():
+            if slots_clash(lab, core_slot):
+                out.extend(c for c in courses if c not in out)
+    return out
 
 running_slot_map = {}
 for _, _row in df.iterrows():
     _code = str(_row['Course Code']).replace(" ", "").upper().strip()
-    _sn   = extract_slot_num(_row['Slot'])
-    if _sn:
+    _sns = extract_slot_labels(_row['Slot'])
+    for _sn in _sns:
         running_slot_map.setdefault(_code, set()).add(_sn)
 
 # course_meta : one default entry per code (first non-minor row)
@@ -59,6 +147,7 @@ for _, row in df.iterrows():
     _raw[code].append({
         "slot":        str(row.get('Slot',        'N/A')),
         "slot_num":    extract_slot_num(row.get('Slot', '')),
+        "slot_labels": sorted(extract_slot_labels(row.get('Slot', ''))),
         "instructor":  str(row.get('Instructor',  'N/A')).strip(),
         "description": str(row.get('Description', '')),
         "credits":     int(float(str(row.get('Credits', '') or '').strip() or 6)),
@@ -611,10 +700,8 @@ def check_prereq(course_code,course_hist,degree = None, data=df_prereq):
       return f'Prerequisite not met. You need to complete {prereq}.', remark, minor_prereq
     
 def check_clash(course_code, core_slot_to_courses):
-    slot_num = extract_slot_num(course_meta.get(course_code, {}).get("slot", ""))
-    if not slot_num or slot_num in ("N/A", "L", "X"):
-        return []
-    return core_slot_to_courses.get(slot_num, [])
+    labels = extract_slot_labels(course_meta.get(course_code, {}).get("slot", ""))
+    return clashing_core(labels, core_slot_to_courses)
     
 def norm_code(x):
     s = str(x).replace(" ", "").upper().strip()
@@ -1112,15 +1199,41 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
         ].iterrows()
     }
 
+    # ── Branch-wise division allocation for multi-division core courses ─────────
+    # Division label → dept abbreviations (same token set as _REMARK_DEPT_ABBREVS).
+    # Update per semester alongside the slot table.
+    CORE_DIVISION_BRANCHES = {
+        'DE250': {
+            'S1': {'AE', 'CS', 'EN', 'CH'},
+            'S2': {'CE', 'GP', 'MM', 'IE'},
+        },
+    }
+
     course_hist_norm = {norm_code(c) for c in course_hist}
+    student_abbrevs = _DEPT_TO_ABBREVS.get(department, set())
     core_slot_to_courses = {}
     for _, crow in dept_core.iterrows():
         code_norm = norm_code(crow['Course Code'])
         code_orig = str(crow['Course Code']).strip()
         if code_norm in course_hist_norm:
             continue
-        for sn in running_slot_map.get(code_orig.replace(" ", "").upper(), set()):
-            core_slot_to_courses.setdefault(sn, []).append(code_orig)
+        code_key = code_orig.replace(" ", "").upper()
+        div_map  = CORE_DIVISION_BRANCHES.get(code_key)
+        divs     = course_divisions.get(code_key, [])
+        if div_map and divs:
+            # Only the division(s) allocated to this student's branch contribute slots
+            for d in divs:
+                allowed = div_map.get(str(d.get('division', '')).strip().upper())
+                if allowed is None or (student_abbrevs & allowed):
+                    for sn in (d.get('slot_labels') or []):
+                        bucket = core_slot_to_courses.setdefault(sn, [])
+                        if code_orig not in bucket:
+                            bucket.append(code_orig)
+        else:
+            for sn in running_slot_map.get(code_key, set()):
+                bucket = core_slot_to_courses.setdefault(sn, [])
+                if code_orig not in bucket:
+                    bucket.append(code_orig)
 
     eligible_courses = []
     rejected_courses = []
@@ -1231,11 +1344,7 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
                 if p_status == 'Instructor approval required' or p_status == 'Instructor approval is conditional':
                     divs_with_clash = [{
                         **d,
-                        'clashes_with': (
-                            core_slot_to_courses.get(d.get('slot_num'), [])
-                            if d.get('slot_num') and d.get('slot_num') not in ('N/A', 'L', 'X')
-                            else []
-                        )
+                        'clashes_with': clashing_core(d.get('slot_labels') or d.get('slot_num'), core_slot_to_courses),
                     } for d in divs]
 
                     if prefer_minor_division:
@@ -1329,11 +1438,7 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
         meta = course_meta.get(course_code, {})
         divs_with_clash = [{
             **d,
-            'clashes_with': (
-                core_slot_to_courses.get(d.get('slot_num'), [])
-                if d.get('slot_num') and d.get('slot_num') not in ('N/A', 'L', 'X')
-                else []
-            )
+            'clashes_with': clashing_core(d.get('slot_labels') or d.get('slot_num'), core_slot_to_courses),
         } for d in divs]
 
         non_m = [d for d in divs_with_clash if not d['is_minor']] or divs_with_clash
