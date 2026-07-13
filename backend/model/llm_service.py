@@ -11,6 +11,7 @@ class Constraints(BaseModel):
     minor: list[str] = Field(default_factory=list, description="Minor basket(s) the user wants recommendations from")
     easy_grading: bool = Field(default=False, description="True if the user explicitly asks for easy grading, GPA booster, etc.")
     popular: bool = Field(default=False, description="True if the user explicitly asks for popular courses using the keywords 'popular' or 'popularity'")
+    common_only: bool = Field(default=False, description="True if the user explicitly asks for courses common to / shared between / in the intersection of multiple specified minors")
 
 class QueryOptimization(BaseModel):
     is_valid: bool = Field(description="True if query contains genuine academic intent, False otherwise")
@@ -154,7 +155,8 @@ class LLMService:
             "- exclude_courses: Specific course codes that should not be recommended.\n"
             "- minor: Minor basket(s) the user wants recommendations from.\n"
             "- easy_grading: Set to true only if the user explicitly asks for easy grading, high CPI, GPA booster, light workload, easy courses, scoring courses, or similar.\n"
-            "- popular: Set to true only if the user explicitly uses the keyword 'popular' or 'popularity' to ask for popular or highly taken courses.\n\n"
+            "- popular: Set to true only if the user explicitly uses the keyword 'popular' or 'popularity' to ask for popular or highly taken courses.\n"
+            "- common_only: Set to true only if the user explicitly asks for courses common to / shared between / in the intersection of multiple minors (e.g. 'courses common to CS and EE minor'). Otherwise false.\n\n"
               "This includes requests for 'easy_grading':"
             "- easy grading\n"
             "- generous grading\n"

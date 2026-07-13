@@ -273,7 +273,8 @@ def build_candidate_pool(student_history=None,
                          exclude_courses=None,
                          minor = None,
                          degree = None,
-                         department = None
+                         department = None,
+                         common_only = False
                          ):
     if student_history is None:
         student_history = []
@@ -349,22 +350,33 @@ def build_candidate_pool(student_history=None,
             .isin(exclude_courses)
         ]
     if minor:
-        allowed_courses = set()
-        for m in minor:
-            allowed_courses |= minor_lookup.get(m, set())
-
-        allowed_courses_norm = {
-            c.replace(" ", "").upper()
-            for c in allowed_courses
-            if c
-        }
+        if common_only and len(minor) >= 2:
+            allowed_courses = None
+            for m in minor:
+                courses_for_m = minor_lookup.get(m, set())
+                courses_for_m_norm = {c.replace(" ", "").upper() for c in courses_for_m if c}
+                if allowed_courses is None:
+                    allowed_courses = courses_for_m_norm
+                else:
+                    allowed_courses &= courses_for_m_norm
+            if allowed_courses is None:
+                allowed_courses = set()
+        else:
+            allowed_courses_raw = set()
+            for m in minor:
+                allowed_courses_raw |= minor_lookup.get(m, set())
+            allowed_courses = {
+                c.replace(" ", "").upper()
+                for c in allowed_courses_raw
+                if c
+            }
 
         pool = pool[
             pool["Course Code"]
             .astype(str)
             .str.replace(" ", "", regex=False)
             .str.upper()
-            .isin(allowed_courses_norm)
+            .isin(allowed_courses)
         ]
     return pool
 
@@ -610,6 +622,11 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
         exclude_departments = constraints.get("exclude_departments", [])
         easy_grading = constraints.get("easy_grading", False)
         popular = constraints.get("popular", False)
+        common_only = constraints.get("common_only", False)
+        if not common_only and query:
+            q_lower = str(query).lower()
+            if any(w in q_lower for w in ["common", "shared", "overlap", "intersection", "both"]):
+                common_only = True
 
         print(f"[PRE-PROCESSING] LLM Optimized Query: '{processed_query}'")
     except Exception as e:
@@ -626,7 +643,8 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
                 "exclude_courses": [],
                 "minor": [],
                 "easy_grading": False,
-                "popular": False
+                "popular": False,
+                "common_only": False
             }
         }
         is_valid = processed_query["is_valid"]
@@ -638,6 +656,11 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
         minor = constraints.get("minor", [])
         easy_grading = constraints.get("easy_grading", False)
         popular = constraints.get("popular", False)
+        common_only = constraints.get("common_only", False)
+        if not common_only and query:
+            q_lower = str(query).lower()
+            if any(w in q_lower for w in ["common", "shared", "overlap", "intersection", "both"]):
+                common_only = True
     
     candidate_pool = build_candidate_pool(
         student_history=student_history,
@@ -646,7 +669,8 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
         exclude_courses=exclude_courses,
         minor=minor,
         degree=degree,
-        department=department
+        department=department,
+        common_only=common_only
     )
 
     is_minor_query = bool(minor)
@@ -746,6 +770,39 @@ def get_candidate_courses(query, student_history=None, top_k=40, w_rrf=0.0, w_ps
             .set_index("_code")
             .to_dict("index")
         )
+        # Extract exact course codes from query
+        exact_match_courses = []
+        if query:
+            temp_query = str(query).upper()
+            # Reverse map full department names to abbreviations
+            for code, full_name in CODE_TO_DEPT.items():
+                temp_query = temp_query.replace(full_name.upper(), code)
+            for full_name, code in DEPARTMENT_TO_CODE.items():
+                temp_query = temp_query.replace(full_name.upper(), code)
+                
+            codes_found = re.findall(r'\b([A-Z]{2,4})\s?(\d{3,4})([A-Z]?)\b', temp_query)
+            for dept, num, suffix in codes_found:
+                normalized_code = f"{dept}{num}{suffix}"
+                matching_rows = df_courses[df_courses["Course Code"].str.replace(" ", "", regex=False).str.upper() == normalized_code]
+                if not matching_rows.empty:
+                    exact_match_courses.append(matching_rows.iloc[0]["Course Code"])
+
+        # Explicitly add exact match courses first
+        for exact_code in exact_match_courses:
+            clean_code = str(exact_code).strip().upper()
+            if clean_code in seen_codes:
+                continue
+            seen_codes.add(clean_code)
+            row = course_lookup.get(clean_code)
+            if row:
+                ps_score = calculate_people_score(student_history, clean_code, student_dept, year) if (w_ps > 0.0 or not primary_keywords) else 0.0
+                candidates_enriched.append({
+                    "code": clean_code,
+                    "name": str(row["Course Name"]),
+                    "description": description_lookup.get(clean_code, ""),
+                    "raw_rrf": 2.0,  # Make it higher than normal top RRF
+                    "raw_ps": ps_score,
+                })
 
         if primary_keywords:
             for code, rrf_score in all_fused_candidates:
