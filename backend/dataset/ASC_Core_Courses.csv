@@ -1,0 +1,729 @@
+Degree,Branch,Specialization,Year,Sem,Course Code,Course Name,Course Type,Credits
+B.Tech.,Aerospace Engineering,N/A,1,Autumn,AE 103,A historical perspective of Aerospace Engineering,Theory,6
+B.Tech.,Aerospace Engineering,N/A,1,Autumn,BB 101,Biology,Theory,6
+B.Tech.,Aerospace Engineering,N/A,1,Autumn,CH 105,Organic & Inorganic Chemistry,Theory,4
+B.Tech.,Aerospace Engineering,N/A,1,Autumn,CH 107,Physical Chemistry,Theory,4
+B.Tech.,Aerospace Engineering,N/A,1,Autumn,CH 117,Chemistry Lab,Lab,3
+B.Tech.,Aerospace Engineering,N/A,1,Autumn,CS 101,Computer Programming and Utilization,Theory,6
+B.Tech.,Aerospace Engineering,N/A,1,Autumn,GC 101,Gender in the workplace,Non-credit,0
+B.Tech.,Aerospace Engineering,N/A,1,Autumn,MA 105,Calculus,Theory,8
+B.Tech.,Aerospace Engineering,N/A,1,Autumn,MA 109,Calculus I,Theory,4
+B.Tech.,Aerospace Engineering,N/A,1,Autumn,MA 111,Calculus II,Theory,4
+B.Tech.,Aerospace Engineering,N/A,1,Autumn,ME 113,Workshop Practice,Lab,4
+B.Tech.,Aerospace Engineering,N/A,1,Autumn,MS 101,Makerspace,Lab,8
+B.Tech.,Aerospace Engineering,N/A,1,Autumn,NOCS01,NCC/NSS/NSO,Non-credit,0
+B.Tech.,Aerospace Engineering,N/A,1,Autumn,PH 107,Quantum Physics and Application,Theory,6
+B.Tech.,Aerospace Engineering,N/A,1,Autumn,PH 117,Physics Lab,Lab,3
+B.Tech.,Aerospace Engineering,N/A,1,Spring,AE 152,Introduction to Aerospace Engg.,Theory,6
+B.Tech.,Aerospace Engineering,N/A,1,Spring,CS 101,Computer Programming and Utilization,Theory,6
+B.Tech.,Aerospace Engineering,N/A,1,Spring,MA 110,Linear Algebra and Differential Equations,Theory,8
+B.Tech.,Aerospace Engineering,N/A,1,Spring,NOCS02,NCC/NSS/NSO,Non-credit,0
+B.Tech.,Aerospace Engineering,N/A,1,Spring,PH 117,Physics Lab,Lab,3
+B.Tech.,Aerospace Engineering,N/A,2,Autumn,AE 223,Thermodynamics and Propulsion,Theory,6
+B.Tech.,Aerospace Engineering,N/A,2,Autumn,AE 227,Solid Mechanics,Theory,6
+B.Tech.,Aerospace Engineering,N/A,2,Autumn,AE 229,Introduction to Aerodynamics and Propulsion Laboratory,Lab,3
+B.Tech.,Aerospace Engineering,N/A,2,Autumn,AE 231,Introduction to Aerospace Structures and Control Laboratory,Lab,3
+B.Tech.,Aerospace Engineering,N/A,2,Autumn,AE 308,Control Theory,Theory,6
+B.Tech.,Aerospace Engineering,N/A,2,Spring,EC 101,Economics,Theory,6
+B.Tech.,Aerospace Engineering,N/A,2,Autumn,ES 250,Environmental Studies : Science and Engineering,Non-credit,3
+B.Tech.,Aerospace Engineering,N/A,2,Autumn,HS 250,Environmental Studies,Non-credit,3
+B.Tech.,Aerospace Engineering,N/A,2,Spring,AE 233,Control Systems Laboratory,Lab,3
+B.Tech.,Aerospace Engineering,N/A,2,Spring,AE 238,Aerospace Structural Mechanics,Theory,6
+B.Tech.,Aerospace Engineering,N/A,2,Spring,AE 244,Low Speed Aerodynamics,Theory,6
+B.Tech.,Aerospace Engineering,N/A,2,Spring,AE 246,Aircraft Structures Laboratory,Lab,3
+B.Tech.,Aerospace Engineering,N/A,2,Spring,AE 248,AI and Data Science,Theory,6
+B.Tech.,Aerospace Engineering,N/A,2,Autumn,DE 250,Design Thinking for Innovation,Theory,6
+B.Tech.,Aerospace Engineering,N/A,2,Spring,PH 111,Introduction to classical Physics,Theory,4
+B.Tech.,Aerospace Engineering,N/A,3,Autumn,AE 339,High Speed Aerodynamics,Theory,6
+B.Tech.,Aerospace Engineering,N/A,3,Autumn,AE 341,Flight Mechanics of Aircrafts and Spacecrafts,Theory,6
+B.Tech.,Aerospace Engineering,N/A,3,Autumn,AE 343,Aerodynamics Laboratory,Lab,3
+B.Tech.,Aerospace Engineering,N/A,3,Autumn,AE 344,Aero Propulsion,Theory,6
+B.Tech.,Aerospace Engineering,N/A,3,Autumn,AE 345,Aircraft Propulsion Laboratory,Lab,3
+B.Tech.,Aerospace Engineering,N/A,3,Spring,AE 332,Aircraft Design,Theory,6
+B.Tech.,Chemical Engineering,N/A,1,Autumn,CH 111,Chemistry,Theory,8
+B.Tech.,Chemical Engineering,N/A,1,Autumn,CH 117,Chemistry Lab,Lab,3
+B.Tech.,Chemical Engineering,N/A,1,Autumn,CS 101,Computer Programming and Utilization,Theory,6
+B.Tech.,Chemical Engineering,N/A,1,Autumn,MA 105,Calculus,Theory,8
+B.Tech.,Chemical Engineering,N/A,1,Autumn,NOCS01,NCC/NSS/NSO,Non-credit,0
+B.Tech.,Chemical Engineering,N/A,1,Autumn,PH 117,Physics Lab,Lab,3
+B.Tech.,Chemical Engineering,N/A,1,Spring,CH 117,Chemistry Lab,Lab,3
+B.Tech.,Chemical Engineering,N/A,1,Spring,CL 102,Material and Energy Balances,Theory,6
+B.Tech.,Chemical Engineering,N/A,1,Spring,MA 110,Linear Algebra and Differential Equations,Theory,8
+B.Tech.,Chemical Engineering,N/A,1,Spring,MS 101,Makerspace,Lab,8
+B.Tech.,Chemical Engineering,N/A,1,Spring,NOCS02,NCC/NSS/NSO,Non-credit,0
+B.Tech.,Chemical Engineering,N/A,1,Spring,PH 110,Introduction to Classical and Quantum Physics,Theory,8
+B.Tech.,Chemical Engineering,N/A,2,Autumn,BB 101,Biology,Theory,6
+B.Tech.,Chemical Engineering,N/A,2,Autumn,CL 205,AI and Data Science,Theory,6
+B.Tech.,Chemical Engineering,N/A,2,Autumn,CL 207,Chemical Engineering Thermodynamics,Theory,6
+B.Tech.,Chemical Engineering,N/A,2,Autumn,CL 254,Process Fluid Mechanics,Theory,6
+B.Tech.,Chemical Engineering,N/A,2,Autumn,EC 101,Economics,Theory,6
+B.Tech.,Chemical Engineering,N/A,2,Autumn,ES 250,Environmental Studies : Science and Engineering,Non-credit,3
+B.Tech.,Chemical Engineering,N/A,2,Autumn,HS 250,Environmental Studies,Non-credit,3
+B.Tech.,Chemical Engineering,N/A,2,Spring,CL 208,Chemical Reaction Engineering,Theory,6
+B.Tech.,Chemical Engineering,N/A,2,Spring,CL 210,Separation Processes,Theory,6
+B.Tech.,Chemical Engineering,N/A,2,Spring,CL 232,Chemical Engineering Lab. I,Lab,6
+B.Tech.,Chemical Engineering,N/A,2,Spring,CL 238,Introduction to Numerical Analysis,Theory,6
+B.Tech.,Chemical Engineering,N/A,2,Spring,CL 242,Fundamentals of Heat and Mass Transfer,Theory,6
+B.Tech.,Chemical Engineering,N/A,2,Spring,DE 250,Design Thinking for Innovation,Theory,6
+B.Tech.,Chemical Engineering,N/A,3,Autumn,CL 249,Computational Methods Lab,Lab,3
+B.Tech.,Chemical Engineering,N/A,3,Autumn,CL 306,Chemical Processes,Theory,6
+B.Tech.,Chemical Engineering,N/A,3,Autumn,CL 327,Chemical Process Design I,Theory,6
+B.Tech.,Chemical Engineering,N/A,3,Autumn,CL 329,Process Control,Theory,6
+B.Tech.,Chemical Engineering,N/A,3,Autumn,CL 333,Chemical Engineering Lab. II,Lab,6
+B.Tech.,Chemical Engineering,N/A,3,Spring,CL 203,Introduction to Transport Phenomena,Theory,6
+B.Tech.,Chemical Engineering,N/A,3,Spring,CL 331,Chemical Process Design II,Theory,6
+B.Tech.,Chemical Engineering,N/A,3,Spring,CL 335,Chemical Engineering Lab. III,Lab,6
+B.Tech.,Civil Engineering,N/A,1,Autumn,CE 103,Introduction to Civil Engineering,Theory,6
+B.Tech.,Civil Engineering,N/A,1,Autumn,CH 105,Organic & Inorganic Chemistry,Theory,4
+B.Tech.,Civil Engineering,N/A,1,Autumn,CH 107,Physical Chemistry,Theory,4
+B.Tech.,Civil Engineering,N/A,1,Autumn,CH 111,Chemistry,Theory,8
+B.Tech.,Civil Engineering,N/A,1,Autumn,CH 117,Chemistry Lab,Lab,3
+B.Tech.,Civil Engineering,N/A,1,Autumn,CS 101,Computer Programming and Utilization,Theory,6
+B.Tech.,Civil Engineering,N/A,1,Autumn,MA 105,Calculus,Theory,8
+B.Tech.,Civil Engineering,N/A,1,Autumn,MA 109,Calculus I,Theory,4
+B.Tech.,Civil Engineering,N/A,1,Autumn,MA 111,Calculus II,Theory,4
+B.Tech.,Civil Engineering,N/A,1,Autumn,MS 101,Makerspace,Lab,8
+B.Tech.,Civil Engineering,N/A,1,Autumn,NOCS01,NCC/NSS/NSO,Non-credit,0
+B.Tech.,Civil Engineering,N/A,1,Autumn,PH 117,Physics Lab,Lab,3
+B.Tech.,Civil Engineering,N/A,1,Spring,CE 102,Engineering Mechanics,Theory,6
+B.Tech.,Civil Engineering,N/A,1,Spring,CS 101,Computer Programming and Utilization,Theory,6
+B.Tech.,Civil Engineering,N/A,1,Spring,MA 110,Linear Algebra and Differential Equations,Theory,8
+B.Tech.,Civil Engineering,N/A,1,Spring,NOCS02,NCC/NSS/NSO,Non-credit,0
+B.Tech.,Civil Engineering,N/A,1,Spring,PH 117,Physics Lab,Lab,3
+B.Tech.,Civil Engineering,N/A,2,Autumn,CE 203,Solid Mechanics,Theory,6
+B.Tech.,Civil Engineering,N/A,2,Autumn,CE 207,Hydromechanics,Theory,6
+B.Tech.,Civil Engineering,N/A,2,Autumn,CE 209,Building Materials and Construction,Theory,6
+B.Tech.,Civil Engineering,N/A,2,Autumn,CE 463,Probabilistic and Statistical Methods in Civil Eng,Theory,6
+B.Tech.,Civil Engineering,N/A,2,Autumn,CE 465,Numerical Methods in Civil Engineering,Theory,6
+B.Tech.,Civil Engineering,N/A,2,Spring,EC 101,Economics,Theory,6
+B.Tech.,Civil Engineering,N/A,2,Spring,CE 219,Solid Mechanics Laboratory,Lab,2
+B.Tech.,Civil Engineering,N/A,2,Spring,CE 234,Structural Mechanics,Theory,6
+B.Tech.,Civil Engineering,N/A,2,Spring,CE 236,Soil Mechanics,Theory,6
+B.Tech.,Civil Engineering,N/A,2,Spring,CE 238,Land Surveying: Theory and Practice,Theory,6
+B.Tech.,Civil Engineering,N/A,2,Spring,CE 242,Hydromechanics Laboratory,Lab,2
+B.Tech.,Civil Engineering,N/A,2,Spring,CE 244,Transportation Engineering,Theory,6
+B.Tech.,Civil Engineering,N/A,2,Autumn,DE 250,Design Thinking for Innovation,Theory,6
+B.Tech.,Civil Engineering,N/A,3,Autumn,CE 235,Artificial Intelligence & Data Science,Theory,6
+B.Tech.,Civil Engineering,N/A,3,Autumn,CE 240,Soil Mechanics Laboratory,Lab,2
+B.Tech.,Civil Engineering,N/A,3,Autumn,CE 333,Foundation Engineering,Theory,6
+B.Tech.,Civil Engineering,N/A,3,Autumn,CE 337,Introduction to Structural Design,Theory,6
+B.Tech.,Civil Engineering,N/A,3,Autumn,CE 341,Transportation Engineering Laboratory,Lab,2
+B.Tech.,Civil Engineering,N/A,3,Autumn,ES 250,Environmental Studies : Science and Engineering,Non-credit,3
+B.Tech.,Civil Engineering,N/A,3,Autumn,HS 250,Environmental Studies,Non-credit,3
+B.Tech.,Civil Engineering,N/A,3,Spring,CE 343,Water Resources Engineering,Theory,6
+B.Tech.,Computer Science and Engineering,N/A,1,Autumn,CH 105,Organic & Inorganic Chemistry,Theory,4
+B.Tech.,Computer Science and Engineering,N/A,1,Autumn,CH 107,Physical Chemistry,Theory,4
+B.Tech.,Computer Science and Engineering,N/A,1,Autumn,CS 101,Computer Programming and Utilization,Theory,6
+B.Tech.,Computer Science and Engineering,N/A,1,Autumn,CS 105,Discrete Structures,Theory,6
+B.Tech.,Computer Science and Engineering,N/A,1,Autumn,MA 105,Calculus,Theory,8
+B.Tech.,Computer Science and Engineering,N/A,1,Autumn,MA 109,Calculus I,Theory,4
+B.Tech.,Computer Science and Engineering,N/A,1,Autumn,MA 111,Calculus II,Theory,4
+B.Tech.,Computer Science and Engineering,N/A,1,Autumn,ME 119,Engineering Graphics & Drawing,Lab,5
+B.Tech.,Computer Science and Engineering,N/A,1,Autumn,NOCS01,NCC/NSS/NSO,Non-credit,0
+B.Tech.,Computer Science and Engineering,N/A,1,Autumn,PH 107,Quantum Physics and Application,Theory,6
+B.Tech.,Computer Science and Engineering,N/A,1,Autumn,PH 117,Physics Lab,Lab,3
+B.Tech.,Computer Science and Engineering,N/A,1,Spring,BB 101,Biology,Theory,6
+B.Tech.,Computer Science and Engineering,N/A,1,Spring,CH 117,Chemistry Lab,Lab,3
+B.Tech.,Computer Science and Engineering,N/A,1,Spring,CS 108,Software Systems Lab,Lab,6
+B.Tech.,Computer Science and Engineering,N/A,1,Spring,MA 110,Linear Algebra and Differential Equations,Theory,8
+B.Tech.,Computer Science and Engineering,N/A,1,Spring,MS 101,Makerspace,Lab,8
+B.Tech.,Computer Science and Engineering,N/A,1,Spring,NOCS02,NCC/NSS/NSO,Non-credit,0
+B.Tech.,Computer Science and Engineering,N/A,2,Autumn,CS 213,Data Structures and Algorithms,Theory,6
+B.Tech.,Computer Science and Engineering,N/A,2,Autumn,CS 215,Data Analysis and Interpretation,Theory,6
+B.Tech.,Computer Science and Engineering,N/A,2,Autumn,CS 228,Logic for Computer Science,Theory,6
+B.Tech.,Computer Science and Engineering,N/A,2,Autumn,CS 230,Digital Logic Design and Computer Architecture,Theory,6
+B.Tech.,Computer Science and Engineering,N/A,2,Autumn,CS 231,Digital Logic and Computer Architecture Lab,Lab,3
+B.Tech.,Computer Science and Engineering,N/A,2,Autumn,CS 293,Data Structures and Algorithms Lab,Lab,3
+B.Tech.,Computer Science and Engineering,N/A,2,Spring,EC 101,Economics,Theory,6
+B.Tech.,Computer Science and Engineering,N/A,2,Spring,CS 217,Artificial Intelligence and Machine Learning,Theory,6
+B.Tech.,Computer Science and Engineering,N/A,2,Spring,CS 218,Design and Analysis of Algorithms,Theory,6
+B.Tech.,Computer Science and Engineering,N/A,2,Spring,CS 219,Operating Systems,Theory,6
+B.Tech.,Computer Science and Engineering,N/A,2,Spring,CS 236,Operating Systems Lab,Lab,3
+B.Tech.,Computer Science and Engineering,N/A,2,Spring,CS 240,Artificial Intelligence and Machine Learning (Lab),Lab,3
+B.Tech.,Computer Science and Engineering,N/A,2,Autumn,DE 250,Design Thinking for Innovation,Theory,6
+B.Tech.,Computer Science and Engineering,N/A,2,Spring,ES 250,Environmental Studies : Science and Engineering,Non-credit,3
+B.Tech.,Computer Science and Engineering,N/A,2,Spring,HS 250,Environmental Studies,Non-credit,3
+B.Tech.,Computer Science and Engineering,N/A,3,Autumn,CS 310,Automata Theory,Theory,6
+B.Tech.,Computer Science and Engineering,N/A,3,Autumn,CS 339,Abstractions and Paradigms for Programming,Theory,6
+B.Tech.,Computer Science and Engineering,N/A,3,Autumn,CS 348,Computer Networks,Theory,6
+B.Tech.,Computer Science and Engineering,N/A,3,Autumn,CS 355,Programming Paradigms Laboratory,Lab,3
+B.Tech.,Computer Science and Engineering,N/A,3,Autumn,CS 378,Computer Networks Lab,Lab,3
+B.Tech.,Computer Science and Engineering,N/A,3,Spring,CS 306,Implementation of Programming Languages Laboratory,Lab,3
+B.Tech.,Computer Science and Engineering,N/A,3,Spring,CS 317,Database and Information Systems,Theory,6
+B.Tech.,Computer Science and Engineering,N/A,3,Spring,CS 320,Implementation of Programming Languages,Theory,6
+B.Tech.,Computer Science and Engineering,N/A,3,Spring,CS 349,Database and Information Systems Lab,Lab,3
+B.Tech.,Electrical Engineering,N/A,1,Autumn,CH 117,Chemistry Lab,Lab,3
+B.Tech.,Electrical Engineering,N/A,1,Autumn,CS 101,Computer Programming and Utilization,Theory,6
+B.Tech.,Electrical Engineering,N/A,1,Autumn,EE 103,Introduction to Electrical Engineering,Theory,6
+B.Tech.,Electrical Engineering,N/A,1,Autumn,EE 113,Introduction to Electrical Engineering Practice,Theory,6
+B.Tech.,Electrical Engineering,N/A,1,Autumn,MA 105,Calculus,Theory,8
+B.Tech.,Electrical Engineering,N/A,1,Autumn,MA 109,Calculus I,Theory,4
+B.Tech.,Electrical Engineering,N/A,1,Autumn,MA 111,Calculus II,Theory,4
+B.Tech.,Electrical Engineering,N/A,1,Autumn,MS 101,Makerspace,Lab,8
+B.Tech.,Electrical Engineering,N/A,1,Autumn,NOCS01,NCC/NSS/NSO,Non-credit,0
+B.Tech.,Electrical Engineering,N/A,1,Autumn,PH 107,Quantum Physics and Application,Theory,6
+B.Tech.,Electrical Engineering,N/A,1,Autumn,PH 117,Physics Lab,Lab,3
+B.Tech.,Electrical Engineering,N/A,1,Spring,CH 117,Chemistry Lab,Lab,3
+B.Tech.,Electrical Engineering,N/A,1,Spring,EE 114,Power Engineering - I,Theory,6
+B.Tech.,Electrical Engineering,N/A,1,Spring,MA 110,Linear Algebra and Differential Equations,Theory,8
+B.Tech.,Electrical Engineering,N/A,1,Spring,MS 101,Makerspace,Lab,8
+B.Tech.,Electrical Engineering,N/A,1,Spring,NOCS02,NCC/NSS/NSO,Non-credit,0
+B.Tech.,Electrical Engineering,N/A,1,Spring,PH 110,Introduction to Classical and Quantum Physics,Theory,8
+B.Tech.,Electrical Engineering,N/A,2,Autumn,EC 101,Economics,Theory,6
+B.Tech.,Electrical Engineering,N/A,2,Autumn,EE 204,Analog Circuits,Theory,6
+B.Tech.,Electrical Engineering,N/A,2,Autumn,EE 214,Digital Circuits Lab,Lab,3
+B.Tech.,Electrical Engineering,N/A,2,Autumn,EE 224,Digital Systems,Theory,6
+B.Tech.,Electrical Engineering,N/A,2,Autumn,EE 229,Signal Processing – I,Theory,6
+B.Tech.,Electrical Engineering,N/A,2,Autumn,EE 240,Power Engineering Lab,Lab,3
+B.Tech.,Electrical Engineering,N/A,2,Autumn,EE 325,Probability and Random Processes,Theory,6
+B.Tech.,Electrical Engineering,N/A,2,Spring,DE 250,Design Thinking for Innovation,Theory,6
+B.Tech.,Electrical Engineering,N/A,2,Spring,EE 207,Electronic Devices & Circuits,Theory,6
+B.Tech.,Electrical Engineering,N/A,2,Spring,EE 230,Analog Lab,Lab,3
+B.Tech.,Electrical Engineering,N/A,2,Spring,EE 238,Power Engineering - II,Theory,6
+B.Tech.,Electrical Engineering,N/A,2,Spring,EE 302,Control Systems,Theory,6
+B.Tech.,Electrical Engineering,N/A,2,Spring,EE 309,Microprocessors,Theory,6
+B.Tech.,Electrical Engineering,N/A,2,Spring,EE 337,Microprocessors Laboratory,Lab,3
+B.Tech.,Electrical Engineering,N/A,3,Autumn,EE 236,Electronic Devices Lab,Lab,3
+B.Tech.,Electrical Engineering,N/A,3,Autumn,EE 301,Electromagnetic Waves,Theory,6
+B.Tech.,Electrical Engineering,N/A,3,Autumn,EE 324,Control Systems Lab,Lab,3
+B.Tech.,Electrical Engineering,N/A,3,Autumn,EE 340,Communications Lab,Lab,3
+B.Tech.,Electrical Engineering,N/A,3,Autumn,EE 341,Communication Systems - I,Theory,6
+B.Tech.,Electrical Engineering,N/A,3,Autumn,EE 353,Introduction to Data Science and Machine Learning,Theory,6
+B.Tech.,Electrical Engineering,N/A,3,Spring,EE 344,Electronic Design Lab,Lab,6
+B.Tech.,Electrical Engineering,N/A,3,Spring,EE 350,Technical Communication,Theory,6
+B.Tech.,Energy Science and Engineering,N/A,1,Autumn,CH 105,Organic & Inorganic Chemistry,Theory,4
+B.Tech.,Energy Science and Engineering,N/A,1,Autumn,CH 107,Physical Chemistry,Theory,4
+B.Tech.,Energy Science and Engineering,N/A,1,Autumn,CH 111,Chemistry,Theory,8
+B.Tech.,Energy Science and Engineering,N/A,1,Autumn,CH 117,Chemistry Lab,Lab,3
+B.Tech.,Energy Science and Engineering,N/A,1,Autumn,CS 101,Computer Programming and Utilization,Theory,6
+B.Tech.,Energy Science and Engineering,N/A,1,Autumn,EN 101,Introduction to Energy,Theory,6
+B.Tech.,Energy Science and Engineering,N/A,1,Autumn,EN 110,Energy Engineering Fundamentals,Theory,6
+B.Tech.,Energy Science and Engineering,N/A,1,Autumn,MA 105,Calculus,Theory,8
+B.Tech.,Energy Science and Engineering,N/A,1,Autumn,MA 109,Calculus I,Theory,4
+B.Tech.,Energy Science and Engineering,N/A,1,Autumn,MA 111,Calculus II,Theory,4
+B.Tech.,Energy Science and Engineering,N/A,1,Autumn,MS 101,Makerspace,Lab,8
+B.Tech.,Energy Science and Engineering,N/A,1,Autumn,NOCS01,NCC/NSS/NSO,Non-credit,0
+B.Tech.,Energy Science and Engineering,N/A,1,Autumn,PH 117,Physics Lab,Lab,3
+B.Tech.,Energy Science and Engineering,N/A,1,Spring,CS 101,Computer Programming and Utilization,Theory,6
+B.Tech.,Energy Science and Engineering,N/A,1,Spring,MA 110,Linear Algebra and Differential Equations,Theory,8
+B.Tech.,Energy Science and Engineering,N/A,1,Spring,NOCS02,NCC/NSS/NSO,Non-credit,0
+B.Tech.,Energy Science and Engineering,N/A,1,Spring,PH 110,Introduction to Classical and Quantum Physics,Theory,8
+B.Tech.,Energy Science and Engineering,N/A,1,Spring,PH 117,Physics Lab,Lab,3
+B.Tech.,Energy Science and Engineering,N/A,2,Spring,EC 101,Economics,Theory,6
+B.Tech.,Energy Science and Engineering,N/A,2,Autumn,EN 203,Thermodynamics and Energy Conversion,Theory,6
+B.Tech.,Energy Science and Engineering,N/A,2,Autumn,EN 204,Material Science for Energy Applications,Theory,6
+B.Tech.,Energy Science and Engineering,N/A,2,Autumn,EN 213,Electrical Networks and Machines,Theory,6
+B.Tech.,Energy Science and Engineering,N/A,2,Autumn,ES 250,Environmental Studies : Science and Engineering,Non-credit,3
+B.Tech.,Energy Science and Engineering,N/A,2,Autumn,HS 250,Environmental Studies,Non-credit,3
+B.Tech.,Energy Science and Engineering,N/A,2,Autumn,MM 225,AI and Data Science,Theory,6
+B.Tech.,Energy Science and Engineering,N/A,2,Autumn,DE 250,Design Thinking for Innovation,Theory,6
+B.Tech.,Energy Science and Engineering,N/A,2,Spring,EN 220,Reactions for Energy,Theory,6
+B.Tech.,Energy Science and Engineering,N/A,2,Spring,EN 222,Fluid Mechanics and Heat Transfer,Theory,6
+B.Tech.,Energy Science and Engineering,N/A,2,Spring,EN 224,Electrical Networks and Machines Lab,Lab,3
+B.Tech.,Energy Science and Engineering,N/A,2,Spring,EN 226,Energy Conversion Lab,Lab,3
+B.Tech.,Energy Science and Engineering,N/A,2,Spring,EN 313,Power Electronics,Theory,6
+B.Tech.,Energy Science and Engineering,N/A,3,Autumn,EN 309,Thermal & Fluid Engineering Lab,Lab,3
+B.Tech.,Energy Science and Engineering,N/A,3,Autumn,EN 323,Renewable Energy Generation and Storage,Theory,6
+B.Tech.,Energy Science and Engineering,N/A,3,Autumn,EN 325,Dynamics and Control,Theory,6
+B.Tech.,Energy Science and Engineering,N/A,3,Autumn,EN 327,Power Electronics and Instrumentation Lab,Lab,3
+B.Tech.,Energy Science and Engineering,N/A,3,Autumn,EN 401,Energy Systems modelling and analysis,Theory,6
+B.Tech.,Energy Science and Engineering,N/A,3,Spring,EN 304,Electrical Energy Systems,Theory,6
+B.Tech.,Energy Science and Engineering,N/A,3,Spring,EN 316,Renewable Energy Lab,Lab,3
+B.Tech.,Energy Science and Engineering,N/A,3,Spring,EN 318,Energy Systems Design Lab,Lab,3
+B.Tech.,Energy Science and Engineering,N/A,3,Spring,EN 410,Energy Management,Theory,6
+B.Tech.,Engineering Physics,N/A,1,Autumn,BB 101,Biology,Theory,6
+B.Tech.,Engineering Physics,N/A,1,Autumn,CH 105,Organic & Inorganic Chemistry,Theory,4
+B.Tech.,Engineering Physics,N/A,1,Autumn,CH 107,Physical Chemistry,Theory,4
+B.Tech.,Engineering Physics,N/A,1,Autumn,CH 117,Chemistry Lab,Lab,3
+B.Tech.,Engineering Physics,N/A,1,Autumn,CS 101,Computer Programming and Utilization,Theory,6
+B.Tech.,Engineering Physics,N/A,1,Autumn,MA 105,Calculus,Theory,8
+B.Tech.,Engineering Physics,N/A,1,Autumn,MA 109,Calculus I,Theory,4
+B.Tech.,Engineering Physics,N/A,1,Autumn,MA 111,Calculus II,Theory,4
+B.Tech.,Engineering Physics,N/A,1,Autumn,ME 119,Engineering Graphics & Drawing,Lab,5
+B.Tech.,Engineering Physics,N/A,1,Autumn,MS 101,Makerspace,Lab,8
+B.Tech.,Engineering Physics,N/A,1,Autumn,NOCS01,NCC/NSS/NSO,Non-credit,0
+B.Tech.,Engineering Physics,N/A,1,Autumn,PH 107,Quantum Physics and Application,Theory,6
+B.Tech.,Engineering Physics,N/A,1,Autumn,PH 109,Fundamental Themes in Physics,Theory,6
+B.Tech.,Engineering Physics,N/A,1,Autumn,PH 117,Physics Lab,Lab,3
+B.Tech.,Engineering Physics,N/A,1,Spring,CS 101,Computer Programming and Utilization,Theory,6
+B.Tech.,Engineering Physics,N/A,1,Spring,MA 110,Linear Algebra and Differential Equations,Theory,8
+B.Tech.,Engineering Physics,N/A,1,Spring,NOCS02,NCC/NSS/NSO,Non-credit,0
+B.Tech.,Engineering Physics,N/A,1,Spring,PH 110,Introduction to Classical and Quantum Physics,Theory,8
+B.Tech.,Engineering Physics,N/A,1,Spring,PH 117,Physics Lab,Lab,3
+B.Tech.,Engineering Physics,N/A,2,Autumn,EC 101,Economics,Theory,6
+B.Tech.,Engineering Physics,N/A,2,Autumn,PH 113,Oscillations and Waves,Theory,3
+B.Tech.,Engineering Physics,N/A,2,Autumn,PH 114,Thermal Physics,Theory,3
+B.Tech.,Engineering Physics,N/A,2,Autumn,PH 217,Classical Mechanics,Theory,6
+B.Tech.,Engineering Physics,N/A,2,Autumn,PH 221,Analog Electronics,Theory,6
+B.Tech.,Engineering Physics,N/A,2,Autumn,PH 223,Complex Analysis and Integral Transforms,Theory,6
+B.Tech.,Engineering Physics,N/A,2,Autumn,PH 227,AI and Data Science,Theory,6
+B.Tech.,Engineering Physics,N/A,2,Spring,DE 250,Design Thinking for Innovation,Theory,6
+B.Tech.,Engineering Physics,N/A,2,Spring,PH 216,Statistical Physics,Theory,6
+B.Tech.,Engineering Physics,N/A,2,Spring,PH 222,Digital Electronics and Microprocessors,Theory,6
+B.Tech.,Engineering Physics,N/A,2,Spring,PH 225,Quantum Mechanics I,Theory,6
+B.Tech.,Engineering Physics,N/A,2,Spring,PH 232,Physics Laboratory I (General Physics Lab),Lab,3
+B.Tech.,Engineering Physics,N/A,2,Spring,PH 312,Electromagnetic Theory,Theory,8
+B.Tech.,Engineering Physics,N/A,3,Autumn,ES 250,Environmental Studies : Science and Engineering,Non-credit,3
+B.Tech.,Engineering Physics,N/A,3,Autumn,HS 250,Environmental Studies,Non-credit,3
+B.Tech.,Engineering Physics,N/A,3,Autumn,PH 307,Introduction to Numerical Analysis,Theory,6
+B.Tech.,Engineering Physics,N/A,3,Autumn,PH 309,Quantum Mechanics II,Theory,8
+B.Tech.,Engineering Physics,N/A,3,Autumn,PH 436,Introduction to Condensed Matter Physics,Theory,6
+B.Tech.,Engineering Physics,N/A,3,Autumn,PH 446,Physics Laboratory (Solid state and Nuclear Physics),Lab,3
+B.Tech.,Engineering Physics,N/A,3,Spring,PH 314,Molecular Spectroscopy and Optical Physics,Theory,8
+B.Tech.,Engineering Physics,N/A,3,Spring,PH 447,Physics Lab (Optics and Spectroscopy),Lab,3
+B.Tech.,Environmental Science and Engineering,N/A,1,Autumn,CH 111,Chemistry,Theory,8
+B.Tech.,Environmental Science and Engineering,N/A,1,Autumn,CH 117,Chemistry Lab,Lab,3
+B.Tech.,Environmental Science and Engineering,N/A,1,Autumn,ES 101,Introduction to Environmental Science & Engineering,Theory,6
+B.Tech.,Environmental Science and Engineering,N/A,1,Autumn,MA 105,Calculus,Theory,8
+B.Tech.,Environmental Science and Engineering,N/A,1,Autumn,MS 101,Makerspace,Lab,8
+B.Tech.,Environmental Science and Engineering,N/A,1,Autumn,NOCS01,NCC/NSS/NSO,Non-credit,0
+B.Tech.,Environmental Science and Engineering,N/A,1,Spring,CS 101,Computer Programming and Utilization,Theory,6
+B.Tech.,Environmental Science and Engineering,N/A,1,Spring,ES 204,Environmental Chemistry,Theory,6
+B.Tech.,Environmental Science and Engineering,N/A,1,Spring,MA 110,Linear Algebra and Differential Equations,Theory,8
+B.Tech.,Environmental Science and Engineering,N/A,1,Spring,NOCS02,NCC/NSS/NSO,Non-credit,0
+B.Tech.,Environmental Science and Engineering,N/A,1,Spring,PH 117,Physics Lab,Lab,3
+B.Tech.,Environmental Science and Engineering,N/A,2,Autumn,EC 101,Economics,Theory,6
+B.Tech.,Environmental Science and Engineering,N/A,2,Autumn,ES 201,Applied Environmental Microbiology and Ecology,Theory,6
+B.Tech.,Environmental Science and Engineering,N/A,2,Autumn,ES 225,Artificial Intelligence & Data Science,Theory,6
+B.Tech.,Environmental Science and Engineering,N/A,2,Autumn,ES 253,Environmental Microbiology Laboratory,Lab,4
+B.Tech.,Environmental Science and Engineering,N/A,2,Autumn,ES 317,Fundamentals of Air Pollution Science and Engineering,Theory,6
+B.Tech.,Environmental Science and Engineering,N/A,2,Autumn,ES 351,Air Pollution Monitoring Laboratory,Lab,3
+B.Tech.,Environmental Science and Engineering,N/A,2,Spring,DE 250,Design Thinking for Innovation,Theory,6
+B.Tech.,Environmental Science and Engineering,N/A,2,Spring,ES 203,Water and Wastewater Engineering,Theory,6
+B.Tech.,Environmental Science and Engineering,N/A,2,Spring,ES 208,Mass Transfer Process in Environmental Systems,Theory,6
+B.Tech.,Environmental Science and Engineering,N/A,2,Spring,ES 252,Environmental Chemistry Lab,Lab,3
+B.Tech.,Environmental Science and Engineering,N/A,2,Spring,ES 319,Computational Laboratory for Environmental Engineering,Lab,3
+B.Tech.,Environmental Science and Engineering,N/A,2,Spring,ES 664,Environmental Systems Modelling,Theory,6
+B.Tech.,Environmental Science and Engineering,N/A,3,Autumn,ES 216,GIS Aided Environmental Planning and Management,Theory,6
+B.Tech.,Environmental Science and Engineering,N/A,3,Autumn,ES 308,Solid and Hazardous Waste Laboratory,Lab,3
+B.Tech.,Environmental Science and Engineering,N/A,3,Autumn,ES 315,Solid Waste Management - Basic Principles and Technical Aspects,Theory,6
+B.Tech.,Environmental Science and Engineering,N/A,3,Autumn,ES 451,Field Studies,Theory,3
+B.Tech.,Environmental Science and Engineering,N/A,3,Autumn,ES 657,Water Resources and Environmental Hydraulics”,Theory,6
+B.Tech.,Mechanical Engineering,N/A,1,Autumn,BB 101,Biology,Theory,6
+B.Tech.,Mechanical Engineering,N/A,1,Autumn,CH 105,Organic & Inorganic Chemistry,Theory,4
+B.Tech.,Mechanical Engineering,N/A,1,Autumn,CH 107,Physical Chemistry,Theory,4
+B.Tech.,Mechanical Engineering,N/A,1,Autumn,CH 117,Chemistry Lab,Lab,3
+B.Tech.,Mechanical Engineering,N/A,1,Autumn,CS 101,Computer Programming and Utilization,Theory,6
+B.Tech.,Mechanical Engineering,N/A,1,Autumn,MA 105,Calculus,Theory,8
+B.Tech.,Mechanical Engineering,N/A,1,Autumn,MA 109,Calculus I,Theory,4
+B.Tech.,Mechanical Engineering,N/A,1,Autumn,MA 111,Calculus II,Theory,4
+B.Tech.,Mechanical Engineering,N/A,1,Autumn,ME 103,Mechanical Department Introductory Course I,Theory,6
+B.Tech.,Mechanical Engineering,N/A,1,Autumn,ME 113,Workshop Practice,Lab,4
+B.Tech.,Mechanical Engineering,N/A,1,Autumn,MS 101,Makerspace,Lab,8
+B.Tech.,Mechanical Engineering,N/A,1,Autumn,NOCS01,NCC/NSS/NSO,Non-credit,0
+B.Tech.,Mechanical Engineering,N/A,1,Autumn,PH 107,Quantum Physics and Application,Theory,6
+B.Tech.,Mechanical Engineering,N/A,1,Autumn,PH 117,Physics Lab,Lab,3
+B.Tech.,Mechanical Engineering,N/A,1,Spring,CS 101,Computer Programming and Utilization,Theory,6
+B.Tech.,Mechanical Engineering,N/A,1,Spring,MA 110,Linear Algebra and Differential Equations,Theory,8
+B.Tech.,Mechanical Engineering,N/A,1,Spring,ME 104,Engineering Mechanics,Theory,6
+B.Tech.,Mechanical Engineering,N/A,1,Spring,NOCS02,NCC/NSS/NSO,Non-credit,0
+B.Tech.,Mechanical Engineering,N/A,1,Spring,PH 117,Physics Lab,Lab,3
+B.Tech.,Mechanical Engineering,N/A,2,Autumn,EC 101,Economics,Theory,6
+B.Tech.,Mechanical Engineering,N/A,2,Autumn,ES 250,Environmental Studies : Science and Engineering,Non-credit,3
+B.Tech.,Mechanical Engineering,N/A,2,Autumn,HS 250,Environmental Studies,Non-credit,3
+B.Tech.,Mechanical Engineering,N/A,2,Autumn,ME 209,Thermodynamics,Theory,6
+B.Tech.,Mechanical Engineering,N/A,2,Autumn,ME 218,Solid Mechanics Lab,Lab,3
+B.Tech.,Mechanical Engineering,N/A,2,Autumn,ME 221,Structural Materials,Theory,6
+B.Tech.,Mechanical Engineering,N/A,2,Autumn,ME 223,Solid Mechanics and Strength of Materials,Theory,6
+B.Tech.,Mechanical Engineering,N/A,2,Autumn,ME 225,Numerical Analysis,Theory,6
+B.Tech.,Mechanical Engineering,N/A,2,Spring,DE 250,Design Thinking for Innovation,Theory,6
+B.Tech.,Mechanical Engineering,N/A,2,Spring,ME 213,Manufacturing Practice Lab,Lab,3
+B.Tech.,Mechanical Engineering,N/A,2,Spring,ME 219,Fluid Mechanics,Theory,6
+B.Tech.,Mechanical Engineering,N/A,2,Spring,ME 228,Applied Data Science and Machine Learning,Theory,6
+B.Tech.,Mechanical Engineering,N/A,2,Spring,ME 230,Mechanical Processing of Materials,Theory,6
+B.Tech.,Mechanical Engineering,N/A,2,Spring,ME 444,Analysis and Design of Mechanical Systems,Theory,6
+B.Tech.,Mechanical Engineering,N/A,2,Spring,PH 111,Introduction to classical Physics,Theory,4
+B.Tech.,Mechanical Engineering,N/A,3,Autumn,ME 224,Fluid Mechanics Lab,Lab,3
+B.Tech.,Mechanical Engineering,N/A,3,Autumn,ME 306,Applied Thermodynamics,Theory,6
+B.Tech.,Mechanical Engineering,N/A,3,Autumn,ME 311,Microprocessors and Automatic Control,Theory,6
+B.Tech.,Mechanical Engineering,N/A,3,Autumn,ME 323,Thermal and Chemical processing of materials,Theory,6
+B.Tech.,Mechanical Engineering,N/A,3,Autumn,ME 346,Heat Transfer,Theory,6
+B.Tech.,Mechanical Engineering,N/A,3,Autumn,ME 374,Manufacturing Processes Lab,Lab,3
+B.Tech.,Mechanical Engineering,N/A,3,Spring,ME 310,Microprocessors and Automatic Control Lab,Lab,3
+B.Tech.,Mechanical Engineering,N/A,3,Spring,ME 312,Operations Modeling and Analysis,Theory,6
+B.Tech.,Mechanical Engineering,N/A,3,Spring,ME 318,Machine Design Laboratory,Lab,3
+B.Tech.,Mechanical Engineering,N/A,3,Spring,ME 372,Heat Transfer and Metrology Lab,Lab,3
+B.Tech.,Mechanical Engineering,N/A,3,Spring,ME 441,Applied Thermodynamics Lab,Lab,3
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,1,Autumn,CH 105,Organic & Inorganic Chemistry,Theory,4
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,1,Autumn,CH 107,Physical Chemistry,Theory,4
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,1,Autumn,CH 111,Chemistry,Theory,8
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,1,Autumn,CH 117,Chemistry Lab,Lab,3
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,1,Autumn,CS 101,Computer Programming and Utilization,Theory,6
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,1,Autumn,MA 105,Calculus,Theory,8
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,1,Autumn,MA 109,Calculus I,Theory,4
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,1,Autumn,MA 111,Calculus II,Theory,4
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,1,Autumn,ME 113,Workshop Practice,Lab,4
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,1,Autumn,MM 103,It`s a materials world !,Theory,6
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,1,Autumn,MS 101,Makerspace,Lab,8
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,1,Autumn,NOCS01,NCC/NSS/NSO,Non-credit,0
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,1,Autumn,PH 107,Quantum Physics and Application,Theory,6
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,1,Autumn,PH 117,Physics Lab,Lab,3
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,1,Spring,CH 117,Chemistry Lab,Lab,3
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,1,Spring,MA 110,Linear Algebra and Differential Equations,Theory,8
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,1,Spring,MM 105,It's a materials world!,Theory,6
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,1,Spring,MS 101,Makerspace,Lab,8
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,1,Spring,NOCS02,NCC/NSS/NSO,Non-credit,0
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,1,Spring,PH 110,Introduction to Classical and Quantum Physics,Theory,8
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,2,Autumn,BB 101,Biology,Theory,6
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,2,Spring,EC 101,Economics,Theory,6
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,2,Autumn,MM 219,Structure of Materials,Theory,6
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,2,Autumn,MM 221,Sensors and Measurements Lab,Lab,4
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,2,Autumn,MM 223,Thermodynamics of Materials,Theory,6
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,2,Autumn,MM 225,AI and Data Science,Theory,6
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,2,Autumn,DE 250,Design Thinking for Innovation,Theory,6
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,2,Spring,ES 250,Environmental Studies : Science and Engineering,Non-credit,3
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,2,Spring,HS 250,Environmental Studies,Non-credit,3
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,2,Spring,MM 210,Numerical Methods for Materials Engineers,Theory,6
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,2,Spring,MM 218,Process Kinetics and Transport,Theory,6
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,2,Spring,MM 220,Computation Lab,Lab,3
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,2,Spring,MM 222,Electrochemistry of Materials and its Applications,Theory,6
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,2,Spring,MM 224,Electrochemistry and Corrosion Lab,Lab,3
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,3,Autumn,MM 329,Diffusion and Phase Transformations,Theory,6
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,3,Autumn,MM 331,Mechanical Behaviour of Materials,Theory,6
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,3,Autumn,MM 333,"Electronic, Magnetic and Optical Properties of Materials",Theory,6
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,3,Autumn,MM 335,Alloy Processing and Characterization Lab,Lab,4
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,3,Autumn,MM 341,Processing and Characterization Lab: Thin Films,Lab,4
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,3,Spring,MM 324,Polymer Science and Engineering,Theory,6
+B.Tech.,Metallurgical Engineering and Materials Science,N/A,3,Spring,MM 337,Processing and Characterization of Non-metallic Materials (Lab),Lab,3
+B.S.,Chemistry,N/A,1,Autumn,BB 101,Biology,Theory,6
+B.S.,Chemistry,N/A,1,Autumn,CH 105,Organic & Inorganic Chemistry,Theory,4
+B.S.,Chemistry,N/A,1,Autumn,CH 107,Physical Chemistry,Theory,4
+B.S.,Chemistry,N/A,1,Autumn,CH 109,Stimulating Topics in Chemistry,Theory,6
+B.S.,Chemistry,N/A,1,Autumn,CH 111,Chemistry,Theory,8
+B.S.,Chemistry,N/A,1,Autumn,CH 117,Chemistry Lab,Lab,3
+B.S.,Chemistry,N/A,1,Autumn,CS 101,Computer Programming and Utilization,Theory,6
+B.S.,Chemistry,N/A,1,Autumn,MA 105,Calculus,Theory,8
+B.S.,Chemistry,N/A,1,Autumn,MA 109,Calculus I,Theory,4
+B.S.,Chemistry,N/A,1,Autumn,MA 111,Calculus II,Theory,4
+B.S.,Chemistry,N/A,1,Autumn,MS 101,Makerspace,Lab,8
+B.S.,Chemistry,N/A,1,Autumn,NOCS01,NCC/NSS/NSO,Non-credit,0
+B.S.,Chemistry,N/A,1,Autumn,PH 107,Quantum Physics and Application,Theory,6
+B.S.,Chemistry,N/A,1,Autumn,PH 117,Physics Lab,Lab,3
+B.S.,Chemistry,N/A,1,Spring,CH 110,Interpretative Spectroscopy,Theory,6
+B.S.,Chemistry,N/A,1,Spring,CS 101,Computer Programming and Utilization,Theory,6
+B.S.,Chemistry,N/A,1,Spring,NOCS02,NCC/NSS/NSO,Non-credit,0
+B.S.,Chemistry,N/A,1,Spring,PH 110,Introduction to Classical and Quantum Physics,Theory,8
+B.S.,Chemistry,N/A,1,Spring,PH 117,Physics Lab,Lab,3
+B.S.,Chemistry,N/A,2,Autumn,CH 209,Basic Organic Chemistry,Theory,6
+B.S.,Chemistry,N/A,2,Autumn,CH 219,Inorganic Chemistry Lab-I,Lab,2
+B.S.,Chemistry,N/A,2,Autumn,CH 225,Data Analysis for Chemists,Theory,6
+B.S.,Chemistry,N/A,2,Autumn,CH 231,Organic Chemistry Lab I,Lab,2
+B.S.,Chemistry,N/A,2,Autumn,CL 205,AI and Data Science,Theory,6
+B.S.,Chemistry,N/A,2,Spring,EC 101,Economics,Theory,6
+B.S.,Chemistry,N/A,2,Autumn,ES 250,Environmental Studies : Science and Engineering,Non-credit,3
+B.S.,Chemistry,N/A,2,Autumn,HS 250,Environmental Studies,Non-credit,3
+B.S.,Chemistry,N/A,2,Spring,CH 202,Transition Metal Chemistry,Theory,6
+B.S.,Chemistry,N/A,2,Spring,CH 216,Thermodynamics and Chemical Kinetics,Theory,6
+B.S.,Chemistry,N/A,2,Spring,CH 226,Inorganic Chemistry Lab-II,Lab,3
+B.S.,Chemistry,N/A,2,Spring,CH 228,Organic Chemistry Lab II,Lab,3
+B.S.,Chemistry,N/A,2,Spring,CH 230,Physical Chemistry Lab I,Lab,2
+B.S.,Chemistry,N/A,2,Autumn,DE 250,Design Thinking for Innovation,Theory,6
+B.S.,Chemistry,N/A,2,Spring,MA 110,Linear Algebra and Differential Equations,Theory,8
+B.S.,Chemistry,N/A,3,Autumn,CH 301,Co-ordination Chemistry and Magnetic Properties,Theory,6
+B.S.,Chemistry,N/A,3,Autumn,CH 305,Chemistry of Functional Groups,Theory,6
+B.S.,Chemistry,N/A,3,Autumn,CH 309,Introduction to Electrochemistry,Theory,3
+B.S.,Chemistry,N/A,3,Autumn,CH 311,Solid State,Theory,3
+B.S.,Chemistry,N/A,3,Autumn,CH 313,Organic Chemistry Lab III,Lab,3
+B.S.,Chemistry,N/A,3,Autumn,CH 315,Physical Chemistry Lab II,Lab,3
+B.S.,Chemistry,N/A,3,Spring,CH 302,Chemistry of Main Group Elements,Theory,6
+B.S.,Chemistry,N/A,3,Spring,CH 304,Chemistry of Biomolecules,Theory,6
+B.S.,Chemistry,N/A,3,Spring,CH 306,Group theory and Spectroscopy Techniques,Theory,6
+B.S.,Chemistry,N/A,3,Spring,CH 310,Inorganic Chemistry Lab III,Lab,3
+B.S.,Chemistry,N/A,3,Spring,CH 312,Physical Chemistry Lab III,Lab,3
+B.S.,Economics,N/A,1,Autumn,CH 111,Chemistry,Theory,8
+B.S.,Economics,N/A,1,Autumn,CS 101,Computer Programming and Utilization,Theory,6
+B.S.,Economics,N/A,1,Autumn,GC 101,Gender in the workplace,Non-credit,0
+B.S.,Economics,N/A,1,Autumn,MA 105,Calculus,Theory,8
+B.S.,Economics,N/A,1,Autumn,NOCS01,NCC/NSS/NSO,Non-credit,0
+B.S.,Economics,N/A,1,Autumn,PH 117,Physics Lab,Lab,3
+B.S.,Economics,N/A,1,Spring,CH 117,Chemistry Lab,Lab,3
+B.S.,Economics,N/A,1,Spring,EC 101,Economics,Theory,6
+B.S.,Economics,N/A,1,Spring,MA 110,Linear Algebra and Differential Equations,Theory,8
+B.S.,Economics,N/A,1,Spring,MS 101,Makerspace,Lab,8
+B.S.,Economics,N/A,1,Spring,NOCS02,NCC/NSS/NSO,Non-credit,0
+B.S.,Economics,N/A,1,Spring,PH 110,Introduction to Classical and Quantum Physics,Theory,8
+B.S.,Economics,N/A,2,Autumn,EC 221,Intermediate Microeconomics I,Theory,6
+B.S.,Economics,N/A,2,Autumn,EC 223,Intermediate Macroeconomics-I,Theory,6
+B.S.,Economics,N/A,2,Autumn,EC 225,Mathematics for Economics,Theory,6
+B.S.,Economics,N/A,2,Autumn,EC 227,Statistics I,Theory,6
+B.S.,Economics,N/A,2,Autumn,ES 250,Environmental Studies : Science and Engineering,Non-credit,3
+B.S.,Economics,N/A,2,Autumn,HS 250,Environmental Studies,Non-credit,3
+B.S.,Economics,N/A,2,Autumn,MM 225,AI and Data Science,Theory,6
+B.S.,Economics,N/A,2,Spring,DE 250,Design Thinking for Innovation,Theory,6
+B.S.,Economics,N/A,2,Spring,EC 210,Intermediate Microeconomics II,Theory,6
+B.S.,Economics,N/A,2,Spring,EC 212,Intermediate Macroeconomics II,Theory,6
+B.S.,Economics,N/A,2,Spring,EC 214,Statistics II,Theory,6
+B.S.,Economics,N/A,3,Autumn,EC 306,Econometrics I,Theory,6
+B.S.,Economics,N/A,3,Autumn,EC 308,Econometrics I Lab,Lab,3
+B.S.,Economics,N/A,3,Autumn,EC 311,International Economics I,Theory,6
+B.S.,Economics,N/A,3,Autumn,EC 313,Development Economics I,Theory,6
+B.S.,Economics,N/A,3,Autumn,EC 402,Game Theory and Economic Analysis,Theory,6
+B.S.,Economics,N/A,3,Spring,EC 302,International Economics II,Theory,6
+B.S.,Economics,N/A,3,Spring,EC 405,Econometrics II,Theory,6
+B.S.,Economics,N/A,3,Spring,EC 407,Econometrics II Lab,Lab,3
+B.S.,Economics,N/A,3,Spring,EC 411,Indian Economy,Theory,6
+B.S.,Mathematics,N/A,1,Autumn,BB 101,Biology,Theory,6
+B.S.,Mathematics,N/A,1,Autumn,CH 105,Organic & Inorganic Chemistry,Theory,4
+B.S.,Mathematics,N/A,1,Autumn,CH 107,Physical Chemistry,Theory,4
+B.S.,Mathematics,N/A,1,Autumn,CH 117,Chemistry Lab,Lab,3
+B.S.,Mathematics,N/A,1,Autumn,CS 101,Computer Programming and Utilization,Theory,6
+B.S.,Mathematics,N/A,1,Autumn,MA 105,Calculus,Theory,8
+B.S.,Mathematics,N/A,1,Autumn,MA 109,Calculus I,Theory,4
+B.S.,Mathematics,N/A,1,Autumn,MA 111,Calculus II,Theory,4
+B.S.,Mathematics,N/A,1,Autumn,MA 113,Mathematics and Its History,Theory,6
+B.S.,Mathematics,N/A,1,Autumn,MA 114,An Introduction to Mathematical Concepts,Theory,6
+B.S.,Mathematics,N/A,1,Autumn,ME 119,Engineering Graphics & Drawing,Lab,5
+B.S.,Mathematics,N/A,1,Autumn,MS 101,Makerspace,Lab,8
+B.S.,Mathematics,N/A,1,Autumn,NOCS01,NCC/NSS/NSO,Non-credit,0
+B.S.,Mathematics,N/A,1,Autumn,PH 107,Quantum Physics and Application,Theory,6
+B.S.,Mathematics,N/A,1,Autumn,PH 117,Physics Lab,Lab,3
+B.S.,Mathematics,N/A,1,Spring,CS 101,Computer Programming and Utilization,Theory,6
+B.S.,Mathematics,N/A,1,Spring,MA 110,Linear Algebra and Differential Equations,Theory,8
+B.S.,Mathematics,N/A,1,Spring,NOCS02,NCC/NSS/NSO,Non-credit,0
+B.S.,Mathematics,N/A,1,Spring,PH 110,Introduction to Classical and Quantum Physics,Theory,8
+B.S.,Mathematics,N/A,1,Spring,PH 117,Physics Lab,Lab,3
+B.S.,Mathematics,N/A,2,Autumn,EC 101,Economics,Theory,6
+B.S.,Mathematics,N/A,2,Autumn,MA 401,Linear Algebra,Theory,8
+B.S.,Mathematics,N/A,2,Autumn,MA 403,Real Analysis,Theory,8
+B.S.,Mathematics,N/A,2,Autumn,MA 419,Basic Algebra,Theory,8
+B.S.,Mathematics,N/A,2,Autumn,SI 427,Probability I,Theory,8
+B.S.,Mathematics,N/A,2,Spring,ES 250,Environmental Studies : Science and Engineering,Non-credit,3
+B.S.,Mathematics,N/A,2,Spring,HS 250,Environmental Studies,Non-credit,3
+B.S.,Mathematics,N/A,2,Spring,MA 406,General Topology,Theory,8
+B.S.,Mathematics,N/A,2,Spring,MA 410,Multivariable Calculus,Theory,6
+B.S.,Mathematics,N/A,2,Spring,MA 412,Complex Analysis,Theory,8
+B.S.,Mathematics,N/A,3,Autumn,MA 417,Ordinary Differential Equations,Theory,8
+B.S.,Mathematics,N/A,3,Autumn,SI 419,Combinatorics,Theory,8
+B.S.,Mathematics,N/A,3,Autumn,SI 507,Numerical Analysis,Theory,8
+B.S.,Mathematics,N/A,3,Spring,MA 408,Measure Theory,Theory,8
+B.S.,Mathematics,N/A,3,Spring,MA 414,Algebra I,Theory,8
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Communication & Signal Processing,1,Autumn,CH 105,Organic & Inorganic Chemistry,Theory,4
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Communication & Signal Processing,1,Autumn,CH 107,Physical Chemistry,Theory,4
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Communication & Signal Processing,1,Autumn,CS 101,Computer Programming and Utilization,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Communication & Signal Processing,1,Autumn,EE 113,Introduction to Electrical Engineering Practice,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Communication & Signal Processing,1,Autumn,MA 109,Calculus I,Theory,4
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Communication & Signal Processing,1,Autumn,MA 111,Calculus II,Theory,4
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Communication & Signal Processing,1,Autumn,NOCS01,NCC/NSS/NSO,Non-credit,0
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Communication & Signal Processing,1,Autumn,PH 107,Quantum Physics and Application,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Communication & Signal Processing,2,Autumn,EE 204,Analog Circuits,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Communication & Signal Processing,2,Autumn,EE 214,Digital Circuits Lab,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Communication & Signal Processing,2,Autumn,EE 224,Digital Systems,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Communication & Signal Processing,2,Autumn,EE 229,Signal Processing – I,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Communication & Signal Processing,2,Autumn,EE 240,Power Engineering Lab,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Communication & Signal Processing,2,Autumn,EE 325,Probability and Random Processes,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Communication & Signal Processing,2,Spring,DE 250,Design Thinking for Innovation,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Communication & Signal Processing,2,Spring,EE 207,Electronic Devices & Circuits,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Communication & Signal Processing,2,Spring,EE 230,Analog Lab,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Communication & Signal Processing,2,Spring,EE 238,Power Engineering - II,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Communication & Signal Processing,2,Spring,EE 302,Control Systems,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Communication & Signal Processing,2,Spring,EE 309,Microprocessors,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Communication & Signal Processing,2,Spring,EE 337,Microprocessors Laboratory,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Communication & Signal Processing,3,Autumn,EE 236,Electronic Devices Lab,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Communication & Signal Processing,3,Autumn,EE 301,Electromagnetic Waves,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Communication & Signal Processing,3,Autumn,EE 324,Control Systems Lab,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Communication & Signal Processing,3,Autumn,EE 340,Communications Lab,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Communication & Signal Processing,3,Autumn,EE 341,Communication Systems - I,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Communication & Signal Processing,3,Autumn,EE 353,Introduction to Data Science and Machine Learning,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Communication & Signal Processing,3,Spring,EE 338,Digital Signal Processing,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Communication & Signal Processing,3,Spring,EE 344,Electronic Design Lab,Lab,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Communication & Signal Processing,3,Spring,EE 350,Technical Communication,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Control Computing,1,Autumn,CH 105,Organic & Inorganic Chemistry,Theory,4
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Control Computing,1,Autumn,CH 107,Physical Chemistry,Theory,4
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Control Computing,1,Autumn,CS 101,Computer Programming and Utilization,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Control Computing,1,Autumn,EE 113,Introduction to Electrical Engineering Practice,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Control Computing,1,Autumn,MA 109,Calculus I,Theory,4
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Control Computing,1,Autumn,MA 111,Calculus II,Theory,4
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Control Computing,1,Autumn,NOCS01,NCC/NSS/NSO,Non-credit,0
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Control Computing,1,Autumn,PH 107,Quantum Physics and Application,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Control Computing,2,Autumn,EE 204,Analog Circuits,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Control Computing,2,Autumn,EE 214,Digital Circuits Lab,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Control Computing,2,Autumn,EE 224,Digital Systems,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Control Computing,2,Autumn,EE 229,Signal Processing – I,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Control Computing,2,Autumn,EE 240,Power Engineering Lab,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Control Computing,2,Autumn,EE 325,Probability and Random Processes,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Control Computing,2,Spring,DE 250,Design Thinking for Innovation,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Control Computing,2,Spring,EE 207,Electronic Devices & Circuits,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Control Computing,2,Spring,EE 230,Analog Lab,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Control Computing,2,Spring,EE 238,Power Engineering - II,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Control Computing,2,Spring,EE 302,Control Systems,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Control Computing,2,Spring,EE 309,Microprocessors,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Control Computing,2,Spring,EE 337,Microprocessors Laboratory,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Control Computing,3,Autumn,EE 236,Electronic Devices Lab,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Control Computing,3,Autumn,EE 301,Electromagnetic Waves,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Control Computing,3,Autumn,EE 324,Control Systems Lab,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Control Computing,3,Autumn,EE 340,Communications Lab,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Control Computing,3,Autumn,EE 341,Communication Systems - I,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Control Computing,3,Autumn,EE 353,Introduction to Data Science and Machine Learning,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Control Computing,3,Spring,EE 613,Nonlinear Dynamical Systems,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Control Computing,3,Spring,EE 344,Electronic Design Lab,Lab,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Control Computing,3,Spring,EE 350,Technical Communication,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Control Computing,4,Autumn,EE 635,Applied Linear Algebra,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Control Computing,4,Autumn,EE 640,Multivariable Control Systems,Lab,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Control Computing,4,Autumn,ES 250,Environmental Studies : Science and Engineering,Theory,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Control Computing,4,Autumn,HS 250,Environmental Studies,Theory,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Control Computing,4,Spring,EE 622,Optimal Control Systems,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Control Computing,4,Spring,EE 636,Matrix Computations,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Control Computing,4,Spring,EE 615,Control and Computing Laboratory,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Power Electronics and Power Systems,1,Autumn,CH 105,Organic & Inorganic Chemistry,Theory,4
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Power Electronics and Power Systems,1,Autumn,CH 107,Physical Chemistry,Theory,4
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Power Electronics and Power Systems,1,Autumn,CS 101,Computer Programming and Utilization,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Power Electronics and Power Systems,1,Autumn,EE 113,Introduction to Electrical Engineering Practice,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Power Electronics and Power Systems,1,Autumn,MA 109,Calculus I,Theory,4
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Power Electronics and Power Systems,1,Autumn,MA 111,Calculus II,Theory,4
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Power Electronics and Power Systems,1,Autumn,NOCS01,NCC/NSS/NSO,Non-credit,0
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Power Electronics and Power Systems,1,Autumn,PH 107,Quantum Physics and Application,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Power Electronics and Power Systems,2,Autumn,EE 204,Analog Circuits,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Power Electronics and Power Systems,2,Autumn,EE 214,Digital Circuits Lab,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Power Electronics and Power Systems,2,Autumn,EE 224,Digital Systems,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Power Electronics and Power Systems,2,Autumn,EE 229,Signal Processing – I,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Power Electronics and Power Systems,2,Autumn,EE 240,Power Engineering Lab,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Power Electronics and Power Systems,2,Autumn,EE 325,Probability and Random Processes,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Power Electronics and Power Systems,2,Spring,DE 250,Design Thinking for Innovation,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Power Electronics and Power Systems,2,Spring,EE 207,Electronic Devices & Circuits,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Power Electronics and Power Systems,2,Spring,EE 230,Analog Lab,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Power Electronics and Power Systems,2,Spring,EE 238,Power Engineering - II,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Power Electronics and Power Systems,2,Spring,EE 302,Control Systems,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Power Electronics and Power Systems,2,Spring,EE 309,Microprocessors,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Power Electronics and Power Systems,2,Spring,EE 337,Microprocessors Laboratory,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Power Electronics and Power Systems,3,Autumn,EE 236,Electronic Devices Lab,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Power Electronics and Power Systems,3,Autumn,EE 301,Electromagnetic Waves,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Power Electronics and Power Systems,3,Autumn,EE 324,Control Systems Lab,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Power Electronics and Power Systems,3,Autumn,EE 340,Communications Lab,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Power Electronics and Power Systems,3,Autumn,EE 341,Communication Systems - I,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Power Electronics and Power Systems,3,Autumn,EE 353,Introduction to Data Science and Machine Learning,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Power Electronics and Power Systems,3,Spring,EE 344,Electronic Design Lab,Lab,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Power Electronics and Power Systems,3,Spring,EE 350,Technical Communication,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Power Electronics and Power Systems,4,Autumn,EE 653,Power Electronics-1,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Power Electronics and Power Systems,4,Autumn,EE 673,Power Systems and Power Electronics -1,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Power Electronics and Power Systems,4,Autumn,EE 657,Electric Devices -1,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Power Electronics and Power Systems,4,Autumn,EE 6105,Power System Modeling and Control,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Power Electronics and Power Systems,4,Autumn,ES 250,Environment Studies : Science and Engineering,Theory,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Power Electronics and Power Systems,4,Autumn,HS 250,Environment Studies,Theory,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Electronic Systems,1,Autumn,CH 105,Organic & Inorganic Chemistry,Theory,4
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Electronic Systems,1,Autumn,CH 107,Physical Chemistry,Theory,4
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Electronic Systems,1,Autumn,CS 101,Computer Programming and Utilization,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Electronic Systems,1,Autumn,EE 113,Introduction to Electrical Engineering Practice,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Electronic Systems,1,Autumn,MA 109,Calculus I,Theory,4
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Electronic Systems,1,Autumn,MA 111,Calculus II,Theory,4
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Electronic Systems,1,Autumn,NOCS01,NCC/NSS/NSO,Non-credit,0
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Electronic Systems,1,Autumn,PH 107,Quantum Physics and Application,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Electronic Systems,2,Autumn,EE 204,Analog Circuits,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Electronic Systems,2,Autumn,EE 214,Digital Circuits Lab,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Electronic Systems,2,Autumn,EE 224,Digital Systems,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Electronic Systems,2,Autumn,EE 229,Signal Processing – I,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Electronic Systems,2,Autumn,EE 240,Power Engineering Lab,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Electronic Systems,2,Autumn,EE 325,Probability and Random Processes,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Electronic Systems,2,Spring,DE 250,Design Thinking for Innovation,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Electronic Systems,2,Spring,EE 207,Electronic Devices & Circuits,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Electronic Systems,2,Spring,EE 230,Analog Lab,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Electronic Systems,2,Spring,EE 238,Power Engineering - II,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Electronic Systems,2,Spring,EE 302,Control Systems,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Electronic Systems,2,Spring,EE 309,Microprocessors,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Electronic Systems,2,Spring,EE 337,Microprocessors Laboratory,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Electronic Systems,3,Autumn,EE 236,Electronic Devices Lab,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Electronic Systems,3,Autumn,EE 301,Electromagnetic Waves,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Electronic Systems,3,Autumn,EE 324,Control Systems Lab,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Electronic Systems,3,Autumn,EE 340,Communications Lab,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Electronic Systems,3,Autumn,EE 341,Communication Systems - I,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Electronic Systems,3,Autumn,EE 353,Introduction to Data Science and Machine Learning,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Electronic Systems,3,Spring,EE 338,Digital Signal Processing,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Electronic Systems,3,Spring,EE 344,Electronic Design Lab,Lab,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Electronic Systems,3,Spring,EE 350,Technical Communication,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Integrated Circuits & Systems,1,Autumn,CH 105,Organic & Inorganic Chemistry,Theory,4
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Integrated Circuits & Systems,1,Autumn,CH 107,Physical Chemistry,Theory,4
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Integrated Circuits & Systems,1,Autumn,CS 101,Computer Programming and Utilization,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Integrated Circuits & Systems,1,Autumn,EE 113,Introduction to Electrical Engineering Practice,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Integrated Circuits & Systems,1,Autumn,MA 109,Calculus I,Theory,4
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Integrated Circuits & Systems,1,Autumn,MA 111,Calculus II,Theory,4
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Integrated Circuits & Systems,1,Autumn,NOCS01,NCC/NSS/NSO,Non-credit,0
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Integrated Circuits & Systems,1,Autumn,PH 107,Quantum Physics and Application,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Integrated Circuits & Systems,2,Autumn,EE 204,Analog Circuits,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Integrated Circuits & Systems,2,Autumn,EE 214,Digital Circuits Lab,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Integrated Circuits & Systems,2,Autumn,EE 224,Digital Systems,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Integrated Circuits & Systems,2,Autumn,EE 229,Signal Processing – I,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Integrated Circuits & Systems,2,Autumn,EE 240,Power Engineering Lab,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Integrated Circuits & Systems,2,Autumn,EE 325,Probability and Random Processes,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Integrated Circuits & Systems,2,Spring,DE 250,Design Thinking for Innovation,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Integrated Circuits & Systems,2,Spring,EE 207,Electronic Devices & Circuits,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Integrated Circuits & Systems,2,Spring,EE 230,Analog Lab,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Integrated Circuits & Systems,2,Spring,EE 238,Power Engineering - II,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Integrated Circuits & Systems,2,Spring,EE 302,Control Systems,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Integrated Circuits & Systems,2,Spring,EE 309,Microprocessors,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Integrated Circuits & Systems,2,Spring,EE 337,Microprocessors Laboratory,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Integrated Circuits & Systems,3,Autumn,EE 236,Electronic Devices Lab,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Integrated Circuits & Systems,3,Autumn,EE 301,Electromagnetic Waves,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Integrated Circuits & Systems,3,Autumn,EE 324,Control Systems Lab,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Integrated Circuits & Systems,3,Autumn,EE 340,Communications Lab,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Integrated Circuits & Systems,3,Autumn,EE 341,Communication Systems - I,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Integrated Circuits & Systems,3,Autumn,EE 353,Introduction to Data Science and Machine Learning,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Integrated Circuits & Systems,3,Spring,EE 338,Digital Signal Processing,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Integrated Circuits & Systems,3,Spring,EE 344,Electronic Design Lab,Lab,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Integrated Circuits & Systems,3,Spring,EE 350,Technical Communication,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Solid State Devices,1,Autumn,CH 105,Organic & Inorganic Chemistry,Theory,4
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Solid State Devices,1,Autumn,CH 107,Physical Chemistry,Theory,4
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Solid State Devices,1,Autumn,CS 101,Computer Programming and Utilization,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Solid State Devices,1,Autumn,EE 113,Introduction to Electrical Engineering Practice,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Solid State Devices,1,Autumn,MA 109,Calculus I,Theory,4
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Solid State Devices,1,Autumn,MA 111,Calculus II,Theory,4
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Solid State Devices,1,Autumn,NOCS01,NCC/NSS/NSO,Non-credit,0
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Solid State Devices,1,Autumn,PH 107,Quantum Physics and Application,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Solid State Devices,2,Autumn,EE 204,Analog Circuits,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Solid State Devices,2,Autumn,EE 214,Digital Circuits Lab,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Solid State Devices,2,Autumn,EE 224,Digital Systems,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Solid State Devices,2,Autumn,EE 229,Signal Processing – I,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Solid State Devices,2,Autumn,EE 240,Power Engineering Lab,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Solid State Devices,2,Autumn,EE 325,Probability and Random Processes,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Solid State Devices,2,Spring,DE 250,Design Thinking for Innovation,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Solid State Devices,2,Spring,EE 207,Electronic Devices & Circuits,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Solid State Devices,2,Spring,EE 230,Analog Lab,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Solid State Devices,2,Spring,EE 238,Power Engineering - II,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Solid State Devices,2,Spring,EE 302,Control Systems,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Solid State Devices,2,Spring,EE 309,Microprocessors,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Solid State Devices,2,Spring,EE 337,Microprocessors Laboratory,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Solid State Devices,3,Autumn,EE 236,Electronic Devices Lab,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Solid State Devices,3,Autumn,EE 301,Electromagnetic Waves,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Solid State Devices,3,Autumn,EE 324,Control Systems Lab,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Solid State Devices,3,Autumn,EE 340,Communications Lab,Lab,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Solid State Devices,3,Autumn,EE 341,Communication Systems - I,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Solid State Devices,3,Autumn,EE 353,Introduction to Data Science and Machine Learning,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Solid State Devices,3,Spring,EE 344,Electronic Design Lab,Lab,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Solid State Devices,3,Spring,EE 350,Technical Communication,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Solid State Devices,3,Spring,EE 620,Physics of Transistors,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Solid State Devices,4,Autumn,EE 669,VLSI Technology,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Solid State Devices,4,Autumn,EE 735,Microelectronics Simulation Lab,Theory,6
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Solid State Devices,4,Autumn,ES 250,Environment Studies : Science and Engineering,Theory,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Solid State Devices,4,Autumn,HS 250,Environment Studies,Theory,3
+Dual Degree (B.Tech. + M.Tech.),Electrical Engineering,Solid State Devices,4,Spring,EE 672,Microelectronics Technology Lab,Theory,6
+B.Tech.,Industrial Engineering and Operations Research,N/A,1,Autumn,BB 101,Biology,Theory,6
+B.Tech.,Industrial Engineering and Operations Research,N/A,1,Autumn,CH 117,Chemistry Lab,Lab,3
+B.Tech.,Industrial Engineering and Operations Research,N/A,1,Autumn,IE 101,Introduction to IE and OR,Theory,6
+B.Tech.,Industrial Engineering and Operations Research,N/A,1,Autumn,MA 105,Calculus,Theory,8
+B.Tech.,Industrial Engineering and Operations Research,N/A,1,Autumn,MS 101,Makerspace,Lab,8
+B.Tech.,Industrial Engineering and Operations Research,N/A,1,Autumn,NOCS01,NCC/NSS/NSO,Non-credit,0
+B.Tech.,Industrial Engineering and Operations Research,N/A,1,Spring,CS 101,Computer Programming and Utilization,Theory,6
+B.Tech.,Industrial Engineering and Operations Research,N/A,1,Spring,IE 102,Probability and Statistics,Theory,6
+B.Tech.,Industrial Engineering and Operations Research,N/A,1,Spring,MA 110,Linear Algebra and Differential Equations,Theory,8
+B.Tech.,Industrial Engineering and Operations Research,N/A,1,Spring,NOCS02,NCC/NSS/NSO,Non-credit,0
+B.Tech.,Industrial Engineering and Operations Research,N/A,1,Spring,PH 117,Physics Lab,Lab,3
+B.Tech.,Industrial Engineering and Operations Research,N/A,2,Spring,EC 101,Economics,Theory,6
+B.Tech.,Industrial Engineering and Operations Research,N/A,2,Autumn,DE 250,Economics,Theory,6
+B.Tech.,Industrial Engineering and Operations Research,N/A,2,Spring,ES 250,Environmental Studies : Science and Engineering,Non-credit,3
+B.Tech.,Industrial Engineering and Operations Research,N/A,2,Spring,HS 250,Environmental Studies,Non-credit,3
+B.Tech.,Industrial Engineering and Operations Research,N/A,2,Autumn,IE 203,Data Structures and Algorithms,Theory,6
+B.Tech.,Industrial Engineering and Operations Research,N/A,2,Autumn,IE 205,Industrial Engineering Lab,Lab,3
+B.Tech.,Industrial Engineering and Operations Research,N/A,2,Autumn,IE 207,Industrial Systems,Theory,6
+B.Tech.,Industrial Engineering and Operations Research,N/A,2,Autumn,IE 209,Linear Optimization and Network Flows,Theory,6
+B.Tech.,Industrial Engineering and Operations Research,N/A,2,Autumn,IE 211,Programming & Computing Lab, Lab,3
+B.Tech.,Industrial Engineering and Operations Research,N/A,2,Spring,IE 201,"Data Analytics, AI/ML Lab",Lab,3
+B.Tech.,Industrial Engineering and Operations Research,N/A,2,Spring,IE 202,Digital Enterprise Systems Lab,Lab,3
+B.Tech.,Industrial Engineering and Operations Research,N/A,2,Spring,IE 204,Feedback and Dynamics,Theory,6
+B.Tech.,Industrial Engineering and Operations Research,N/A,2,Spring,IE 206,Introduction to Artificial Intelligence and Machine Learning,Theory,6
+B.Tech.,Industrial Engineering and Operations Research,N/A,2,Spring,IE 208,Nonlinear and Discrete Optimization,Theory,6
+B.Tech.,Industrial Engineering and Operations Research,N/A,2,Spring,IE 210,Optimization Modeling LAB,Lab,3
+B.S.,Applied Geophysics,N/A,1,Autumn,CH 111,Chemistry,Theory,8
+B.S.,Applied Geophysics,N/A,1,Autumn,CH 117,Chemistry,Lab,3
+B.S.,Applied Geophysics,N/A,1,Autumn,GP 101,Solid-Earth Geophysics,Theory,6
+B.S.,Applied Geophysics,N/A,1,Autumn,MA 105,Calculus,Theory,8
+B.S.,Applied Geophysics,N/A,1,Autumn,MS 101,Makerspace,Theory,8
+B.S.,Applied Geophysics,N/A,1,Autumn,NOCS01,NCC/NSS/NSO,Non-credit,0
+B.S.,Applied Geophysics,N/A,1,Autumn,GC 101,Gender in the workplace,Non-credit,0
