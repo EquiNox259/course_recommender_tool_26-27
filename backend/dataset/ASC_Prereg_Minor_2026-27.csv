@@ -26,7 +26,7 @@ CH 521,Interpretative Molecular Spectroscopy,Yes
 CH 547,Organometallic Chemistry,No
 CS 347,Operating Systems,Yes
 CS 409,Introduction to Cryptography,No
-CS 416,Computer and Network Security,No
+CS 416,Computer and Network Security,Yes
 DH 302,Introduction to Public Health Informatics,No
 DH 307,R & D Project,No
 DH 308,Clinical Data Management,No
@@ -43,7 +43,7 @@ EE 341,Communication Systems - I,No
 EN 323,Renewable Energy Generation and Storage,No
 ENT602,Technology Venture Creation,No
 ENT606,Developing a Proof of Concept- Basic,No
-ENT609,Marketing & Finance for Entrepreneurs,Yes
+ENT609,Marketing & Finance for Entrepreneurs,No
 ENT612,Field Immersion for Researchers and Entrepreneurs,No
 ENT615,Strategy and Leadership for Entrepreneurs,No
 ENT617,Tech-Opportunities Identification,No
