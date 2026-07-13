@@ -1207,6 +1207,12 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
             'S1': {'AE', 'CS', 'EN', 'CH'},
             'S2': {'CE', 'GP', 'MM', 'IE'},
         },
+        
+        'BB101': {
+            'D1': {'CH', 'ME'},
+            'D2': {'AE', 'EP', 'IE'},
+            'S1': {'CL', 'MM'},
+        },
     }
 
     course_hist_norm = {norm_code(c) for c in course_hist}
