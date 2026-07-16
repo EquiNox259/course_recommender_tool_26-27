@@ -81,7 +81,13 @@ class LLMService:
                 seed=42,
                 thinking_config=types.ThinkingConfig(thinking_budget=0)
             )
-        )           
+        )
+
+        um = response.usage_metadata
+            print(f"[TOKENS] prompt={um.prompt_token_count} "
+                  f"cached={getattr(um, 'cached_content_token_count', 0)} "
+                  f"out={um.candidates_token_count}")
+               
         return response.text
     
     def rephrase_and_extract_intent(self, raw_query: str) -> dict:
@@ -426,6 +432,11 @@ class LLMService:
                     thinking_config=types.ThinkingConfig(thinking_budget=0)
                 )
             )
+
+            um = response.usage_metadata
+            print(f"[TOKENS] prompt={um.prompt_token_count} "
+                  f"cached={getattr(um, 'cached_content_token_count', 0)} "
+                  f"out={um.candidates_token_count}")
 
             result = json.loads(response.text.strip())
             
