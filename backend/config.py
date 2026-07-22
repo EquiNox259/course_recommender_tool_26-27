@@ -54,4 +54,4 @@ GSHEETS_SPREADSHEET_NAME = os.environ.get("GSHEETS_SPREADSHEET_NAME", "Course Re
 FRONTEND_ORIGIN = os.environ.get("FRONTEND_ORIGIN", "http://127.0.0.1:5000")
 
 # Pre-registration
-PREREG_MODE = True
+PREREG_MODE = False
