@@ -2,7 +2,7 @@ import ast
 import numpy as np
 import re, os
 import pandas as pd
-from config import RUNNING_COURSES_PATH, RUNNING_COURSES_PATH_ALT, PREREQ_PATH, COURSES_HISTORY_PATH, CORE_COURSES_PATH, HIGH_DEMAND_COURSES_PATH, HIGH_DEMAND_CRITERIA_PATH, PREREG_MINOR_PATH, SEMESTER, GRADES_2024_PATH, GRADES_2025_PATH
+from config import RUNNING_COURSES_PATH, RUNNING_COURSES_PATH_ALT, PREREQ_PATH, COURSES_HISTORY_PATH, CORE_COURSES_PATH, PREREG_MODE,   HIGH_DEMAND_COURSES_PATH, HIGH_DEMAND_CRITERIA_PATH, PREREG_MINOR_PATH, SEMESTER, GRADES_2024_PATH, GRADES_2025_PATH
 from collections import defaultdict
 from datetime import datetime
 
@@ -483,7 +483,7 @@ def check_restriction(Degree,year,department,course_code, data=data_modified, is
     return results[0] if results else 'Restricted'
 
 #check prerequsite
-def check_prereq(course_code,course_hist,degree = None, data=df_prereq):
+def check_prereq(course_code,course_hist,degree = None, department=None, data=df_prereq):
     # Normalize course_code to a stripped uppercase code (without spaces)
     course_code = str(course_code).replace(" ", "").upper().strip()
     # Normalize course_hist to a set of stripped uppercase codes (without spaces)
@@ -496,13 +496,31 @@ def check_prereq(course_code,course_hist,degree = None, data=df_prereq):
     # Fetch prerequsite course code and instructor approval status
     rows = data[data['CourseCode'] == course_code]
 
+    # 1. Department applicability: Keep only rows whose scope covers this student
+    if department is not None and 'Applicable forDepartment(s)' in data.columns:
+        rows = rows[rows['Applicable forDepartment(s)'].apply(
+            lambda s: _dept_scope_ok(s, course_code, department))]
+        if rows.empty:
+            return 'Valid', None, None
+
+    # 2. Program applicability : Similar to Department applicability
     if degree and 'Applicable forprogram(s)' in data.columns:
-        preferred = rows[rows['Applicable forprogram(s)'].str.contains(
-            degree, na=False, regex=False
-        )]
-        row = preferred.iloc[0] if len(preferred) > 0 else rows.iloc[0]
-    else:
-        row = rows.iloc[0]
+        preferred = rows[rows['Applicable forprogram(s)'].str.contains(degree, na=False, regex=False)]
+        if len(preferred) > 0:
+            rows = preferred
+
+    # 3. Prefer the prerequisite row when both Types survive scoping
+    pr_rows = rows[rows['Type'] == 'prerequiste']
+    eq_rows = rows[rows['Type'] == 'equivalent']
+
+    _eqpat = r'(?:[A-Z]{2,3}\d{3,4})'
+    for _, _erow in eq_rows.iterrows():
+        _enorm  = re.sub(r'\s+(\d)', r'\1', str(_erow['Courses']).upper())
+        for _ec in re.findall(_eqpat, _enorm):
+            if _ec in course_hist:
+                return f'Equivalent course already completed: {_ec}.', None, None
+
+    row = pr_rows.iloc[0] if len(pr_rows) > 0 else rows.iloc[0]
 
     prereq   = row['Courses']
     approval = row['InstructorConsent']
@@ -831,17 +849,18 @@ if _cn_col:
 
 # Courses listed on the External ASC minor pre-registration page WITHOUT the "Course has Pre-requisites/Equivalent" note 
 # External ASC does not enforce prereqs for these in minor pre-registration, so neither do we.
-try:
-    _df_prereg = pd.read_csv(PREREG_MINOR_PATH)
-    PREREG_PREREQ_EXEMPT = {
-        str(r['Course Code']).replace(' ', '').upper().strip()
-        for _, r in _df_prereg.iterrows()
-        if str(r['Prereq_Note']).strip().lower() == 'no'
-    }
-    print(f"[SUCCESS] Minor pre-reg prereq exemptions loaded: {len(PREREG_PREREQ_EXEMPT)} courses.")
-except Exception as e:
-    print(f"[WARNING] Failed to load minor pre-reg exemptions: {e}")
-    PREREG_PREREQ_EXEMPT = set()
+if PREREG_MODE:
+    try:
+        _df_prereg = pd.read_csv(PREREG_MINOR_PATH)
+        PREREG_PREREQ_EXEMPT = {
+            str(r['Course Code']).replace(' ', '').upper().strip()
+            for _, r in _df_prereg.iterrows()
+            if str(r['Prereq_Note']).strip().lower() == 'no'
+        }
+        print(f"[SUCCESS] Minor pre-reg prereq exemptions loaded: {len(PREREG_PREREQ_EXEMPT)} courses.")
+    except Exception as e:
+        print(f"[WARNING] Failed to load minor pre-reg exemptions: {e}")
+        PREREG_PREREQ_EXEMPT = set()
 
 try:
     from config import MINOR_COURSES_PATH as _MINOR_PATH, RUNNING_COURSES_PATH as _META_PATH
@@ -1047,6 +1066,19 @@ _REMARK_DEPT_ABBREVS: dict = {
 _DEPT_TO_ABBREVS: dict = {}
 for _abbr, _full in _REMARK_DEPT_ABBREVS.items():
     _DEPT_TO_ABBREVS.setdefault(_full, set()).add(_abbr)
+
+def _dept_scope_ok(scope, course_code, student_department):
+    s = str(scope or '').strip().lower()
+    if not s or s.startswith('all') or s == 'nan':
+        return True
+    _m = re.match(r'[A-Za-z]+', str(course_code).strip())
+    prefix = _m.group(0).upper() if _m else ''
+    is_self = prefix in _DEPT_TO_ABBREVS.get(student_department, set())
+    if s.startswith('self'):
+        return is_self
+    if s.startswith('other'):
+        return not is_self
+    return True
 
 
 def _sentence_applies(sentence: str, student_dept: str) -> bool:
@@ -1294,7 +1326,7 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
         if norm_code(course_code) in course_hist_norm:
             continue
 
-        course["high_demand"] = norm_code(course_code) in high_demand_codes
+        course["high_demand"] = PREREG_MODE and norm_code(course_code) in high_demand_codes
 
         # 3. Check restriction -- for High-Demand courses, the Pre-Registration
         # Criteria takes precedence over the regular course-metadata
@@ -1334,14 +1366,15 @@ def recommender(student_id, Degree, year, department, desired_courses, manual_co
             continue
 
         # 4. Check prerequisite
-        if prefer_minor_division and course_code in PREREG_PREREQ_EXEMPT: # External ASC Exemption
+        if PREREG_MODE and prefer_minor_division and course_code in PREREG_PREREQ_EXEMPT: # External ASC Exemption
             p_status, p_remark, p_minor_prereq = 'Valid', '', None
 
         else:
             p_status, p_remark, p_minor_prereq = check_prereq(
                 course_code=course_code,
                 course_hist=course_hist,
-                degree = Degree
+                degree = Degree,
+                department = department
             )
 
             if p_status != 'Valid':
